@@ -159,6 +159,49 @@ td.nw{white-space:nowrap}
 .stat{font-size:11px;font-weight:600;border-radius:10px;padding:1px 8px;border:1px solid var(--line-2);white-space:nowrap}
 .stat.ok{border-color:#0ca30c;color:var(--ink)}.stat.due{border-color:#fab219}.stat.stale{border-color:#d03b3b;background:#d03b3b18}
 .loading{padding:60px;text-align:center;color:var(--ink-2)}
+
+/* ---- asset-class tabs ---- */
+nav .navx{margin-left:auto;display:flex;gap:2px}nav .navx a{font-size:12px;color:var(--ink-3)}
+.tabhead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:2px 0 10px}
+.tabt{font-size:20px;margin:0;letter-spacing:-.01em}.tabs{margin:2px 0 0;color:var(--ink-2);font-size:13px}
+.tabmix{min-width:200px;flex:0 1 280px}.tabmix .mix{margin-bottom:3px}
+.tbar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;padding:4px;background:var(--surface-2);border-radius:8px;width:max-content;max-width:100%}
+.tbar a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:500}
+.tbar a.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}.tbar a:hover{color:var(--ink)}
+.mix{display:flex;gap:1px;border-radius:3px;overflow:hidden;background:var(--surface-2)}.mix i{display:block;height:100%}
+.gauge{display:block;margin:4px 0}
+.tiles7{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:14px}
+@media(max-width:1100px){.tiles7{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:640px){.tiles7{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tiles3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}@media(max-width:760px){.tiles3{grid-template-columns:1fr}}
+.at{display:block;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--line-2);border-radius:10px;padding:12px;text-decoration:none;color:var(--ink);cursor:pointer;min-width:0}
+.at:hover{background:var(--surface-2)}.at .gauge{max-width:100%}
+.atl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:600}
+.atv{font-size:30px;font-weight:600;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;line-height:1.2}.atv .chip{font-size:12px}
+.ats{font-size:12px;color:var(--ink-2);margin-top:3px;overflow:hidden;text-overflow:ellipsis}
+.at .mix{height:6px;margin-top:6px}
+.hero{border-top:4px solid var(--line-2)}.herorow{display:flex;align-items:flex-end;gap:14px;margin:6px 0 2px}
+.bk{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.bk div{border-radius:6px;padding:5px 9px;display:flex;flex-direction:column;min-width:78px}
+.bk span{font-size:11px;color:var(--ink-2)}.bk b{font-size:16px}
+.cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}.heat.sm{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:4px}
+.ht{border:1px solid var(--line);border-left-width:4px;border-radius:6px;padding:7px 8px;cursor:pointer;min-width:0}
+.ht:hover{outline:2px solid var(--ink-3)}.htn{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hts{display:flex;align-items:baseline;justify-content:space-between;gap:6px}.hts b{font-size:18px}.hts span{font-size:11px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heat.sm .hts b{font-size:15px}
+.tscroll{overflow-x:auto}td.hc{text-align:right;font-variant-numeric:tabular-nums}
+table.st th .btn{white-space:nowrap}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:6px}.sgh{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:600;margin-bottom:4px}
+.warnrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:640px){.warnrow{grid-template-columns:1fr}}
+.wv{font-size:26px;font-weight:600}.wv span{font-size:12px;color:var(--ink-3);font-weight:400}
+.mixt td{vertical-align:middle}.mixt a{color:var(--ink);text-decoration:none}
+.hb{display:flex;flex-direction:column;gap:6px}.hbr{display:grid;grid-template-columns:minmax(0,190px) 1fr 56px;gap:8px;align-items:center;cursor:pointer;font-size:12px}
+.hbn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hbt{background:var(--surface-2);border-radius:4px;height:14px;overflow:hidden}.hbt i{display:block;height:100%;border-radius:4px}.hbv{text-align:right;font-weight:600}
+.rules{margin:6px 0 0 18px;padding:0;color:var(--ink-2)}.rules li{margin-bottom:6px}.rules b{color:var(--ink)}
+.ddbar{height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;margin:4px 0}.ddbar i{display:block;height:100%;background:var(--b6)}
+.dtools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-4px 0 12px}.dtools .btn{text-decoration:none;font-size:12px;padding:4px 9px}
+.klinks{display:flex;flex-direction:column;gap:2px}
+.card>table{display:block;overflow-x:auto}
+@media(max-width:640px){.legendbar{min-width:0;width:100%;grid-template-columns:repeat(3,1fr)}header{gap:10px}.wrap{padding:14px 16px 50px}.tabmix{flex-basis:100%}.big{font-size:34px}}
 </style>
 </head>
 <body>
@@ -172,15 +215,15 @@ td.nw{white-space:nowrap}
   </div>
   <div class="legendbar" id="scale" aria-label="Score bands, 1 is cheap and 100 is rich"></div>
 </header>
-<nav id="nav" aria-label="Views">
-  <a href="#month">This month</a>
-  <a href="#signals">Signal finder</a>
-  <a href="#map">Opportunity map</a>
-  <a href="#classes">Asset classes</a>
-  <a href="#trends">Trends</a>
-  <a href="#alerts">Alerts</a>
-  <a href="#knowledge">Knowledge</a>
-  <a href="#notes">Design notes</a>
+<nav id="nav" aria-label="Asset classes">
+  <a href="#snapshot">Snapshot</a>
+  <a href="#india">Indian equities</a>
+  <a href="#global">International</a>
+  <a href="#commod">Commodities</a>
+  <a href="#crypto">Crypto</a>
+  <a href="#fixed">Fixed income</a>
+  <a href="#realestate">Real estate</a>
+  <span class="navx"><a href="#knowledge">Knowledge</a><a href="#notes">Design notes</a></span>
 </nav>
 <main id="view" tabindex="-1"></main>
 </div>
