@@ -1,0 +1,52 @@
+name: Fetch Nifty 500 stock fundamentals
+
+# Fills the stock screener inputs for every Nifty 500 constituent that the monthly Claude run
+# did not source (Yahoo Finance via yfinance), re-runs the stock engine and commits.
+on:
+  schedule:
+    - cron: "30 1 4 * *"     # 4th of each month, 07:00 IST, after the Claude run on the 3rd
+  workflow_dispatch:
+    inputs:
+      asof:
+        description: "Price date YYYY-MM-DD (default: today)"
+        required: false
+  push:
+    branches: [stocks-nifty500]
+    paths: [".github/workflows/stocks-fundamentals.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install pandas numpy matplotlib yfinance
+      - name: Fetch fundamentals
+        run: |
+          ASOF="${{ github.event.inputs.asof }}"
+          if [ -z "$ASOF" ] && [ "${{ github.event_name }}" = "push" ]; then ASOF=2026-11-20; fi
+          if [ -z "$ASOF" ]; then ASOF=$(date -u +%Y-%m-%d); fi
+          python3 scripts/fetch_stock_fundamentals.py --asof "$ASOF" | tee /tmp/fetch.log
+      - name: Re-run stock engine and rebuild board data
+        run: |
+          (cd models && python3 -I stock_oscillator.py table > /tmp/stocks.log) && head -n 60 /tmp/stocks.log && grep "Signal counts" /tmp/stocks.log
+          python3 -I scripts/build_signals.py
+      - name: Commit if anything changed
+        run: |
+          git config user.name "board-refresh-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A models data
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "Fetch Nifty 500 stock fundamentals $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin HEAD:"${GITHUB_REF_NAME}"
