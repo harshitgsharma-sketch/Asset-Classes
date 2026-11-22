@@ -1,4 +1,4 @@
-"""Nifty 200 Stock Screener — Entry/Exit Oscillator (v1, indicative) — "Asset Mgmt" project.
+"""Nifty 500 Stock Screener — Entry/Exit Oscillator (v1, indicative) — "Asset Mgmt" project.
 
 Same engine as nifty_oscillator.py / sector_oscillator.py:
   per-indicator score = clamp(1 + 99*(x - cheap)/(rich - cheap), 1, 100)
@@ -8,20 +8,21 @@ Three buckets: Valuation (own history + vs sector) 50% / Quality 25% / Momentum 
 Thin-bucket rule: a bucket resting on one indicator moves only half-way from 50.
 
 Files (project, under claude/):
-  nifty200-stocks-config.json         per-stock set-up: sector, sector index, type, flags
-  nifty200-stocks-inputs-monthly.csv  long format, one row per (month, ticker); raw inputs.
+  nifty500-stocks-config.json         per-stock set-up: sector, sector index, type, flags
+  nifty500-stocks-inputs-monthly.csv  long format, one row per (month, ticker); raw inputs.
                                       Row ticker=NIFTY50 holds the benchmark px1/px3 and gsec10.
   nifty-sectors-inputs-monthly.csv    (read only) sector index PE for V1
-  nifty200-stocks-score-log.csv       output (regenerated)
+  nifty500-stocks-score-log.csv       output (regenerated)
 
 Any ticker in the inputs CSV is scored, even if not in the config (as nonfin vs Nifty 50, flagged),
-so the universe grows by appending rows (e.g. a screener.in export of the Nifty 200).
+so the universe grows by appending rows. scripts/fetch_stock_fundamentals.py fills the Nifty 500 from
+Yahoo Finance and writes name/sector/sector_index/type columns used for stocks not in the config.
 Usage: python3 stock_oscillator.py [score|drivers|table|all] [TICKER ...]
 """
 import json, sys, math, os
 import numpy as np, pandas as pd
 
-CONFIG, INPUTS, LOG = "nifty200-stocks-config.json", "nifty200-stocks-inputs-monthly.csv", "nifty200-stocks-score-log.csv"
+CONFIG, INPUTS, LOG = "nifty500-stocks-config.json", "nifty500-stocks-inputs-monthly.csv", "nifty500-stocks-score-log.csv"
 SECTOR_INPUTS = "nifty-sectors-inputs-monthly.csv"
 
 # id: (name, bucket, type, I, S, R, St, cheap, rich, applies_to)
@@ -29,7 +30,7 @@ SECTOR_INPUTS = "nifty-sectors-inputs-monthly.csv"
 SPEC = {
  # ---- Valuation (own history + vs sector)
  "V1": ("PE / sector index PE (x)",                    "V", "Leading", 5, 4, 0.875, 0.875, 0.6, 1.8, "all"),
- "V2": ("5-yr re-rating: price CAGR - EPS CAGR (pp/yr)", "V", "Leading", 4, 4, 0.75, 0.75, -10, 10, "all"),
+ "V2": ("Re-rating: price CAGR - EPS CAGR, 5 or 3 yr (pp/yr)", "V", "Leading", 4, 4, 0.75, 0.75, -10, 10, "all"),
  "V3": ("Earnings yield - 10-yr G-sec (pp)",           "V", "Leading", 4, 3, 0.875, 1.0, 3, -5, "all"),
  "V4": ("P/B / (5-yr ROE / 12.5%) (x)",                "V", "Leading", 5, 4, 0.875, 0.875, 0.7, 2.5, ["lender"]),
  "V5": ("PE vs own 5-yr median PE (%)",                "V", "Leading", 5, 5, 1.0, 0.75, -35, 35, "all"),
@@ -76,14 +77,19 @@ def derive(row, bench, sector_pe, ci):
         out["V1"] = pe/sector_pe
     eps = eps_list(row.get("eps_hist"))
     e_cagr = None
-    if len(eps) >= 6 and eps[0] > 0 and eps[-1] > 0:
-        e_cagr = ((eps[-1]/eps[0])**(1/(len(eps)-1)) - 1)*100
-    elif len(eps) >= 6 and eps[0] <= 0:
-        notes.append("V2 skipped: loss-year EPS base")
+    # V2 horizon: 5 yrs when 6 annual EPS are known (screener.in), else 3 yrs on the last 4 (Yahoo)
+    span = 5 if len(eps) >= 6 else 3 if len(eps) >= 4 else None
+    px_n = num(row.get("px5")) if span == 5 else num(row.get("px3"))
+    if span:
+        base, last = eps[-(span + 1)], eps[-1]
+        if base > 0 and last > 0:
+            e_cagr = ((last/base)**(1/span) - 1)*100
+            if span == 3: notes.append("V2 on 3-yr window")
+        else:
+            notes.append("V2 skipped: loss-year EPS base")
     elif num(row.get("pg5")) is not None:
-        e_cagr = num(row.get("pg5")); notes.append("V2 uses profit CAGR (EPS base <=0 or short)")
-    px5 = num(row.get("px5"))
-    if None not in (px5, e_cagr): out["V2"] = px5 - e_cagr
+        e_cagr = num(row.get("pg5")); px_n = num(row.get("px5")); notes.append("V2 uses profit CAGR (EPS history short)")
+    if None not in (px_n, e_cagr): out["V2"] = px_n - e_cagr
     if None not in (pe, gsec): out["V3"] = 100/pe - gsec
     roe5, roe = num(row.get("roe5")), num(row.get("roe"))
     if roe5 is None and num(row.get("roe3")) is not None:
@@ -178,8 +184,13 @@ def run(keys=None, verbose=True):
         bench = g.loc["NIFTY50"].to_dict()
         for t, r in g.iterrows():
             if t == "NIFTY50": continue
-            ci = dict(idx.get(t) or {"ticker": t, "name": t, "sector": "?", "sector_index": "NIFTY50",
-                                     "type": "nonfin", "flags": ["not in config: scored as nonfin vs Nifty 50"]})
+            if t in idx:
+                ci = dict(idx[t])
+            else:   # auto-classified by scripts/fetch_stock_fundamentals.py (NSE industry + Yahoo industry)
+                rr = r.to_dict(); g_ = lambda k, d: rr.get(k) if isinstance(rr.get(k), str) and rr.get(k) else d
+                ci = {"ticker": t, "name": g_("name", t), "sector": g_("sector", "?"),
+                      "sector_index": g_("sector_index", "NIFTY50"), "type": g_("type", "nonfin"),
+                      "flags": [] if g_("sector_index", None) else ["not classified: scored as nonfin vs Nifty 50"]}
             spe, smonth = sector_pe_for(sec, month, ci["sector_index"])
             ind, notes = derive(r.to_dict(), bench, spe, ci)
             s = score_stock(ind, ci, num(r.get("pg_ttm")))

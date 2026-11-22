@@ -37,7 +37,7 @@ async function fetchLive(){
   if((location.hash||'#month')==='#month')freshLine();route();fetchLive();
 }
 const BANDS=[['Strong buy',0,20,'--b1'],['Buy',20,35,'--b2'],['Accumulate',35,50,'--b3'],['Hold',50,65,'--b4'],['Trim',65,80,'--b5'],['Exit',80,100,'--b6']];
-const MODELS={core:'Gold & Nifty 50',sectors:'Nifty sectors & size',factors:'Nifty factors',stocks:'Nifty stocks (50)',global:'Global markets',commodities:'Commodities',crypto:'Bitcoin',bonds:'Bonds & deposits',carry:'Arbitrage & covered call',reits:'REITs & InvITs',property:'Housing by city'};
+const MODELS={core:'Gold & Nifty 50',sectors:'Nifty sectors & size',factors:'Nifty factors',stocks:'Nifty 500 stocks',global:'Global markets',commodities:'Commodities',crypto:'Bitcoin',bonds:'Bonds & deposits',carry:'Arbitrage & covered call',reits:'REITs & InvITs',property:'Housing by city'};
 const MODEL_ORDER=['core','sectors','factors','stocks','global','commodities','crypto','bonds','carry','reits','property'];
 const TIERS={A:'High: multi-year history (reconstructed), full scoring',B:'Medium: one month, most inputs live',C:'Low: one month, partial or estimated inputs'};
 const TIERNAME={A:'High',B:'Medium',C:'Low'};
@@ -45,6 +45,9 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 const bandOf=s=>s==null?null:BANDS.find(b=>s<=b[2])||BANDS[5];
 const bcol=s=>{const b=bandOf(s);return b?`var(${b[3]})`:'var(--line-2)'};
 const items=DATA.items.filter(i=>i.score!=null);
+/* Nifty 500 stocks outside the Nifty 50 are on the map, list, search and sector chart, but kept out of the headline counts and signal lanes so 450 stocks do not swamp the other models. */
+items.forEach(i=>{i.wide=i.model==='stocks'&&(i.meta||{}).Universe==='Nifty 500'});
+const headline=items.filter(i=>!i.wide);
 const byId=Object.fromEntries(DATA.items.map(i=>[i.id,i]));
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const notInvestable=i=>/Not investable/i.test(i.action||'');
@@ -93,9 +96,9 @@ function prevScore(i){return i.history&&i.history.length>1?i.history[i.history.l
 
 /* ---------- THIS MONTH ---------- */
 function viewMonth(){
-  const counts=BANDS.map(b=>items.filter(i=>bandOf(i.score)===b).length);
-  const buyZone=items.filter(i=>i.score<=35&&!notInvestable(i));
-  const trimZone=items.filter(i=>i.score>65);
+  const counts=BANDS.map(b=>headline.filter(i=>bandOf(i.score)===b).length);
+  const buyZone=headline.filter(i=>i.score<=35&&!notInvestable(i));
+  const trimZone=headline.filter(i=>i.score>65);
   const withHist=items.filter(i=>i.history&&i.history.length>1);
   const moved=withHist.filter(i=>bandOf(prevScore(i))!==bandOf(i.score));
   const groupList=(list,dir)=>{
@@ -113,7 +116,7 @@ function viewMonth(){
     {t:'Gold',a:`Asset-class valuation: ${ac.GOLD.score}`,b:`Gold oscillator: ${byId.GOLD.score} (macro supportive at 35.5)`,gap:Math.abs(ac.GOLD.score-byId.GOLD.score),ids:['GOLD']},
     {t:'Nifty 50',a:`Nifty oscillator: ${byId.NIFTY50.score}`,b:`Global 5-yr lens: ${byId.GLB_NIFTY50.score}`,gap:Math.abs(byId.NIFTY50.score-byId.GLB_NIFTY50.score),ids:['NIFTY50']},
   ].sort((x,y)=>y.gap-x.gap);
-  const tot=items.length;
+  const tot=headline.length;
   const into=(b)=>moved.filter(i=>bandOf(i.score)[0]===b).map(i=>i.name);
   const join=l=>l.length<2?l.join(''):l.slice(0,-1).join(', ')+' and '+l[l.length-1];
   const intoBuy=into('Buy'),intoHold=moved.filter(i=>bandOf(i.score)[0]==='Hold');
@@ -139,10 +142,10 @@ function viewMonth(){
   <div class="grid g2">
   <section class="card">
     <h2>Market temperature</h2>
-    <p class="hint">All ${tot} readings by band. Mostly mid-range: the useful readings are at the edges.</p>
+    <p class="hint">All ${tot} headline readings by band (Nifty 500 stocks outside the Nifty 50 are on the map). Mostly mid-range: the useful readings are at the edges.</p>
     <div class="dist" role="img" aria-label="${counts.map((c,k)=>BANDS[k][0]+' '+c).join(', ')}">${counts.map((c,k)=>c?`<div style="flex:${c};background:var(${BANDS[k][3]})"></div>`:'').join('')}</div>
     <div class="legend">${counts.map((c,k)=>`<span><span class="sw" style="background:var(${BANDS[k][3]})"></span> ${BANDS[k][0]} <b>${c}</b></span>`).join('')}</div>
-    <div class="note">${Math.round(100*items.filter(i=>i.tier!=='A').length/tot)}% of readings have only one month of history, so treat single-month calls as indicative.</div>
+    <div class="note">${Math.round(100*headline.filter(i=>i.tier!=='A').length/tot)}% of readings have only one month of history, so treat single-month calls as indicative.</div>
   </section>
   <section class="card">
     <h2>Where models disagree</h2>
@@ -176,8 +179,8 @@ function spark(h,w,ht){
 let sigState={model:'all'};
 function laneCard(i){return `<div class="lc" data-id="${i.id}" role="button" tabindex="0" aria-label="${esc(i.name)}, score ${i.score}, signal strength ${i.conv}"><div class="top"><span>${HELD.has(i.id)?'<span class="held">You hold</span> ':''}${esc(i.name)}</span><b>${i.score.toFixed(1)}</b></div><div class="bot">${convBar(i)}<span>${i.conv}</span>${bstrip(i)}${mom(i)}<span style="margin-left:auto">${tierTag(i.tier)}</span></div></div>`}
 function viewSignals(){
-  const lanes=['buy','stage','near','rally','trimnow'].map(k=>[k,items.filter(i=>i.lane===k).sort((a,b)=>b.conv-a.conv)]);
-  const top=(side)=>items.filter(i=>i.side===side&&!notInvestable(i)).sort((a,b)=>b.conv-a.conv).slice(0,10);
+  const lanes=['buy','stage','near','rally','trimnow'].map(k=>[k,headline.filter(i=>i.lane===k).sort((a,b)=>b.conv-a.conv)]);
+  const top=(side)=>headline.filter(i=>i.side===side&&!notInvestable(i)).sort((a,b)=>b.conv-a.conv).slice(0,10);
   const rankRows=(l)=>l.map((i,k)=>`<div class="rank" data-id="${i.id}" role="button" tabindex="0"><span class="tag">${k+1}</span><span class="n">${esc(i.name)} <span class="tag">${MODELS[i.model]}</span></span>${bstrip(i)}<span>${tierTag(i.tier)}</span>${convBar(i)}<span class="cv">${i.conv}</span></div>`).join('');
   return `
   <section class="card" style="margin-bottom:14px">
@@ -211,7 +214,7 @@ function drawVT(){
   const el=document.getElementById('vtsvg');if(!el)return;
   const W=el.clientWidth,H=Math.min(460,W*.55),L=40,R=16,T=12,B=34;
   const x=v=>L+(v-1)/99*(W-L-R),y=v=>T+(100-v)/99*(H-T-B);
-  const pts=items.filter(i=>i.V!=null&&i.T!=null&&(sigState.model==='all'||i.model===sigState.model)&&!notInvestable(i));
+  const pts=(sigState.model==='all'?headline:items).filter(i=>i.V!=null&&i.T!=null&&(sigState.model==='all'||i.model===sigState.model)&&!notInvestable(i));
   let s=`<svg width="${W}" height="${H}" role="group" aria-label="Valuation versus timing scatter">`;
   const q=[[1,50,1,50,'var(--b2)','Cheap · timing supportive → buy now'],[1,50,50,100,'var(--b3)','Cheap · timing against → stage entries'],[50,100,50,100,'var(--b6)','Rich · timing against → trim now'],[50,100,1,50,'var(--b5)','Rich · timing still OK → trim into rallies']];
   q.forEach(([x0,x1,y0,y1,c,l])=>{s+=`<rect x="${x(x0)}" y="${y(y1)}" width="${x(x1)-x(x0)}" height="${y(y0)-y(y1)}" fill="${c}" opacity=".07"/>`;s+=`<text x="${x0<50?x(x0)+8:x(x1)-8}" y="${y0<50?y(y0)-8:y(y1)+16}" text-anchor="${x0<50?'start':'end'}" style="font-weight:600;fill:var(--ink-2)">${l}</text>`});
@@ -282,7 +285,7 @@ function drawMap(){
   }
   const W=el.clientWidth,L=170,R=16,top=26;
   const models=MODEL_ORDER.filter(m=>mapState.model==='all'||m===mapState.model);
-  const rh=m=>m==='stocks'?92:m==='global'?70:52;
+  const rh=m=>m==='stocks'?(items.filter(i=>i.model==='stocks').length>100?180:92):m==='global'?70:52;
   const H=models.reduce((s,m)=>s+rh(m),0);
   const x=v=>L+(v-1)/99*(W-L-R);
   let s=`<svg width="${W}" height="${top+H+24}" role="group" aria-label="Strip plot of readings by model">`;
@@ -430,7 +433,7 @@ function viewAlerts(){
 
 /* ---------- NOTES ---------- */
 function viewNotes(){
-  const thin=[['Gold, Nifty 50','61 months (pre-Nov reconstructed)','72–88%','No'],['Silver, Brent','61 / 49 months (reconstructed)','57–72%','No'],['Bitcoin','61 months (reconstructed)','64%','No'],['Copper','1 month','–','No'],['Nifty sectors (20)','1 month','7 of 17 core indicators','No'],['Factors (10)','1 month','12/12; PE percentile estimated','No'],['Stocks (50 of Nifty 200)','1 month','9/10 per stock; own-median PE not sourced','No'],['Global markets (24)','1 month','27–85%; 13 markets rest on one valuation input','No'],['Bonds (7) and carry (2)','1 month','Full; carry vol estimated','No'],['REITs & InvITs (12)','1 month','3–7 of 7; SM-REITs have no live price','No'],['Housing by city (9)','1 snapshot','Valuation only, quarterly data','No'],['Asset classes (15)','1 month','Valuation only, judgment anchors','No']];
+  const thin=[['Gold, Nifty 50','61 months (pre-Nov reconstructed)','72–88%','No'],['Silver, Brent','61 / 49 months (reconstructed)','57–72%','No'],['Bitcoin','61 months (reconstructed)','64%','No'],['Copper','1 month','–','No'],['Nifty sectors (20)','1 month','7 of 17 core indicators','No'],['Factors (10)','1 month','12/12; PE percentile estimated','No'],['Nifty 500 stocks','1 month','9/10 per stock; Nifty 50 from screener.in, the rest from Yahoo Finance (3-yr EPS window); own-median PE not sourced','No'],['Global markets (24)','1 month','27–85%; 13 markets rest on one valuation input','No'],['Bonds (7) and carry (2)','1 month','Full; carry vol estimated','No'],['REITs & InvITs (12)','1 month','3–7 of 7; SM-REITs have no live price','No'],['Housing by city (9)','1 snapshot','Valuation only, quarterly data','No'],['Asset classes (15)','1 month','Valuation only, judgment anchors','No']];
   return `<div class="card prose">
   <h2 style="margin-top:0">The concept in one line</h2>
   <p>One page that answers, every month: <strong>what should I add to, what should I trim, what changed, and how much should I trust it?</strong> Everything sits on the same 1–100 scale, so a bond, a REIT, a sector and Bitcoin can be compared on one axis.</p>

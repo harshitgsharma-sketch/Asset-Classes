@@ -35,10 +35,13 @@ d=pd.read_csv(P+'nifty-factors-score-log.csv')
 for _,r in d.iterrows():
     add(id='FAC_'+r['index'],name=r['name'],model='factors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Factor cycle':num(r.factor_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.quadrant,meta={'PE':num(r.pe),'Indicators':r.indicators},flags=r.flags if isinstance(r.flags,str) else '')
 # stocks
-d=pd.read_csv(P+'nifty200-stocks-score-log.csv')
+d=pd.read_csv(P+'nifty500-stocks-score-log.csv')
+import json as _j
+N50={x['ticker'] for x in _j.load(open(P+'nifty500-stocks-config.json'))['stocks']}
+d=d[d.month==d.month.max()]
 for _,r in d.iterrows():
     c=cov(r.coverage)
-    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Sector':r.sector,'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Universe':'Nifty 50' if r.ticker in N50 else 'Nifty 500','Sector':r.sector,'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r.flags if isinstance(r.flags,str) else '')
 # global
 d=pd.read_csv(C+'global-indices-score-log.csv')
 for _,r in d.iterrows():
@@ -92,7 +95,7 @@ MODELS={ # key: (log file, expected refresh cadence in days, how it is refreshed
  'core':('nifty-score-log.csv',35,'monthly Claude run (3rd)'),
  'sectors':('nifty-sectors-score-log.csv',35,'monthly Claude run (3rd)'),
  'factors':('nifty-factors-score-log.csv',35,'monthly Claude run (3rd)'),
- 'stocks':('nifty200-stocks-score-log.csv',35,'monthly Claude run (3rd)'),
+ 'stocks':('nifty500-stocks-score-log.csv',35,'monthly Claude run (3rd)'),
  'global':('global-indices-score-log.csv',35,'monthly Claude run (3rd)'),
  'commodities':('commodities-score-log.csv',35,'monthly Claude run (3rd)'),
  'crypto':('btc-score-log.csv',35,'monthly Claude run (3rd)'),
