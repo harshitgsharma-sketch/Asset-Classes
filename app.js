@@ -34,7 +34,7 @@ async function fetchLive(){
     fetch('https://api.frankfurter.app/latest?from=USD&to=INR').then(r=>r.json()).then(j=>{LIVE.usdinr={value:j.rates.INR,source:'ECB reference, live',at:new Date().toISOString()}}),
   ];
   await Promise.allSettled(tasks);
-  if((location.hash||'#month')==='#month'){freshLine();route()}
+  freshLine();if(CUR.tab==='snapshot'||CUR.tab==='commod'||CUR.tab==='crypto')route()
 }
 const BANDS=[['Strong buy',0,20,'--b1'],['Buy',20,35,'--b2'],['Accumulate',35,50,'--b3'],['Hold',50,65,'--b4'],['Trim',65,80,'--b5'],['Exit',80,100,'--b6']];
 const MODELS={core:'Gold & Nifty 50',sectors:'Nifty sectors & size',factors:'Nifty factors',stocks:'Nifty 500 stocks',global:'Global markets',commodities:'Commodities',crypto:'Bitcoin',bonds:'Bonds & deposits',carry:'Arbitrage & covered call',reits:'REITs & InvITs',property:'Housing by city'};
@@ -44,10 +44,11 @@ const TIERNAME={A:'High',B:'Medium',C:'Low'};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const bandOf=s=>s==null?null:BANDS.find(b=>s<=b[2])||BANDS[5];
 const bcol=s=>{const b=bandOf(s);return b?`var(${b[3]})`:'var(--line-2)'};
-const items=DATA.items.filter(i=>i.score!=null);
+const ALL_ITEMS=DATA.items.filter(i=>i.score!=null);
+let items=ALL_ITEMS;   // narrowed to the open tab's scope by the router
 /* Nifty 500 stocks outside the Nifty 50 are on the map, list, search and sector chart, but kept out of the headline counts and signal lanes so 450 stocks do not swamp the other models. */
-items.forEach(i=>{i.wide=i.model==='stocks'&&(i.meta||{}).Universe==='Nifty 500'});
-const headline=items.filter(i=>!i.wide);
+ALL_ITEMS.forEach(i=>{i.wide=i.model==='stocks'&&(i.meta||{}).Universe==='Nifty 500'});
+const HL=()=>items.filter(i=>!i.wide);
 const byId=Object.fromEntries(DATA.items.map(i=>[i.id,i]));
 const pct=x=>Math.round(x*100)+'%';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -97,9 +98,9 @@ function prevScore(i){return i.history&&i.history.length>1?i.history[i.history.l
 
 /* ---------- THIS MONTH ---------- */
 function viewMonth(){
-  const counts=BANDS.map(b=>headline.filter(i=>bandOf(i.score)===b).length);
-  const buyZone=headline.filter(i=>i.score<=35&&!notInvestable(i));
-  const trimZone=headline.filter(i=>i.score>65);
+  const counts=BANDS.map(b=>HL().filter(i=>bandOf(i.score)===b).length);
+  const buyZone=HL().filter(i=>i.score<=35&&!notInvestable(i));
+  const trimZone=HL().filter(i=>i.score>65);
   const withHist=items.filter(i=>i.history&&i.history.length>1);
   const moved=withHist.filter(i=>bandOf(prevScore(i))!==bandOf(i.score));
   const groupList=(list,dir)=>{
@@ -117,7 +118,7 @@ function viewMonth(){
     {t:'Gold',a:`Asset-class valuation: ${ac.GOLD.score}`,b:`Gold oscillator: ${byId.GOLD.score} (macro supportive at 35.5)`,gap:Math.abs(ac.GOLD.score-byId.GOLD.score),ids:['GOLD']},
     {t:'Nifty 50',a:`Nifty oscillator: ${byId.NIFTY50.score}`,b:`Global 5-yr lens: ${byId.GLB_NIFTY50.score}`,gap:Math.abs(byId.NIFTY50.score-byId.GLB_NIFTY50.score),ids:['NIFTY50']},
   ].sort((x,y)=>y.gap-x.gap);
-  const tot=headline.length;
+  const tot=HL().length;
   const into=(b)=>moved.filter(i=>bandOf(i.score)[0]===b).map(i=>i.name);
   const join=l=>l.length<2?l.join(''):l.slice(0,-1).join(', ')+' and '+l[l.length-1];
   const intoBuy=into('Buy'),intoHold=moved.filter(i=>bandOf(i.score)[0]==='Hold');
@@ -146,7 +147,7 @@ function viewMonth(){
     <p class="hint">All ${tot} headline readings by band (Nifty 500 stocks outside the Nifty 50 are on the map). Mostly mid-range: the useful readings are at the edges.</p>
     <div class="dist" role="img" aria-label="${counts.map((c,k)=>BANDS[k][0]+' '+c).join(', ')}">${counts.map((c,k)=>c?`<div style="flex:${c};background:var(${BANDS[k][3]})"></div>`:'').join('')}</div>
     <div class="legend">${counts.map((c,k)=>`<span><span class="sw" style="background:var(${BANDS[k][3]})"></span> ${BANDS[k][0]} <b>${c}</b></span>`).join('')}</div>
-    <div class="note">${Math.round(100*headline.filter(i=>i.tier!=='A').length/tot)}% of readings have only one month of history, so treat single-month calls as indicative.</div>
+    <div class="note">${Math.round(100*HL().filter(i=>i.tier!=='A').length/tot)}% of readings have only one month of history, so treat single-month calls as indicative.</div>
   </section>
   <section class="card">
     <h2>Where models disagree</h2>
@@ -173,15 +174,15 @@ function spark(h,w,ht){
   const xs=k=>k*(w-4)/(h.length-1)+2, ys=v=>ht-2-(v/100)*(ht-4);
   const d=h.map((p,k)=>(k?'L':'M')+xs(k).toFixed(1)+','+ys(p[1]).toFixed(1)).join('');
   const last=h[h.length-1][1];
-  return `<svg width="${w}" height="${ht}" aria-hidden="true"><rect x="0" y="${ys(35)}" width="${w}" height="${ys(0)-ys(35)}" fill="var(--b3)" opacity=".35"/><rect x="0" y="${ys(100)}" width="${w}" height="${ys(65)-ys(100)}" fill="var(--b5)" opacity=".3"/><path d="${d}" fill="none" stroke="var(--ink)" stroke-width="1.5"/><circle cx="${xs(h.length-1)}" cy="${ys(last)}" r="3" fill="${bcol(last)}" stroke="var(--ink)" stroke-width="1"/></svg>`;
+  return `<svg width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" style="max-width:100%;height:auto" aria-hidden="true"><rect x="0" y="${ys(35)}" width="${w}" height="${ys(0)-ys(35)}" fill="var(--b3)" opacity=".35"/><rect x="0" y="${ys(100)}" width="${w}" height="${ys(65)-ys(100)}" fill="var(--b5)" opacity=".3"/><path d="${d}" fill="none" stroke="var(--ink)" stroke-width="1.5"/><circle cx="${xs(h.length-1)}" cy="${ys(last)}" r="3" fill="${bcol(last)}" stroke="var(--ink)" stroke-width="1"/></svg>`;
 }
 
 /* ---------- SIGNAL FINDER ---------- */
 let sigState={model:'all'};
 function laneCard(i){return `<div class="lc" data-id="${i.id}" role="button" tabindex="0" aria-label="${esc(i.name)}, score ${i.score}, signal strength ${i.conv}"><div class="top"><span>${HELD.has(i.id)?'<span class="held">You hold</span> ':''}${esc(i.name)}</span><b>${i.score.toFixed(1)}</b></div><div class="bot">${convBar(i)}<span>${i.conv}</span>${bstrip(i)}${mom(i)}<span style="margin-left:auto">${tierTag(i.tier)}</span></div></div>`}
 function viewSignals(){
-  const lanes=['buy','stage','near','rally','trimnow'].map(k=>[k,headline.filter(i=>i.lane===k).sort((a,b)=>b.conv-a.conv)]);
-  const top=(side)=>headline.filter(i=>i.side===side&&!notInvestable(i)).sort((a,b)=>b.conv-a.conv).slice(0,10);
+  const lanes=['buy','stage','near','rally','trimnow'].map(k=>[k,HL().filter(i=>i.lane===k).sort((a,b)=>b.conv-a.conv)]);
+  const top=(side)=>HL().filter(i=>i.side===side&&!notInvestable(i)).sort((a,b)=>b.conv-a.conv).slice(0,10);
   const rankRows=(l)=>l.map((i,k)=>`<div class="rank" data-id="${i.id}" role="button" tabindex="0"><span class="tag">${k+1}</span><span class="n">${esc(i.name)} <span class="tag">${MODELS[i.model]}</span></span>${bstrip(i)}<span>${tierTag(i.tier)}</span>${convBar(i)}<span class="cv">${i.conv}</span></div>`).join('');
   return `
   <section class="card" style="margin-bottom:14px">
@@ -200,22 +201,22 @@ function viewSignals(){
     <div class="filters"><label class="sr" for="ssel">Model</label><select id="ssel" class="btn">${['all',...MODEL_ORDER.filter(m=>items.some(i=>i.model===m&&i.V!=null&&i.T!=null))].map(m=>`<option value="${m}" ${sigState.model===m?'selected':''}>${m==='all'?'All models with both buckets':MODELS[m]}</option>`).join('')}</select></div>
     <div id="vtsvg"></div>
   </section>
-  <section class="card">
+  ${items.some(i=>i.model==='stocks')?`<section class="card">
     <h2>Sector vs its stocks</h2>
     <p class="hint">Does the sector call hold up stock by stock? Filled dot is the sector index score; small dots are the Nifty stocks in it (sectors with two or more); the diamond is their median. A wide gap or a wide spread means the sector call depends on which stocks you buy.</p>
     <div id="sxsvg"></div>
-  </section>`;
+  </section>`:''}`;
 }
 function drawSignals(){
   bindRows(document.getElementById('view'));
   const sel=document.getElementById('ssel');sel.onchange=()=>{sigState.model=sel.value;drawVT()};
-  drawVT();drawSX();
+  drawVT();if(document.getElementById('sxsvg'))drawSX();
 }
 function drawVT(){
   const el=document.getElementById('vtsvg');if(!el)return;
   const W=el.clientWidth,H=Math.min(460,W*.55),L=40,R=16,T=12,B=34;
   const x=v=>L+(v-1)/99*(W-L-R),y=v=>T+(100-v)/99*(H-T-B);
-  const pts=(sigState.model==='all'?headline:items).filter(i=>i.V!=null&&i.T!=null&&(sigState.model==='all'||i.model===sigState.model)&&!notInvestable(i));
+  const pts=(sigState.model==='all'?HL():items).filter(i=>i.V!=null&&i.T!=null&&(sigState.model==='all'||i.model===sigState.model)&&!notInvestable(i));
   let s=`<svg width="${W}" height="${H}" role="group" aria-label="Valuation versus timing scatter">`;
   const q=[[1,50,1,50,'var(--b2)','Cheap · timing supportive → buy now'],[1,50,50,100,'var(--b3)','Cheap · timing against → stage entries'],[50,100,50,100,'var(--b6)','Rich · timing against → trim now'],[50,100,1,50,'var(--b5)','Rich · timing still OK → trim into rallies']];
   q.forEach(([x0,x1,y0,y1,c,l])=>{s+=`<rect x="${x(x0)}" y="${y(y1)}" width="${x(x1)-x(x0)}" height="${y(y0)-y(y1)}" fill="${c}" opacity=".07"/>`;s+=`<text x="${x0<50?x(x0)+8:x(x1)-8}" y="${y0<50?y(y0)-8:y(y1)+16}" text-anchor="${x0<50?'start':'end'}" style="font-weight:600;fill:var(--ink-2)">${l}</text>`});
@@ -258,7 +259,7 @@ function viewMap(){
   <p class="hint">One dot per instrument, one row per model. Left is cheap, right is rich. Hover or focus a dot for its reading; click or press Enter for the drivers.</p>
   <div class="filters" role="group" aria-label="Filters">
     <label class="sr" for="q">Search</label><input id="q" type="search" placeholder="Search: IT, Infosys, Japan, REIT…" value="${esc(mapState.q)}">
-    <label class="sr" for="msel">Model</label><select id="msel" class="btn">${['all',...MODEL_ORDER].map(m=>`<option value="${m}" ${mapState.model===m?'selected':''}>${m==='all'?'All models':MODELS[m]}</option>`).join('')}</select>
+    <label class="sr" for="msel">Model</label><select id="msel" class="btn">${['all',...MODEL_ORDER.filter(m=>items.some(i=>i.model===m))].map(m=>`<option value="${m}" ${mapState.model===m?'selected':''}>${m==='all'?'All models':MODELS[m]}</option>`).join('')}</select>
     <span class="seg" id="tierseg" aria-label="Confidence"><button data-v="all">Any confidence</button><button data-v="AB">Medium and high</button><button data-v="A">High only</button></span>
     <button class="btn ${mapState.held?'on':''}" id="heldb" aria-pressed="${mapState.held}">My holdings${HELD.size?' ('+HELD.size+')':''}</button>
     <label class="toggle" id="ni"><input type="checkbox" ${mapState.hideNI?'checked':''}> Hide not investable from India</label>
@@ -285,7 +286,7 @@ function drawMap(){
     el.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{mapState.sort=b.dataset.s;drawMap()});bindRows(el);return;
   }
   const W=el.clientWidth,L=170,R=16,top=26;
-  const models=MODEL_ORDER.filter(m=>mapState.model==='all'||m===mapState.model);
+  const models=MODEL_ORDER.filter(m=>(mapState.model==='all'||m===mapState.model)&&items.some(i=>i.model===m));
   const rh=m=>m==='stocks'?(items.filter(i=>i.model==='stocks').length>100?180:92):m==='global'?70:52;
   const H=models.reduce((s,m)=>s+rh(m),0);
   const x=v=>L+(v-1)/99*(W-L-R);
@@ -360,11 +361,15 @@ function drawClasses(){
 }
 
 /* ---------- TRENDS ---------- */
-const SERIES=[['GOLD','--s1'],['NIFTY50','--s2'],['CMD_SILVER','--s3'],['CMD_BRENT','--s4'],['BTC','--s5']];
+const SERIES_ALL=[['GOLD','--s1'],['NIFTY50','--s2'],['CMD_SILVER','--s3'],['CMD_BRENT','--s4'],['BTC','--s5']];
+let SERIES=SERIES_ALL;
 let trendState={on:{GOLD:1,NIFTY50:1,CMD_SILVER:1,CMD_BRENT:0,BTC:0},range:36};
 function viewTrends(){
+  SERIES=SERIES_ALL.filter(([id])=>items.includes(byId[id]));
+  if(!SERIES.length)return `<div class="card"><div class="empty">Nothing in this tab has monthly history yet. History builds after each monthly run.</div></div>`;
+  if(SERIES.length<SERIES_ALL.length&&!SERIES.some(([id])=>trendState.on[id]))SERIES.forEach(([id])=>trendState.on[id]=1);
   return `<div class="card" style="margin-bottom:14px"><h2>Oscillator history with entry/exit zones</h2>
-  <p class="hint">Only five models have monthly history, and everything before Nov-2026 is reconstructed (about ±3 points), not live. Toggle series; hover for values.</p>
+  <p class="hint">Only gold, the Nifty 50, silver, Brent and Bitcoin have monthly history, and everything before Nov-2026 is reconstructed (about ±3 points), not live. Toggle series; hover for values.</p>
   <div class="filters"><span id="stog">${SERIES.map(([id,c])=>`<span class="toggle ${trendState.on[id]?'':'off'}" data-id="${id}" style="margin-right:6px"><span class="sw" style="background:var(${c})"></span>${esc(byId[id].name)}</span>`).join('')}</span>
   <span class="seg" id="rseg"><button data-v="12">1 yr</button><button data-v="36">3 yr</button><button data-v="61">5 yr</button></span></div>
   <div id="tsvg"></div></div>
@@ -413,7 +418,7 @@ function viewAlerts(){
   const fired=[];
   withHist.forEach(i=>{const p=prevScore(i),pb=bandOf(p)[0],nb=bandOf(i.score)[0];if(pb!==nb)fired.push(['Band change',i,`${pb} → ${nb} (${p} → ${i.score})`]);});
   withHist.forEach(i=>{const h=i.history.slice(-4).map(x=>x[1]);if(h.length===4&&h.every((v,k)=>!k||v<h[k-1]))fired.push(['3-month drift',i,`Falling three months in a row: ${h.join(' → ')}`]);});
-  const b=byId.BTC;if(b.buckets.Filter>65)fired.push(['Staging rule',b,`Score in Buy but macro filter ${b.buckets.Filter}: enter in tranches, not lump sum`]);
+  const b=byId.BTC;if(items.includes(b)&&b.buckets.Filter>65)fired.push(['Staging rule',b,`Score in Buy but macro filter ${b.buckets.Filter}: enter in tranches, not lump sum`]);
   items.filter(i=>i.score>80).forEach(i=>fired.push(['Exit zone',i,`Score ${i.score} (>80)`]));
   items.filter(i=>i.parabolic&&i.parabolic.status!=='Normal').sort((a,b)=>b.parabolic.gap-a.parabolic.gap).forEach(i=>fired.push([i.parabolic.status==='Parabolic'?'Parabolic move':'Stretched',i,`${pct(i.parabolic.gap)} above its 150-day EMA (${i.parabolic.asof}). Flag only, score unchanged.`]));
   const PS=DATA.parabolic&&DATA.parabolic.summary;
@@ -429,19 +434,19 @@ function viewAlerts(){
     ['Thematic froth','AMFI sectoral/thematic froth reaches 80+ (top fifth of its history): flags the size indices, CPSE, Defence and Infra',1],
     ['Parabolic move',`Price 70%+ above its 150-day EMA (50%+ = Stretched). Daily, ${PS?PS.covered+' assets':'when data is available'}. A late-stage warning, not a sell signal: see the back-test below.`,1],
   ];
-  const BT=PS&&PS['6m']?`<div class="card" style="grid-column:1/-1"><h2>Parabolic-move back-test</h2><p class="hint">Every time an asset first closed 70%+ above its 150-day EMA in the last ~10 years of daily data (Yahoo Finance), and what the price did next. Rule from the <a href="#knowledge/sector-rotation-7-indian-bull-runs">sector rotation note</a>.</p>
+  const BT=PS&&PS['6m']&&items.some(i=>i.parabolic)?`<div class="card" style="grid-column:1/-1"><h2>Parabolic-move back-test</h2><p class="hint">Every time an asset first closed 70%+ above its 150-day EMA in the last ~10 years of daily data (Yahoo Finance), and what the price did next. Rule from the <a href="#knowledge/sector-rotation-7-indian-bull-runs">sector rotation note</a>.</p>
   <div class="kv" style="max-width:640px"><div>Episodes</div><div>${PS.episodes} across ${PS.assets_with_episodes} of ${PS.covered} assets</div>${['3m','6m','12m'].filter(h=>PS[h]).map(h=>`<div>${h.replace('m',' months')} later</div><div>median ${PS[h].median>0?'+':''}${pct(PS[h].median)}; lower in ${pct(PS[h].share_lower)} of ${PS[h].n} cases</div>`).join('')}<div>Firing now</div><div>${PS.parabolic_now.length?PS.parabolic_now.map(k=>byId[k]?byId[k].name:k).join(', '):'None'}${PS.stretched_now.length?` · Stretched: ${PS.stretched_now.map(k=>byId[k]?byId[k].name:k).join(', ')}`:''}</div></div>
   <p class="hint" style="margin-top:10px">Read it as: prices usually kept rising for months after the rule fired, but with deep swings, so it marks a late, volatile stage rather than a top. That is why it stays a flag and does not move scores.</p></div>`:'';
   const AM=DATA.amfi;
-  if(AM&&AM.froth>=80)AM.applies_to.forEach(id=>{if(byId[id])fired.push(['Thematic froth',byId[id],`AMFI sectoral/thematic froth ${AM.froth}/100 (${AM.month}); adds to this index's Sector cycle score`])});
-  const FR=AM&&AM.history&&AM.history.length?(()=>{const W=640,H=120,h=AM.history,x=k=>8+k/(h.length-1)*(W-16),y=v=>H-14-(v/100)*(H-28);
+  if(AM&&AM.froth>=80)AM.applies_to.forEach(id=>{if(byId[id]&&items.includes(byId[id]))fired.push(['Thematic froth',byId[id],`AMFI sectoral/thematic froth ${AM.froth}/100 (${AM.month}); adds to this index's Sector cycle score`])});
+  const FR=AM&&AM.history&&AM.history.length&&items.some(i=>AM.applies_to.includes(i.id))?(()=>{const W=640,H=120,h=AM.history,x=k=>8+k/(h.length-1)*(W-16),y=v=>H-14-(v/100)*(H-28);
     const yr=h.map((p,k)=>[p[0],k]).filter(p=>p[0].endsWith('-01'));
     return `<div class="card" style="grid-column:1/-1"><h2>Thematic-fund froth (AMFI)</h2><p class="hint">How hard money is chasing sectoral/thematic funds, against its own history since 2019 (0 = quiet, 100 = most intense). Feeds the Sector cycle bucket of the size indices, CPSE, Defence and Infra (indicator S4). Latest: <b>${AM.froth}</b> for ${AM.month}; peak ${AM.peak[1]} in ${AM.peak[0]}.</p>
     <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" role="img" aria-label="Thematic-fund froth history, latest ${AM.froth}"><rect x="8" y="${y(100)}" width="${W-16}" height="${y(80)-y(100)}" fill="var(--b6)" opacity=".12"/><line x1="8" x2="${W-8}" y1="${y(50)}" y2="${y(50)}" stroke="var(--line-2)" stroke-dasharray="3 3"/><polyline fill="none" stroke="var(--ink)" stroke-width="1.5" points="${h.map((p,k)=>`${x(k).toFixed(1)},${y(p[1]).toFixed(1)}`).join(' ')}"/>${yr.map(([m,k])=>`<text x="${x(k)}" y="${H-2}" font-size="10" text-anchor="middle" style="fill:var(--ink-3)">${m.slice(0,4)}</text>`).join('')}</svg>
     <p class="hint" style="margin-top:6px">Back-check 2019–2026: after months in the top third, the Nifty 500 returned a median +4–5% over 12 months, vs +15–28% after the bottom third. One cycle only. <a href="#knowledge/sector-froth-signals">Evidence</a></p></div>`})():'';
   return `<div class="grid g2">
-  <div class="card"><h2>Triggered by the November run</h2><p class="hint">Computed from the logs. In the real build these would arrive as a digest after the monthly refresh on the 3rd.</p>
-  <table><tr><th>Rule</th><th>Signal</th><th>Why</th></tr>${fired.map(f=>`<tr class="row" data-id="${f[1].id}" style="display:table-row"><td><span class="pill">${f[0]}</span></td><td><b>${esc(f[1].name)}</b> ${f[1].score}</td><td>${esc(f[2])}</td></tr>`).join('')}</table></div>
+  <div class="card"><h2>Triggered by the ${MONTHNAME} run</h2><p class="hint">Computed from the logs. In the real build these would arrive as a digest after the monthly refresh on the 3rd.</p>
+  ${fired.length?'':'<div class="empty">Nothing triggered in this tab.</div>'}<table><tr><th>Rule</th><th>Signal</th><th>Why</th></tr>${fired.map(f=>`<tr class="row" data-id="${f[1].id}" style="display:table-row"><td><span class="pill">${f[0]}</span></td><td><b>${esc(f[1].name)}</b> ${f[1].score}</td><td>${esc(f[2])}</td></tr>`).join('')}</table></div>
   <div class="card"><h2>Alert rules (proposed)</h2><p class="hint">Toggles are illustrative. "On something you hold" needs your holdings, see Design notes.</p>
   <table>${rules.map(r=>`<tr><td><span class="pill ${r[2]?'on':''}">${r[2]?'On':'Off'}</span></td><td><b>${r[0]}</b><br><span style="color:var(--ink-2)">${r[1]}</span></td></tr>`).join('')}</table></div>${BT}${FR}</div>`;
 }
@@ -539,13 +544,242 @@ function openDrawer(id){
 function closeDrawer(){if(!dr.classList.contains('open'))return;dr.classList.remove('open');if(lastFocus&&document.contains(lastFocus))lastFocus.focus()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 
-/* ---------- ROUTER ---------- */
-const VIEWS={month:[viewMonth],signals:[viewSignals,drawSignals],map:[viewMap,bindMap],classes:[viewClasses,drawClasses],trends:[viewTrends,bindTrends],alerts:[viewAlerts],knowledge:[viewKnowledge,drawKnowledge],notes:[viewNotes]};
-function route(){
-  const h=(location.hash||'#month').slice(1).split('/')[0];const v=VIEWS[h]||VIEWS.month;
-  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+(VIEWS[h]?h:'month')));
-  const m=document.getElementById('view');m.innerHTML=v[0]();bindRows(m);if(v[1])v[1]();
+
+/* =====================================================================
+   ASSET-CLASS TABS: seven self-contained tabs, each with its own tools
+   ===================================================================== */
+const TABS={
+  snapshot:{t:'Snapshot',sub:'Every asset class on one 1–100 scale: where the cheap and rich readings are today.',scope:()=>true,
+    notes:['sector-investing-playbook','sector-rotation-research-evidence','board-backlog']},
+  india:{t:'Indian equities',sub:'The Nifty 50, then size, sectors, factors and individual stocks.',scope:i=>i.id==='NIFTY50'||['sectors','factors','stocks'].includes(i.model),
+    notes:['sector-investing-playbook','india-sector-facts-2016-2026','sector-froth-signals','valuing-cyclical-sectors','sector-rotation-7-indian-bull-runs','flat-markets-are-not-dead-markets','identifying-winning-sectors']},
+  global:{t:'International',sub:'The US first, then 20 more markets, all scored for an INR investor over five years.',scope:i=>i.model==='global',
+    notes:['sector-rotation-research-evidence','sector-rotation-economic-cycle-schwab']},
+  commod:{t:'Commodities',sub:'Gold, silver, Brent crude and copper.',scope:i=>i.id==='GOLD'||i.model==='commodities',
+    notes:['valuing-cyclical-sectors','board-backlog']},
+  crypto:{t:'Crypto',sub:'Bitcoin, with its 5% portfolio cap and staging rule.',scope:i=>i.model==='crypto',notes:['board-backlog']},
+  fixed:{t:'Fixed income',sub:'Bonds, deposits and cash-like carry, with yields next to scores.',scope:i=>['bonds','carry'].includes(i.model),notes:[]},
+  realestate:{t:'Real estate',sub:'Listed REITs and InvITs, and housing by city.',scope:i=>['reits','property'].includes(i.model),notes:[]},
+};
+const TOOLS=[['','Overview'],['finder','Signal finder'],['map','Map'],['trends','Trends'],['alerts','Alerts'],['changes','Changes'],['know','Knowledge']];
+const tabOf=i=>Object.keys(TABS).find(k=>k!=='snapshot'&&TABS[k].scope(i))||'snapshot';
+const inTab=t=>ALL_ITEMS.filter(TABS[t].scope);
+const toolOK=(t,k)=>k!=='trends'||SERIES_ALL.some(([id])=>TABS[t].scope(byId[id]));
+
+/* ---------- shared visual pieces ---------- */
+const tint=(v,p=34)=>v==null?'transparent':`color-mix(in srgb, ${bcol(v)} ${p}%, var(--surface))`;
+const fmtPct=(x,d=0)=>x==null?'—':(x>0?'+':'')+(x*100).toFixed(d)+'%';
+const ddNow=i=>i&&i.drawdown?i.drawdown.now:null;
+const ddTxt=i=>{const d=ddNow(i);return d==null?'—':d>-0.005?'at high':Math.round(d*100)+'%'};
+function gauge(s,W=220,lab=false){const x=v=>2+(v-1)/99*(W-4);
+  return `<svg class="gauge" width="${W}" height="${lab?28:16}" viewBox="0 0 ${W} ${lab?28:16}" style="max-width:100%;height:auto" aria-hidden="true">${BANDS.map(b=>`<rect x="${x(Math.max(1,b[1]))}" y="6" width="${Math.max(1,x(b[2])-x(Math.max(1,b[1]))-1.5)}" height="6" rx="2" fill="var(${b[3]})"/>`).join('')}${s!=null?`<path d="M${x(s)-5},0 L${x(s)+5},0 L${x(s)},6 Z" fill="var(--ink)"/><rect x="${x(s)-1}" y="5" width="2" height="8" fill="var(--ink)"/>`:''}${lab?`<text x="2" y="26">1 cheap</text><text x="${W-2}" y="26" text-anchor="end">100 rich</text>`:''}</svg>`}
+function bandMix(list,h=10){const c=BANDS.map(b=>list.filter(i=>bandOf(i.score)===b).length);
+  return `<div class="mix" style="height:${h}px" role="img" aria-label="${c.map((n,k)=>BANDS[k][0]+' '+n).join(', ')}">${c.map((n,k)=>n?`<i style="flex:${n};background:var(${BANDS[k][3]})" title="${BANDS[k][0]}: ${n}"></i>`:'').join('')}</div>`}
+function hc(v,txt){return `<td class="hc" style="background:${tint(v,40)}">${txt??(v==null?'—':Math.round(v))}</td>`}
+function flagIcon(i){const f=[];if(i.flags&&/guard/.test(i.flags))f.push('⚑');else if(i.flags)f.push('<span title="model note" style="color:var(--ink-3)">ⓘ</span>');if(i.parabolic&&i.parabolic.status!=='Normal')f.push('<span class="pill">'+i.parabolic.status+'</span>');return f.join(' ')}
+function heatTile(i,sub,v){const val=v===undefined?i.score:v;return `<div class="ht" data-id="${i.id}" role="button" tabindex="0" style="background:${tint(val,46)};border-color:${bcol(val)}" aria-label="${esc(i.name)} ${i.score}"><div class="htn">${esc(i.name.replace(/^Nifty (India )?/,''))}</div><div class="hts"><b>${i.score.toFixed(0)}</b><span>${sub||''}</span></div></div>`}
+function areaTile(t,i,label,extra){const list=inTab(t);return `<a class="at" href="#${t}" style="border-top-color:${bcol(i?i.score:null)}"><div class="atl">${TABS[t].t}</div><div class="atv">${i?i.score.toFixed(0):'—'}<span>${i?chip(i.score):''}</span></div><div class="ats">${esc(label)}</div>${gauge(i?i.score:null,180)}${bandMix(list,6)}<div class="ats">${list.length} reading${list.length>1?'s':''}${extra?' · '+extra:''}</div></a>`}
+/* sortable table */
+const TSORT={};
+function sortTable(key,cols,rows,def){const st=TSORT[key]||(TSORT[key]=def||{k:cols[1].k,dir:1});const col=cols.find(c=>c.k===st.k)||cols[0];
+  const val=i=>{const v=col.get(i);return v==null||v===''?(st.dir>0?Infinity:-Infinity):v};
+  const r=[...rows].sort((a,b)=>{const x=val(a),y=val(b);return (typeof x==='string'?x.localeCompare(y):x-y)*st.dir});
+  return `<div class="tscroll"><table class="st" data-key="${key}"><thead><tr>${cols.map(c=>`<th scope="col"${c.num?' style="text-align:right"':''}><button class="btn" data-k="${c.k}" aria-sort="${st.k===c.k?(st.dir>0?'ascending':'descending'):'none'}">${c.l}${st.k===c.k?(st.dir>0?' ▲':' ▼'):''}</button></th>`).join('')}</tr></thead><tbody>${r.map(i=>`<tr class="row" data-id="${i.id}" tabindex="0" style="display:table-row">${cols.map(c=>c.cell?c.cell(i):`<td${c.num?' style="text-align:right"':''}>${c.fmt?c.fmt(i):esc(c.get(i)??'—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+function bindSort(root){root.querySelectorAll('table.st').forEach(t=>t.querySelectorAll('th .btn').forEach(b=>b.onclick=e=>{e.stopPropagation();const st=TSORT[t.dataset.key];st.dir=st.k===b.dataset.k?-st.dir:1;st.k=b.dataset.k;rerender()}))}
+const C={name:{k:'name',l:'Name',get:i=>i.name,fmt:i=>`<b>${esc(i.name)}</b>`},
+  score:{k:'score',l:'Score',num:1,get:i=>i.score,cell:i=>hc(i.score,`<b>${i.score.toFixed(1)}</b>`)},
+  band:{k:'band',l:'Band',get:i=>i.score,fmt:i=>chip(i.score)},
+  b:(k,l)=>({k:'b_'+k,l:l||k,num:1,get:i=>(i.buckets||{})[k],cell:i=>hc((i.buckets||{})[k])}),
+  m:(k,l,num)=>({k:'m_'+k,l:l||k,num,get:i=>{const v=(i.meta||{})[k];return v===''?null:v}}),
+  dd:{k:'dd',l:'From high',num:1,get:i=>ddNow(i),fmt:i=>ddTxt(i)},
+  flags:{k:'flags',l:'Notes',get:i=>i.flags?1:0,fmt:i=>flagIcon(i)}};
+/* dot chart: one row per item, band-shaded 1–100 axis, optional second marker */
+function dotChart(id,rows,o={}){const el=document.getElementById(id);if(!el)return;
+  const W=el.clientWidth,L=Math.min(o.L||190,W*.42),R=o.R??60,rh=30,T=20;const x=v=>L+(v-1)/99*(W-L-R);
+  let s=`<svg width="${W}" height="${T+rh*rows.length+4}" role="group" aria-label="${esc(o.label||'Scores on the 1 to 100 scale')}">`;
+  BANDS.forEach((b,k)=>s+=`<rect x="${x(Math.max(1,b[1]))}" y="${T-4}" width="${x(b[2])-x(Math.max(1,b[1]))}" height="${rh*rows.length}" fill="var(${b[3]})" opacity="${k===3?.14:k===0||k===5?.07:.1}"/>${x(b[2])-x(Math.max(1,b[1]))>b[0].length*6+6?`<text x="${(x(Math.max(1,b[1]))+x(b[2]))/2}" y="11" text-anchor="middle">${b[0]}</text>`:''}`);
+  rows.forEach((r,k)=>{const cy=T+k*rh+rh/2-2;
+    s+=`<g class="dot" data-id="${r.id}" tabindex="0" role="button" aria-label="${esc(r.label)} ${r.v}" style="cursor:pointer"><rect x="0" y="${cy-rh/2+2}" width="${W}" height="${rh}" fill="transparent"/><line x1="0" x2="${W}" y1="${cy+rh/2-2}" y2="${cy+rh/2-2}" stroke="var(--line)"/><text x="0" y="${cy+4}" style="fill:var(--ink);font-size:12px">${esc(r.label.length>30?r.label.slice(0,28)+'…':r.label)}</text>`;
+    if(r.v2!=null)s+=`<line x1="${x(r.v)}" x2="${x(r.v2)}" y1="${cy}" y2="${cy}" stroke="var(--ink-3)" stroke-width="2"/><circle cx="${x(r.v2)}" cy="${cy}" r="5" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.8"/>`;
+    s+=`<circle cx="${x(r.v)}" cy="${cy}" r="7" fill="${bcol(r.v)}" stroke="var(--ink)" stroke-width="1.3"/><text x="${W-R+8}" y="${cy+4}" style="fill:var(--ink);font-weight:600">${r.right??r.v.toFixed(1)}</text></g>`});
+  el.innerHTML=s+'</svg>';bindDots(el)}
+/* scatter: x/y from item fields, colour = score band */
+function scatter(id,pts,o){const el=document.getElementById(id);if(!el)return;
+  const W=el.clientWidth,H=Math.min(360,Math.max(240,W*.5)),L=46,R=14,T=14,B=36;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);const pad=(a,b)=>{const d=(b-a)||1;return [a-d*.08,b+d*.08]};
+  const [x0,x1]=o.xr||pad(Math.min(...xs),Math.max(...xs)),[y0,y1]=o.yr||pad(Math.min(...ys),Math.max(...ys));
+  const X=v=>L+(v-x0)/(x1-x0)*(W-L-R),Y=v=>T+(y1-v)/(y1-y0)*(H-T-B);
+  let s=`<svg width="${W}" height="${H}" role="group" aria-label="${esc(o.label)}">`;
+  if(o.xBands)BANDS.forEach((b,k)=>{const a=Math.max(x0,Math.max(1,b[1])),c=Math.min(x1,b[2]);if(c>a)s+=`<rect x="${X(a)}" y="${T}" width="${X(c)-X(a)}" height="${H-T-B}" fill="var(${b[3]})" opacity="${k===3?.12:.08}"/>`});
+  const tk=(a,b,n=5)=>{const st=(b-a)/n;return [...Array(n+1)].map((_,k)=>a+st*k)};
+  tk(y0,y1).forEach(v=>s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${o.yf?o.yf(v):v.toFixed(1)}</text>`);
+  tk(x0,x1).forEach(v=>s+=`<text x="${X(v)}" y="${H-B+14}" text-anchor="middle">${o.xf?o.xf(v):v.toFixed(0)}</text>`);
+  if(o.yRef!=null)s+=`<line x1="${L}" x2="${W-R}" y1="${Y(o.yRef)}" y2="${Y(o.yRef)}" stroke="var(--ink-3)" stroke-dasharray="4 3"/><text x="${W-R}" y="${Y(o.yRef)-4}" text-anchor="end">${esc(o.yRefL||'')}</text>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">${esc(o.xl)}</text><text transform="translate(12,${(T+H-B)/2}) rotate(-90)" text-anchor="middle">${esc(o.yl)}</text>`;
+  const placed=[];const fits=(x0,y0,w)=>{const r=[x0,y0-10,x0+w,y0+3];if(placed.some(q=>!(r[2]<q[0]||r[0]>q[2]||r[3]<q[1]||r[1]>q[3])))return false;placed.push(r);return true};
+  pts.forEach(p=>{if(!p.lab)return;const lx=X(p.x),flip=lx>W-150,w=p.lab.length*6.2,x0=flip?lx-9-w:lx+9;if(!fits(x0,Y(p.y)+4,w))p.lab=''});
+  pts.forEach(p=>{const i=byId[p.id];const lx=X(p.x),flip=lx>W-150;s+=`<g class="dot" data-id="${p.id}" tabindex="0" role="button" aria-label="${esc(i.name)}"><circle cx="${lx}" cy="${Y(p.y)}" r="11" fill="transparent"/><circle cx="${lx}" cy="${Y(p.y)}" r="6.5" fill="${bcol(i.score)}" stroke="var(--ink)" stroke-width="1.2"/>${p.lab?`<text x="${flip?lx-9:lx+9}" y="${Y(p.y)+4}" text-anchor="${flip?'end':'start'}" style="fill:var(--ink);font-size:11px">${esc(p.lab)}</text>`:''}</g>`});
+  el.innerHTML=s+'</svg>';bindDots(el)}
+/* small horizontal bars */
+function hbars(rows,max,fmt){return `<div class="hb">${rows.map(r=>`<div class="hbr" data-id="${r.id}" role="button" tabindex="0"><span class="hbn">${esc(r.label)}</span><span class="hbt"><i style="width:${Math.max(2,100*r.v/max)}%;background:${bcol(r.c)}"></i></span><span class="hbv">${fmt(r.v)}</span></div>`).join('')}</div>`}
+
+/* ---------- tab overviews ---------- */
+let OV_DRAW=[];   // charts drawn after the HTML is in place (and again on resize)
+function ovSnapshot(){
+  const reits=inTab('realestate').filter(i=>i.model==='reits').sort((a,b)=>a.score-b.score);const rm=reits[Math.floor(reits.length/2)];
+  const cheap=[...ALL_ITEMS].filter(i=>!notInvestable(i)).sort((a,b)=>a.score-b.score).slice(0,8),rich=[...ALL_ITEMS].sort((a,b)=>b.score-a.score).slice(0,8);
+  const AM=DATA.amfi,PS=DATA.parabolic&&DATA.parabolic.summary,bad=MODEL_ORDER.map(modelStatus).filter(s=>s.cls!=='ok').length;
+  const areaRows=Object.keys(TABS).filter(t=>t!=='snapshot').map(t=>{const l=inTab(t).sort((a,b)=>a.score-b.score);return `<tr><td><a href="#${t}"><b>${TABS[t].t}</b></a></td><td style="width:42%">${bandMix(l,12)}</td><td class="tag">${l.length}</td><td>${l.length?`<span class="sw" style="background:${bcol(l[0].score)}"></span> ${esc(l[0].name)} <b>${l[0].score.toFixed(0)}</b>`:''}</td></tr>`}).join('');
+  OV_DRAW=[drawClasses];
+  return `<div class="tiles7">
+    ${areaTile('india',byId.NIFTY50,'Nifty 50')}${areaTile('global',byId.GLB_SP500,'S&P 500 (US)')}${areaTile('commod',byId.GOLD,'Gold')}${areaTile('crypto',byId.BTC,'Bitcoin')}
+    ${areaTile('fixed',byId.FI_GSEC_10Y,'10-yr G-sec',byId.FI_GSEC_10Y?`yield ${byId.FI_GSEC_10Y.meta['Yield %']}%`:'')}${areaTile('realestate',rm,'REIT median: '+(rm?rm.name.split(' (')[0]:''))}
+  </div>
+  <section class="card" style="margin-bottom:14px"><h2>Asset classes on one scale</h2><p class="hint">Filled dot: the asset-class model's valuation-only score. Ring: the dedicated model's full score (valuation + timing + macro). The line between them is how much timing and macro change the picture. Click a row to open it.</p>
+    <div class="legend"><span><svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="var(--ink-2)"/></svg> Valuation</span><span><svg width="14" height="14"><circle cx="7" cy="7" r="4.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/></svg> Dedicated model</span></div><div id="acsvg"></div></section>
+  <div class="grid g2" style="margin-bottom:14px">
+    <section class="card"><h2>Band mix by asset class</h2><p class="hint">How each tab's readings split across the six bands, with its cheapest reading.</p><table class="mixt"><tbody>${areaRows}</tbody></table></section>
+    <section class="card"><h2>Market-wide warnings</h2><p class="hint">Signals that cut across tabs.</p>
+      <div class="warnrow"><div><div class="tag">Thematic-fund froth (AMFI)</div><div class="wv">${AM?AM.froth:'—'}<span>/100</span></div>${AM?gauge(AM.froth,200):''}<div class="tag">${AM?AM.month+' · peak '+AM.peak[1]+' in '+AM.peak[0]:''}</div></div>
+      <div><div class="tag">Parabolic moves today</div><div class="wv">${PS?PS.parabolic_now.length:'—'}<span> of ${PS?PS.covered:'—'}</span></div><div class="tag">${PS&&PS.stretched_now.length?'Stretched: '+PS.stretched_now.map(k=>byId[k]?byId[k].name:k).join(', '):'None stretched'}</div></div>
+      <div><div class="tag">Data freshness</div><div class="wv">${bad}<span> model${bad===1?'':'s'} due</span></div><div class="tag"><a href="#health">Data health</a></div></div></div></section>
+  </div>
+  <div class="grid g2"><section class="card"><h2>Cheapest across all asset classes</h2><p class="hint">Investable readings only.</p>${cheap.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section>
+    <section class="card"><h2>Richest across all asset classes</h2><p class="hint">Matter only for what you hold.</p>${rich.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section></div>`;
 }
-addEventListener('hashchange',route);
-let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const h=(location.hash||'#month').slice(1);if(h==='map')drawMap();if(h==='classes')drawClasses();if(h==='trends')drawTrends()},150)});
+let indState={heat:'score',sec:'all',stockView:'grid',uni:'n50'};
+const SIZE_IDS=['SEC_NIFTY500','SEC_NEXT50','SEC_MIDSELECT','SEC_MIDCAP150','SEC_SMALLCAP250'];
+function ovIndia(){
+  const n=byId.NIFTY50,AM=DATA.amfi;
+  const size=SIZE_IDS.map(k=>byId[k]).filter(Boolean),sectors=ALL_ITEMS.filter(i=>i.model==='sectors'&&!SIZE_IDS.includes(i.id));
+  const factors=ALL_ITEMS.filter(i=>i.model==='factors').sort((a,b)=>a.score-b.score),stocks=ALL_ITEMS.filter(i=>i.model==='stocks'&&(indState.uni==='all'||!i.wide));
+  const rel=i=>(i.buckets||{})['Relative vs Nifty'];
+  const hv={score:i=>i.score,rel:rel,dd:i=>{const d=ddNow(i);return d==null?null:Math.max(1,Math.min(100,100+d*200))}}[indState.heat];
+  const hsub={score:i=>chip(i.score).replace(/<span class="sw"[^>]*><\/span>/,''),rel:i=>'rel '+(rel(i)==null?'—':Math.round(rel(i))),dd:i=>ddTxt(i)}[indState.heat];
+  const secs=[...sectors].sort((a,b)=>(hv(a)??999)-(hv(b)??999));
+  const sgroups=[...new Set(stocks.map(i=>i.meta.Sector))].sort();
+  const sel=stocks.filter(i=>indState.sec==='all'||i.meta.Sector===indState.sec);
+  const byGrp=sgroups.filter(g=>sel.some(i=>i.meta.Sector===g)).map(g=>[g,sel.filter(i=>i.meta.Sector===g).sort((a,b)=>a.score-b.score)]).sort((a,b)=>a[1][0].score-b[1][0].score);
+  OV_DRAW=[()=>dotChart('sizec',[n,...size].map(i=>({id:i.id,label:i.name.replace(' (benchmark)',''),v:i.score,v2:rel(i)}) ),{label:'Size indices, absolute and relative'}),
+           ()=>dotChart('facc',factors.map(i=>({id:i.id,label:i.name,v:i.score,v2:rel(i)})),{label:'Factor indices'})];
+  return `<div class="grid g2" style="margin-bottom:14px">
+    <section class="card hero" style="border-top-color:${bcol(n.score)}"><h2>The market: Nifty 50</h2><div class="herorow"><div class="big">${n.score}</div><div>${chip(n.score)}<div class="tag">${esc(n.signal)}</div></div></div>${gauge(n.score,320,true)}
+      <div class="bk">${Object.entries(n.buckets).filter(([k,v])=>v!=null).map(([k,v])=>`<div style="background:${tint(v,40)}"><span>${k==='Filter'?'Macro':k}</span><b>${Math.round(v)}</b></div>`).join('')}<div style="background:${tint(ddNow(n)==null?null:50)}"><span>From high</span><b>${ddTxt(n)}</b></div>${AM?`<div style="background:${tint(AM.froth,40)}"><span>Fund froth</span><b>${AM.froth}</b></div>`:''}</div>
+      <button class="btn" data-id="NIFTY50" style="margin-top:10px">Open Nifty 50 details</button></section>
+    <section class="card"><h2>Size: large → small caps</h2><p class="hint">Filled dot: the index's own score. Ring: score relative to the Nifty 50 (low = cheaper than the market).</p><div id="sizec"></div></section></div>
+  <section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Sectors: heat-map</h2><p class="hint">Cheapest to richest. Colour shows the band of what you colour by.</p></div>
+    <span class="seg" id="heatseg" aria-label="Colour by"><button data-v="score">Score</button><button data-v="rel">Relative to Nifty</button><button data-v="dd">Distance from high</button></span></div>
+    <div class="heat">${secs.map(i=>heatTile(i,hsub(i)+(i.flags&&/guard/.test(i.flags)?' ⚑':''),hv(i))).join('')}</div>
+    ${indState.heat==='dd'?'<div class="tag" style="margin-top:6px">Distance from high: blue = far below its 10-year high, red = at or near it. Grey tiles have no daily price history.</div>':''}</section>
+  <section class="card" style="margin-bottom:14px"><h2>Sectors: table</h2><p class="hint">Click a column to sort; click a row for the full panel. ⚑ = peak-earnings guard on; ⓘ = model note.</p>
+    ${sortTable('sec',[C.name,C.score,{k:'rel',l:'Relative',num:1,get:rel,cell:i=>hc(rel(i))},C.b('Valuation'),C.b('Sector cycle','Cycle'),C.b('Timing'),C.b('Filter','Macro'),C.dd,C.flags],sectors,{k:'score',dir:1})}</section>
+  <div class="grid g2" style="margin-bottom:14px"><section class="card"><h2>Factors</h2><p class="hint">Value, quality, momentum, low volatility… Ring: relative to the Nifty 50.</p><div id="facc"></div></section>
+    <section class="card"><h2>Does the sector call hold stock by stock?</h2><p class="hint">Big dot: the sector index. Small dots: its stocks. Diamond: their median.</p><div id="sxsvg"></div></section></div>
+  <section class="card"><div class="cardhead"><div><h2>Stocks (${indState.uni==='all'?'Nifty 500':'Nifty 50'}: ${stocks.length})</h2><p class="hint">Grouped by sector, cheapest group first. Colour = band.</p></div>
+    <div class="filters" style="margin:0"><label class="sr" for="secsel">Sector</label><select id="secsel" class="btn"><option value="all">All sectors</option>${sgroups.map(g=>`<option ${indState.sec===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+    <span class="seg" id="uniseg"><button data-v="n50">Nifty 50</button><button data-v="all">Nifty 500</button></span> <span class="seg" id="stseg"><button data-v="grid">Heat grid</button><button data-v="table">Table</button></span></div></div>
+    ${indState.stockView==='grid'?`<div class="sgrid">${byGrp.map(([g,l])=>`<div class="sg"><div class="sgh">${esc(g)}</div><div class="heat sm">${l.map(i=>heatTile(i,(i.meta.PE?'PE '+i.meta.PE:''))).join('')}</div></div>`).join('')}</div>`
+    :sortTable('stk',[C.name,C.m('Sector'),C.score,C.b('Valuation'),C.b('Quality'),C.b('Momentum'),C.m('PE','PE',1),C.m('Sector PE','Sector PE',1),C.dd,C.flags],sel,{k:'score',dir:1})}</section>`;
+}
+const REGION={'United States':'Americas',Canada:'Americas',Brazil:'Americas',Mexico:'Americas','United Kingdom':'Europe',France:'Europe',Germany:'Europe',Netherlands:'Europe',Italy:'Europe',Spain:'Europe',Poland:'Europe',Turkey:'Europe & Middle East',Russia:'Europe & Middle East','Saudi Arabia':'Europe & Middle East',Japan:'Asia-Pacific',Australia:'Asia-Pacific','South Korea':'Asia-Pacific',China:'Asia-Pacific',India:'Asia-Pacific',Indonesia:'Asia-Pacific',World:'World'};
+function ovGlobal(){
+  const g=ALL_ITEMS.filter(i=>i.model==='global'),us=['GLB_SP500','GLB_NDX','GLB_RUT'].map(k=>byId[k]).filter(Boolean);
+  const er=i=>{const v=(i.meta||{})['Exp. INR return % p.a. (net)'];return v===''||v==null?null:+v};
+  const regions=['Americas','Europe','Europe & Middle East','Asia-Pacific','World'].map(r=>[r,g.filter(i=>(REGION[i.meta.Economy]||'Asia-Pacific')===r).sort((a,b)=>a.score-b.score)]).filter(r=>r[1].length);
+  const gp=g.filter(i=>er(i)!=null),byEr=[...gp].sort((a,b)=>er(b)-er(a)),bySc=[...gp].sort((a,b)=>a.score-b.score);
+  const labIds=new Set(['GLB_SP500','GLB_NDX','GLB_RUT','GLB_NIFTY50',...byEr.slice(0,3).map(i=>i.id),...byEr.slice(-2).map(i=>i.id),...bySc.slice(0,2).map(i=>i.id),...bySc.slice(-2).map(i=>i.id)]);
+  const xlo=Math.max(1,Math.floor(Math.min(...gp.map(i=>i.score))/10)*10-5),xhi=Math.min(100,Math.ceil(Math.max(...gp.map(i=>i.score))/10)*10+5);
+  OV_DRAW=[()=>scatter('gsc',gp.map(i=>({id:i.id,x:i.score,y:er(i),lab:labIds.has(i.id)?i.name.replace(/ \(.*\)/,''):''})),{label:'Score versus expected INR return',xl:'Score: cheap ← → rich (hover any dot for its name)',yl:'Expected INR return, % a year (net)',xBands:1,xr:[xlo,xhi],yf:v=>v.toFixed(0)+'%'})];
+  return `<div class="tiles3">${us.map(i=>`<div class="at" data-id="${i.id}" role="button" tabindex="0" style="border-top-color:${bcol(i.score)}"><div class="atl">${esc(i.meta.Economy)}</div><div class="atv">${i.score.toFixed(0)}<span>${chip(i.score)}</span></div><div class="ats"><b>${esc(i.name)}</b></div>${gauge(i.score,200)}<div class="ats">Expected ${er(i)}% a year in INR (${esc(i.meta.Range||'')}) · ${esc(i.action||'')}</div><div class="ats">From high ${ddTxt(i)}</div></div>`).join('')}</div>
+  <div class="grid g2" style="margin-bottom:14px"><section class="card"><h2>Cheap and rewarding?</h2><p class="hint">Each market's score against its expected INR return over five years. Bottom-left markets are cheap but promise little; top-left is the sweet spot.</p><div id="gsc"></div></section>
+    <section class="card"><h2>By region</h2><p class="hint">Colour = band. Click a tile to open it.</p>${regions.map(([r,l])=>`<div class="grp">${r}</div><div class="heat sm">${l.map(i=>heatTile(i,er(i)!=null?er(i)+'%/yr':'')).join('')}</div>`).join('')}</section></div>
+  <section class="card"><h2>All markets</h2><p class="hint">Click a column to sort. Expected return is net, in INR, a year over five years.</p>
+    ${sortTable('glb',[C.name,C.m('Economy'),C.score,C.b('Valuation'),C.b('Macro'),C.b('Currency'),C.b('Timing'),{k:'er',l:'Exp. INR %/yr',num:1,get:er,fmt:i=>er(i)==null?'—':er(i).toFixed(1)},C.dd],g,{k:'score',dir:1})}</section>`;
+}
+const PKEY={GOLD:'gold_usd',CMD_SILVER:'silver_usd',CMD_BRENT:'brent_usd',CMD_COPPER:'copper_usd_t',BTC:'btc_usd'};
+function priceLine(i){const k=PKEY[i.id];if(!k)return '';const run=(DATA.run_prices||{})[k],lp=latestPrice(k);if(!run||!lp)return '';const ch=lp.value/run-1;
+  return `<div class="kv"><div>Price at scoring</div><div>${(+run).toLocaleString('en-IN')} ${PRICE_META[k][1]}</div><div>Latest</div><div>${(+lp.value).toLocaleString('en-IN',{maximumFractionDigits:2})} <b>${fmtPct(ch,1)}</b>${Math.abs(ch)>=.05?' <span class="stat due">big move</span>':''}</div></div>`}
+function assetCard(i,wide){const P=i.parabolic;return `<section class="card hero" style="border-top-color:${bcol(i.score)}"><div class="cardhead"><h2>${esc(i.name)}</h2>${tierTag(i.tier)}</div>
+  <div class="herorow"><div class="big">${i.score}</div><div>${chip(i.score)}<div class="tag">${esc(i.signal)}</div></div></div>${gauge(i.score,wide?420:280,true)}
+  <div class="bk">${Object.entries(i.buckets||{}).filter(([k,v])=>v!=null).map(([k,v])=>`<div style="background:${tint(v,40)}"><span>${k==='Filter'?'Macro':k}</span><b>${Math.round(v)}</b></div>`).join('')}
+   <div style="background:${tint(ddNow(i)==null?null:Math.max(1,Math.min(100,100+ddNow(i)*200)),30)}"><span>From high</span><b>${ddTxt(i)}</b></div>${P?`<div style="background:${tint(Math.max(1,Math.min(100,50+P.gap*70)),30)}"><span>vs 150-day avg</span><b>${fmtPct(P.gap)}</b></div>`:''}</div>
+  ${i.history&&i.history.length>2?`<div class="tag" style="margin-top:8px">Score, last ${Math.min(24,i.history.length)} months</div>${spark(i.history.slice(-24),wide?560:300,wide?110:60)}`:''}
+  ${priceLine(i)}${i.action?`<div class="note"><b>Model's action:</b> ${esc(i.action)}</div>`:''}
+  <button class="btn" data-id="${i.id}" style="margin-top:8px">Open full details</button></section>`}
+function ovCommod(){const l=['GOLD','CMD_SILVER','CMD_BRENT','CMD_COPPER'].map(k=>byId[k]).filter(i=>i&&i.score!=null);
+  OV_DRAW=[()=>dotChart('cmc',l.map(i=>({id:i.id,label:i.name,v:i.score,right:i.score.toFixed(1)+'  '+ddTxt(i)})),{label:'Commodities compared',R:110})];
+  return `<section class="card" style="margin-bottom:14px"><h2>Side by side</h2><p class="hint">Score on the 1–100 scale; right column: distance from the 10-year high.</p><div id="cmc"></div></section><div class="grid g2">${l.map(i=>assetCard(i)).join('')}</div>`}
+function ovCrypto(){const b=byId.BTC;return `<div class="grid g2"><div>${assetCard(b,true)}</div><section class="card"><h2>Rules that come with it</h2>
+  <ul class="rules"><li><b>Cap at 5% of the portfolio.</b> Bitcoin's falls have reached ${b.drawdown?pct(b.drawdown.worst):'−80%'} in the last decade.</li><li><b>Stage entries</b> when the macro filter is high (now ${b.buckets.Filter}).</li><li><b>Tax:</b> 31.2% on gains (VDA), no loss set-off.</li><li>Score history before Nov 2026 is reconstructed (±3 points).</li></ul>
+  <div class="tag" style="margin-top:8px">Distance from high</div>${b.drawdown?`<div class="ddbar"><i style="width:${Math.min(100,-b.drawdown.now*100)}%"></i></div><div class="tag">${pct(b.drawdown.now)} from its ${b.drawdown.high_date} high · worst ${pct(b.drawdown.worst)} (${b.drawdown.worst_date})</div>`:''}</section></div>`}
+function ovFixed(){const bonds=ALL_ITEMS.filter(i=>i.model==='bonds'),carry=ALL_ITEMS.filter(i=>i.model==='carry');
+  const y=i=>+((i.meta||{})['Yield %']||0),acIds=['SHORT_DEBT','GSEC_LONG','CORP_AAA','CREDIT_AA','US_TREASURY','CASH'];const acs=DATA.assetClasses.filter(a=>acIds.includes(a.id));
+  return `<div class="grid g2" style="margin-bottom:14px"><section class="card"><h2>Yield vs score</h2><p class="hint">Bar length = yield; colour = the model's band (blue = attractive now). Click a bar to open it.</p>${hbars(bonds.sort((a,b)=>y(b)-y(a)).map(i=>({id:i.id,label:i.name.replace(/ \(.*\)/,''),v:y(i),c:i.score})),Math.max(...bonds.map(y)),v=>v.toFixed(2)+'%')}</section>
+    <section class="card"><h2>Asset-class view</h2><p class="hint">Valuation-only score for each fixed-income class, with the suggested tilt.</p>${acs.map(a=>`<div class="row" style="cursor:default"><span class="score">${a.score}</span><span class="sw" style="background:${bcol(a.score)}"></span><span class="nm">${esc(a.name)}</span><span class="tag">${esc(a.tilt||'')}${a.yield_!=null?' · '+a.yield_+'%':''}</span></div>`).join('')}</section></div>
+  <section class="card" style="margin-bottom:14px"><h2>Bonds and deposits</h2>${sortTable('fi',[C.name,C.score,{k:'y',l:'Yield %',num:1,get:y,fmt:i=>y(i).toFixed(2)},C.b('Valuation'),C.b('Timing'),C.b('Filter','Macro'),{k:'act',l:"Model's action",get:i=>i.action||''}],bonds,{k:'score',dir:1})}</section>
+  <section class="card"><h2>Cash-like carry</h2><div class="grid g2">${carry.map(i=>`<div class="at" data-id="${i.id}" role="button" tabindex="0" style="border-top-color:${bcol(i.score)}"><div class="atl">${esc(i.name)}</div><div class="atv">${i.score.toFixed(0)}<span>${chip(i.score)}</span></div>${gauge(i.score,200)}<div class="ats">Post-tax ${esc(i.meta['Post-tax yield %'])}% · edge vs liquid ${esc(i.meta['Edge vs liquid (pp)'])} pp</div><div class="ats">${esc(i.action||'')}</div></div>`).join('')}</div></section>`}
+function ovRE(){const r=ALL_ITEMS.filter(i=>i.model==='reits'),c=ALL_ITEMS.filter(i=>i.model==='property');const m=(i,k)=>{const v=(i.meta||{})[k];return v===''||v==null?null:+v};
+  OV_DRAW=[()=>scatter('rsc',r.filter(i=>m(i,'Post-tax yield %')!=null&&m(i,'Price/NAV')!=null).map(i=>({id:i.id,x:m(i,'Post-tax yield %'),y:m(i,'Price/NAV'),lab:i.name.replace(/ (Real Estate |Office |Business )?(Investment )?(Trust|REIT|Parks REIT|InvIT|Fund).*$/,'').replace(/\(.*\)/,'')})),{label:'Post-tax yield versus price to NAV',xl:'Post-tax distribution yield, %',yl:'Price / NAV',yRef:1,yRefL:'priced at NAV',xf:v=>v.toFixed(1)+'%',yf:v=>v.toFixed(2)})];
+  return `<div class="grid g2" style="margin-bottom:14px"><section class="card"><h2>Yield vs price to NAV</h2><p class="hint">Right and low is best: high post-tax yield, bought below NAV. Colour = band.</p><div id="rsc"></div></section>
+    <section class="card"><h2>Housing by city</h2><p class="hint">Valuation only; colour = band. Use the rent-vs-buy calculator on your own numbers.</p><div class="heat">${c.sort((a,b)=>a.score-b.score).map(i=>heatTile(i,`rent ${m(i,'Rent yield %')}%`)).join('')}</div></section></div>
+  <section class="card"><h2>Listed REITs and InvITs</h2>${sortTable('re',[C.name,C.m('Type'),C.score,{k:'y',l:'Yield %',num:1,get:i=>m(i,'Distribution yield %'),fmt:i=>m(i,'Distribution yield %')??'—'},{k:'pty',l:'Post-tax %',num:1,get:i=>m(i,'Post-tax yield %'),fmt:i=>m(i,'Post-tax yield %')??'—'},{k:'sp',l:'Spread vs G-sec',num:1,get:i=>m(i,'Spread vs G-sec (pp)'),fmt:i=>m(i,'Spread vs G-sec (pp)')??'—'},{k:'pn',l:'P/NAV',num:1,get:i=>m(i,'Price/NAV'),fmt:i=>m(i,'Price/NAV')??'—'},C.dd],r,{k:'score',dir:1})}</section>`}
+const OVERVIEW={snapshot:ovSnapshot,india:ovIndia,global:ovGlobal,commod:ovCommod,crypto:ovCrypto,fixed:ovFixed,realestate:ovRE};
+
+/* ---------- scoped tools ---------- */
+function viewChanges(t){if(t==='snapshot')return viewMonth();
+  const l=items,withHist=l.filter(i=>i.history&&i.history.length>1),buy=l.filter(i=>i.score<=35&&!notInvestable(i)).sort((a,b)=>a.score-b.score),trim=l.filter(i=>i.score>65).sort((a,b)=>b.score-a.score);
+  return `${withHist.length?`<section class="card" style="margin-bottom:14px"><h2>Band changes since last month</h2><div class="chg">${withHist.map(i=>{const p=prevScore(i),pb=bandOf(p)[0],nb=bandOf(i.score)[0],d=(i.score-p).toFixed(1);return `<div class="chgc" data-id="${i.id}" role="button" tabindex="0"><div class="n">${esc(i.name)}</div><div style="margin:4px 0">${spark(i.history.slice(-12),150,40)}</div><div class="t">${p} → <b style="color:var(--ink)">${i.score}</b> (${d>0?'+':''}${d})</div><div class="t">${pb===nb?`Still ${nb}`:`<span class="moved">${pb} → ${nb}</span>`}</div></div>`}).join('')}</div></section>`:`<div class="empty" style="margin-bottom:14px">Readings in this tab have one month of history so far; band changes appear after the next monthly run (3rd).</div>`}
+  <div class="grid g2"><section class="card"><h2>In the Buy zone (35 or lower)</h2>${buy.map(i=>rowHTML(i,`<span class="tag">${esc(shortAct(i))}</span>`)).join('')||'<div class="empty">None this month.</div>'}</section>
+  <section class="card"><h2>In the Trim zone (above 65)</h2>${trim.map(i=>rowHTML(i,`<span class="tag">${esc(shortAct(i))}</span>`)).join('')||'<div class="empty">None this month.</div>'}</section></div>`}
+function viewKnowTab(t){const rel=TABS[t].notes;
+  return `<section class="card"><h2>Notes related to ${TABS[t].t}</h2><p class="hint">From the knowledge base. Opens in the full library.</p><div id="knowl" class="klinks">${rel.length?'Loading…':'<div class="empty">No notes for this asset class yet. Send a video or article on it and it will be added here.</div>'}</div><p style="margin-top:10px"><a href="#knowledge">Open the full knowledge library →</a></p></section>`}
+async function drawKnowTab(t){const el=document.getElementById('knowl');if(!el||!TABS[t].notes.length)return;
+  try{if(!KNOW){const r=await fetch('knowledge/index.json?t='+Date.now(),{cache:'no-store'});KNOW=((await r.json()).notes||[]).sort((a,b)=>(!!b.pinned-!!a.pinned)||(b.added||'').localeCompare(a.added||''))}
+    el.innerHTML=TABS[t].notes.map(s=>KNOW.find(n=>n.slug===s)).filter(Boolean).map(n=>`<a class="kitem" href="#knowledge/${encodeURIComponent(n.slug)}"><span class="kt">${esc(n.title)}</span><span class="km">${esc(n.source||'')} · ${esc(n.added||'')}</span></a>`).join('')}
+  catch(e){el.innerHTML='<div class="empty">Could not load the notes.</div>'}}
+function viewHealth(){return `<div class="card"><h2>Data health</h2><p class="hint">Live prices against the prices each model was scored at, and how fresh each model's inputs are.</p></div>${healthHTML()}`}
+
+/* ---------- per-item tools in the side panel ---------- */
+const _openDrawer=openDrawer;
+openDrawer=function(id){_openDrawer(id);const i=byId[id];if(!i)return;const t=tabOf(i);
+  const tools=[[`#${t}/map`,'Show on map',()=>{mapState.q=i.name;mapState.model=i.model}],[`#${t}/finder`,'Signal finder',null],[`#${t}/alerts`,'Alerts',null],[`#${t}/know`,'Related notes',null]];
+  if(i.history&&i.history.length>1)tools.unshift([`#${t}/trends`,'Trend',()=>{SERIES_ALL.forEach(([k])=>trendState.on[k]=k===i.id?1:0)}]);
+  const bar=document.createElement('div');bar.className='dtools';bar.innerHTML=`<span class="tag">Analyse in ${TABS[t].t}:</span>`+tools.map((x,k)=>`<a class="btn" href="${x[0]}" data-k="${k}">${x[1]}</a>`).join('');
+  bar.querySelectorAll('a').forEach(a=>a.onclick=()=>{const f=tools[+a.dataset.k][2];if(f)f();closeDrawer()});
+  const h=dr.querySelector('#drh');h.insertAdjacentElement('afterend',bar)};
+
+/* ---------- router ---------- */
+const LEGACY={month:'snapshot/changes',signals:'snapshot/finder',map:'snapshot/map',classes:'snapshot',trends:'snapshot/trends',alerts:'snapshot/alerts'};
+const TOOLVIEW={finder:[viewSignals,drawSignals],map:[viewMap,bindMap],trends:[viewTrends,bindTrends],alerts:[viewAlerts,null],changes:[null,null],know:[null,null]};
+let CUR={tab:'snapshot',tool:''};
+function rerender(){route()}
+function route(){
+  let h=(location.hash||'#snapshot').slice(1);
+  if(LEGACY[h.split('/')[0]]&&!TABS[h.split('/')[0]]){history.replaceState(null,'','#'+LEGACY[h.split('/')[0]]);h=LEGACY[h.split('/')[0]]}
+  const [a,b]=h.split('/');const m=document.getElementById('view');hideTT();
+  document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.getAttribute('href')==='#'+(TABS[a]?a:'')));
+  OV_DRAW=[];
+  if(a==='knowledge'||a==='notes'||a==='health'){items=ALL_ITEMS;CUR={tab:a,tool:''};
+    m.innerHTML=a==='knowledge'?viewKnowledge():a==='notes'?viewNotes():viewHealth();bindRows(m);if(a==='knowledge')drawKnowledge();return}
+  const t=TABS[a]?a:'snapshot',tool=TOOLVIEW[b]&&toolOK(t,b)?b:'';CUR={tab:t,tool};
+  items=ALL_ITEMS.filter(TABS[t].scope);
+  const bar=`<div class="tabhead"><div><h1 class="tabt">${TABS[t].t}</h1><p class="tabs">${TABS[t].sub}</p></div><div class="tabmix">${bandMix(items,8)}<span class="tag">${items.length} reading${items.length>1?'s':''}</span></div></div>
+    <div class="tbar" role="tablist" aria-label="Tools for ${TABS[t].t}">${TOOLS.filter(([k])=>!k||toolOK(t,k)).map(([k,l])=>`<a role="tab" aria-selected="${k===tool}" class="${k===tool?'on':''}" href="#${t}${k?'/'+k:''}">${l}</a>`).join('')}</div>`;
+  let body,after=null;
+  if(!tool){body=OVERVIEW[t]();after=()=>{OV_DRAW.forEach(f=>f());if(t==='india')drawSX()}}
+  else if(tool==='changes')body=viewChanges(t);
+  else if(tool==='know'){body=viewKnowTab(t);after=()=>drawKnowTab(t)}
+  else{body=TOOLVIEW[tool][0]();after=TOOLVIEW[tool][1]}
+  m.innerHTML=bar+`<div class="tabbody">${body}</div>`;bindRows(m);bindSort(m);
+  m.querySelectorAll('.at[href]').forEach(x=>x.onclick=null);
+  if(after)after();
+  if(t==='india'&&!tool){
+    m.querySelectorAll('#heatseg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===indState.heat);x.onclick=()=>{indState.heat=x.dataset.v;rerender()}});
+    m.querySelectorAll('#stseg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===indState.stockView);x.onclick=()=>{indState.stockView=x.dataset.v;rerender()}});
+    m.querySelectorAll('#uniseg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===indState.uni);x.onclick=()=>{indState.uni=x.dataset.v;indState.sec='all';rerender()}});
+    const ss=m.querySelector('#secsel');if(ss)ss.onchange=()=>{indState.sec=ss.value;rerender()};
+  }
+}
+addEventListener('hashchange',()=>{route();window.scrollTo(0,0)});
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(!CUR.tool&&TABS[CUR.tab]){OV_DRAW.forEach(f=>f());if(CUR.tab==='india')drawSX()}else if(CUR.tool==='map')drawMap();else if(CUR.tool==='trends')drawTrends();else if(CUR.tool==='finder')drawSignals()},150)});
 freshLine();route();fetchLive();
