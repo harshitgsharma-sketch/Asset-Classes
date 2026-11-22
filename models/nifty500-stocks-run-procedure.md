@@ -1,18 +1,18 @@
-# Nifty 200 Stock Screener — Standard Run Procedure (v1, indicative, published 21-Nov-2026)
+# Nifty 500 Stock Screener — Standard Run Procedure (v1, indicative, published 21-Nov-2026)
 
-> **Release status:** v1 scores the 50 Nifty 50 constituents. 9 of the 11 design indicators are live for non-financials (V5 own-median PE is not sourced; V4 applies to lenders only). There is one month of data and no back-test. Always say "v1 / indicative" and quote the universe size when reporting.
+> **Release status (22-Nov-2026):** universe extended to the Nifty 500. The 50 Nifty 50 stocks are sourced by hand from screener.in on the monthly run; the other ~450 are filled by `scripts/fetch_stock_fundamentals.py` from Yahoo Finance (yfinance), which has 4 years of annual EPS, so their V2 uses a 3-yr window. 9 of the 11 design indicators are live for non-financials (V5 own-median PE is not sourced; V4 applies to lenders only). There is one month of data and no back-test. Always say "v1 / indicative" and quote the universe size when reporting.
 
-Applies to any question about individual Indian large-cap stocks: "cheapest Nifty stocks", "is TCS cheap", "rate HDFC Bank", "stock screener", "which Nifty 50 names to buy or trim". Same method and same output every time. Design: `nifty200-stocks-model-design.md`.
+Applies to any question about individual Indian large-cap stocks: "cheapest Nifty stocks", "is TCS cheap", "rate HDFC Bank", "stock screener", "which Nifty 50 names to buy or trim". Same method and same output every time. Design: `nifty500-stocks-model-design.md`.
 
 Project files (all under `claude/`):
 | File | Role |
 |---|---|
-| `nifty200-stocks-model-design.md` | Design, indicators, weaknesses, data plan |
-| `nifty200-stocks-run-procedure.md` | This playbook |
+| `nifty500-stocks-model-design.md` | Design, indicators, weaknesses, data plan |
+| `nifty500-stocks-run-procedure.md` | This playbook |
 | `stock_oscillator.py` | Canonical engine. The only scoring code to use |
-| `nifty200-stocks-config.json` | Per-stock set-up: sector, sector index, type, flags |
-| `nifty200-stocks-inputs-monthly.csv` | Long format, one row per (month, ticker), plus a NIFTY50 benchmark row |
-| `nifty200-stocks-score-log.csv` | Generated scores (regenerated on every run) |
+| `nifty500-stocks-config.json` | Per-stock set-up: sector, sector index, type, flags |
+| `nifty500-stocks-inputs-monthly.csv` | Long format, one row per (month, ticker), plus a NIFTY50 benchmark row |
+| `nifty500-stocks-score-log.csv` | Generated scores (regenerated on every run) |
 | `nifty-sectors-inputs-monthly.csv` | Read only: sector index PE for V1 |
 
 ## 1. Steps
@@ -21,7 +21,7 @@ Project files (all under `claude/`):
 2. **Load** the engine, config, inputs, sector inputs and log, and write them to a working folder.
 3. **Refresh inputs** (§3). Add rows for the new month (`month` = YYYY-MM of the run; overwrite rows for the same month). Put the date and source in `source`.
 4. **Run** `python3 stock_oscillator.py all` (ranked table). For detail: `python3 stock_oscillator.py drivers TCS HDFCBANK`. Quote only numbers the script prints.
-5. **Report** with the §5 template. Send `nifty200-stocks-score-log.csv`.
+5. **Report** with the §5 template. Send `nifty500-stocks-score-log.csv`.
 6. **Save back** inputs, score log (and engine/config only if changed). Add a §8 run-log line.
 
 ## 2. Fixed conventions
@@ -66,17 +66,20 @@ Project files (all under `claude/`):
 4. **Signal counts** and the vetoes and flags that change the read (value trap, falling knife, not rated, one-offs).
 5. **Data quality:** universe size, indicators live (9 of 11; V5 missing), stale and estimated inputs.
 6. **Caveat line:** single-month v1, judgment anchors, not investment advice.
-7. **Files:** `nifty200-stocks-score-log.csv`.
+7. **Files:** `nifty500-stocks-score-log.csv`.
 
 Plain language, tables, explain jargon the first time, phone-readable.
 
 ## 6. Change log
 
+- 22-Nov-2026 (later): first Action run filled 449 of 450 non-Nifty-50 stocks (VISL had no Yahoo data). Added a negative-equity guard: book value ≤0 → "NOT RATED (negative equity)" (Vodafone Idea scored 18 on a one-off profit).
+- 22-Nov-2026: universe extended to the Nifty 500 (files renamed nifty200-stocks-* → nifty500-stocks-*). New `scripts/fetch_stock_fundamentals.py` downloads NSE's `ind_nifty500list.csv` (saved as `nifty500-constituents.csv`), pulls Yahoo Finance data for every constituent without a row this month, and writes name/sector/sector_index/type columns; the engine uses those for stocks not in the config. V2 uses a 3-yr window when only 4 years of EPS are known. The board keeps non-Nifty-50 stocks out of its headline counts and signal lanes.
+
 - 21-Nov-2026: v1 built and run on the 50 Nifty 50 constituents (screener.in data, close 20-Nov-2026). V2 is skipped on a loss-year EPS base; "NOT RATED" was added for stocks with no valuation input; Q1/Q4/V4 fall back to 3-yr ROE when there is no 5-yr figure.
 
 ## 7. v1 vs design (what is still missing)
 
-- Universe: 50 of 200. Add the other 150 from a Screener screen export plus NSE's `ind_nifty200list.csv` (design §6).
+- Yahoo-sourced stocks (outside the Nifty 50): 4 yrs of EPS (3-yr V2 window), Yahoo's TTM ROE and PE, NSE-industry-to-sector-index mapping (hospitals, chemicals, diversified → Nifty 500 PE).
 - V5 (PE vs own 5-yr median) needs PE history.
 - No EPS revisions, 200-DMA or P/EV for insurers.
 - No history before Nov-26 and no back-test.
@@ -85,6 +88,7 @@ Plain language, tables, explain jargon the first time, phone-readable.
 
 | Run date | Month | Cheapest | Richest | Notes |
 |---|---|---|---|---|
+| 22-Nov-2026 | 2026-11 (Nifty 500) | National Aluminium 12.2 · J&K Bank 12.7 · Emmvee 16.4 · PFC 16.8 · LIC Housing 17.4 (Strong buy) | CleanMax 92.6 · Max Financial 91.0 · Jio Financial 89.8 · PolicyBazaar 87.2 · HPCL 86.1 (Exit) | 499 scored; Yahoo Finance close 20-Nov-26 for 449; 23 not rated; 12 buys vetoed |
 | 21-Nov-2026 | 2026-11 | Hindalco 23.2 Buy · Coal India 24.3 Buy · ONGC 28.2 Buy · Infosys 29.4 Buy · TCS 30.6 Buy · SBI 32.7 Buy | Jio Financial 89.8 Exit · Grasim 80.8 Exit · Bharti Airtel 78.1 Trim · Max Healthcare 77.2 Trim · Eternal 73.4 Trim (IndiGo 81.4, not rated) | First run, 50 stocks, screener.in close 20-Nov-26; Nifty 25,514 (19-Nov-26); 1-yr −2.6%, 3-yr CAGR 9.0%; G-sec 7.20 |
 
 ## 9. Learnings and pitfalls

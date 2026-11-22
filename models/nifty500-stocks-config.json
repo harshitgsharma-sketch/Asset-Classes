@@ -1,7 +1,7 @@
 {
  "version": "v1 21-Nov-2026 (indicative)",
  "notes": "One entry per stock. sector_index = key of the row in nifty-sectors-inputs-monthly.csv whose PE is the sector benchmark for V1 (NIFTY50 when the sector model has no matching index). type: nonfin | lender | insurer | holdco. lender: adds V4 (P/B vs ROE), lender ROE anchors, skips Q2 leverage. insurer/holdco: skip Q2 (consolidated borrowings are not the parent's). A ticker in the inputs CSV that is not listed here is still scored, as nonfin vs NIFTY50, and flagged. anchors override [cheap, rich] per indicator.",
- "universe_target": "Nifty 200 (NSE list: niftyindices.com > Nifty 200 > index constituents CSV, ind_nifty200list.csv). v1 populates the 50 Nifty 50 constituents as of 30-Sep-2026.",
+ "universe_target": "Nifty 500 (NSE ind_nifty500list.csv). This config hand-configures the 50 Nifty 50 constituents (30-Sep-2026); the rest are auto-classified by scripts/fetch_stock_fundamentals.py.",
  "stocks": [
   {"ticker": "ADANIENT",   "name": "Adani Enterprises",          "sector": "Diversified",      "sector_index": "NIFTY50",     "type": "nonfin", "flags": ["group holdco/incubator: PE swings with new-business losses"]},
   {"ticker": "ADANIPORTS", "name": "Adani Ports & SEZ",          "sector": "Infrastructure",   "sector_index": "INFRA",       "type": "nonfin"},

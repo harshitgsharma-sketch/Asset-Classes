@@ -1,6 +1,8 @@
-# Nifty 200 Stock Screener — Scoring Design (v1, indicative, 21 Nov 2026)
+# Nifty 500 Stock Screener — Scoring Design (v1, indicative, 21 Nov 2026)
 
-**Status:** v1 engine built and run on the 50 Nifty 50 constituents (as of 30-Sep-2026) with data to 20-Nov-2026. The target universe is the Nifty 200; the engine accepts the other 150 as extra rows in the inputs CSV (see §6). Score only with `claude/stock_oscillator.py` + `claude/nifty200-stocks-config.json` + `claude/nifty200-stocks-inputs-monthly.csv`. Results are in `claude/nifty200-stocks-score-log.csv`. Playbook: `claude/nifty200-stocks-run-procedure.md`.
+**Update 22-Nov-2026:** the target universe is now the Nifty 500. Non-Nifty-50 stocks come from Yahoo Finance via `scripts/fetch_stock_fundamentals.py` (see run procedure §6) and are auto-classified: NSE industry → sector index (IT, FMCG, Pharma, Auto, Metal, Energy, Realty, Infra, Consumption, Fin Services; banks → Private/PSU Bank; other → Nifty 500), Yahoo industry → type (banks and credit = lender, insurance = insurer).
+
+**Status (v1):** v1 engine built and run on the 50 Nifty 50 constituents (as of 30-Sep-2026) with data to 20-Nov-2026. The target universe is the Nifty 200; the engine accepts the other 150 as extra rows in the inputs CSV (see §6). Score only with `claude/stock_oscillator.py` + `claude/nifty500-stocks-config.json` + `claude/nifty500-stocks-inputs-monthly.csv`. Results are in `claude/nifty500-stocks-score-log.csv`. Playbook: `claude/nifty500-stocks-run-procedure.md`.
 
 > Not investment advice. Anchors are starting judgments. There is no back-test, so they must be reset from back-tested data.
 
