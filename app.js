@@ -34,7 +34,7 @@ async function fetchLive(){
     fetch('https://api.frankfurter.app/latest?from=USD&to=INR').then(r=>r.json()).then(j=>{LIVE.usdinr={value:j.rates.INR,source:'ECB reference, live',at:new Date().toISOString()}}),
   ];
   await Promise.allSettled(tasks);
-  if((location.hash||'#month')==='#month')freshLine();route();fetchLive();
+  if((location.hash||'#month')==='#month'){freshLine();route()}
 }
 const BANDS=[['Strong buy',0,20,'--b1'],['Buy',20,35,'--b2'],['Accumulate',35,50,'--b3'],['Hold',50,65,'--b4'],['Trim',65,80,'--b5'],['Exit',80,100,'--b6']];
 const MODELS={core:'Gold & Nifty 50',sectors:'Nifty sectors & size',factors:'Nifty factors',stocks:'Nifty stocks (50)',global:'Global markets',commodities:'Commodities',crypto:'Bitcoin',bonds:'Bonds & deposits',carry:'Arbitrage & covered call',reits:'REITs & InvITs',property:'Housing by city'};
@@ -460,6 +460,24 @@ function viewNotes(){
   <p style="margin-top:10px">Mid-range scores (36–65) are close to neutral in every model; the readings are most useful at the extremes. Not investment advice: anchors are judgment-based.</p></div>`;
 }
 
+/* ---------- KNOWLEDGE ---------- */
+let KNOW=null,MARKED=null;
+function loadMarked(){if(MARKED)return MARKED;MARKED=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js';s.onload=()=>ok(window.marked);s.onerror=()=>{MARKED=null;no(new Error('could not load the Markdown renderer'))};document.head.appendChild(s)});return MARKED}
+function viewKnowledge(){return `<div class="know"><div class="card klist" id="klist"><h2>Notes</h2><p class="hint">Loading…</p></div><div class="card prose kbody" id="kbody"><p class="hint">Loading…</p></div></div>`}
+async function drawKnowledge(){
+  const list=document.getElementById('klist'),body=document.getElementById('kbody');
+  const slug=decodeURIComponent((location.hash.split('/')[1])||'');
+  try{
+    if(!KNOW){const r=await fetch('knowledge/index.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('index '+r.status);KNOW=((await r.json()).notes||[]).sort((a,b)=>(b.added||'').localeCompare(a.added||''))}
+    const cur=KNOW.find(n=>n.slug===slug)||KNOW[0];
+    list.innerHTML=`<h2>Notes</h2><p class="hint">${KNOW.length} note${KNOW.length===1?'':'s'} · newest first</p>${KNOW.map(n=>`<a class="kitem${cur&&n.slug===cur.slug?' on':''}" href="#knowledge/${encodeURIComponent(n.slug)}"${cur&&n.slug===cur.slug?' aria-current="page"':''}><span class="kt">${esc(n.title)}</span><span class="km">${esc(n.source||'')} · ${esc(n.added||'')}</span></a>`).join('')}`;
+    if(!cur){body.innerHTML='<p class="hint">No notes yet. Add one to the knowledge/ folder.</p>';return}
+    const [md,mk]=await Promise.all([fetch('knowledge/'+cur.file+'?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('note '+r.status);return r.text()}),loadMarked()]);
+    body.innerHTML=mk.parse(md);
+    body.querySelectorAll('a[href^="http"]').forEach(a=>{a.target='_blank';a.rel='noopener'});
+  }catch(e){body.innerHTML=`<p class="hint">Could not load the knowledge notes (${esc(e.message)}). If you opened the file directly, serve the folder instead.</p>`}
+}
+
 /* ---------- DRAWER ---------- */
 const dr=document.getElementById('drawer');
 let lastFocus=null;
@@ -493,9 +511,9 @@ function closeDrawer(){if(!dr.classList.contains('open'))return;dr.classList.rem
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 
 /* ---------- ROUTER ---------- */
-const VIEWS={month:[viewMonth],signals:[viewSignals,drawSignals],map:[viewMap,bindMap],classes:[viewClasses,drawClasses],trends:[viewTrends,bindTrends],alerts:[viewAlerts],notes:[viewNotes]};
+const VIEWS={month:[viewMonth],signals:[viewSignals,drawSignals],map:[viewMap,bindMap],classes:[viewClasses,drawClasses],trends:[viewTrends,bindTrends],alerts:[viewAlerts],knowledge:[viewKnowledge,drawKnowledge],notes:[viewNotes]};
 function route(){
-  const h=(location.hash||'#month').slice(1);const v=VIEWS[h]||VIEWS.month;
+  const h=(location.hash||'#month').slice(1).split('/')[0];const v=VIEWS[h]||VIEWS.month;
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+(VIEWS[h]?h:'month')));
   const m=document.getElementById('view');m.innerHTML=v[0]();bindRows(m);if(v[1])v[1]();
 }
