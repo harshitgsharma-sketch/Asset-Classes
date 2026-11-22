@@ -1,0 +1,141 @@
+{
+  "notes": [
+    {
+      "slug": "board-backlog",
+      "title": "Board backlog: what moves into the Entry/Exit Board",
+      "file": "board-backlog.md",
+      "source": "Triage log",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "triage",
+        "backlog"
+      ],
+      "pinned": true
+    },
+    {
+      "slug": "sector-investing-playbook",
+      "title": "Sector investing playbook: rules distilled from the knowledge base",
+      "file": "sector-investing-playbook.md",
+      "source": "Synthesis",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "playbook",
+        "rules"
+      ],
+      "pinned": true
+    },
+    {
+      "slug": "sector-rotation-research-evidence",
+      "title": "Sector rotation: what the research says",
+      "file": "sector-rotation-research-evidence.md",
+      "source": "Desk research",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "momentum",
+        "reversal",
+        "business cycle"
+      ]
+    },
+    {
+      "slug": "sector-froth-signals",
+      "title": "Sector froth: fund launches, IPO waves and capex booms",
+      "file": "sector-froth-signals.md",
+      "source": "Desk research",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "froth",
+        "thematic funds",
+        "IPO waves"
+      ]
+    },
+    {
+      "slug": "valuing-cyclical-sectors",
+      "title": "Valuing cyclical sectors: P/E traps, the capital cycle and lasting returns on capital",
+      "file": "valuing-cyclical-sectors.md",
+      "source": "Desk research",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "valuation",
+        "cyclicals",
+        "capital cycle"
+      ]
+    },
+    {
+      "slug": "india-sector-facts-2016-2026",
+      "title": "India sector facts, 2016–2026: dispersion, persistence, drawdowns and concentration",
+      "file": "india-sector-facts-2016-2026.md",
+      "source": "Our data + NSE, RBI, S&P",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "India",
+        "data"
+      ]
+    },
+    {
+      "slug": "flat-markets-are-not-dead-markets",
+      "title": "Flat markets are not dead markets: sectors keep rotating",
+      "file": "flat-markets-are-not-dead-markets.md",
+      "source": "WeekendInvesting (YouTube)",
+      "source_url": "https://www.youtube.com/watch?v=90xkdiThhcY",
+      "added": "2026-11-22",
+      "tags": [
+        "sector rotation",
+        "consolidation",
+        "defensives",
+        "momentum"
+      ]
+    },
+    {
+      "slug": "identifying-winning-sectors",
+      "title": "Identifying winning sectors: four sector-rotation approaches",
+      "file": "identifying-winning-sectors.md",
+      "source": "ET Money (YouTube)",
+      "source_url": "https://www.youtube.com/watch?v=y4xDxyrGqJc",
+      "added": "2026-11-22",
+      "tags": [
+        "sector rotation",
+        "business cycle",
+        "relative valuation",
+        "growth vs GDP"
+      ]
+    },
+    {
+      "slug": "sector-rotation-economic-cycle-schwab",
+      "title": "Sector rotation through the economic cycle (the classic US sequence)",
+      "file": "sector-rotation-economic-cycle-schwab.md",
+      "source": "Charles Schwab (YouTube)",
+      "source_url": "https://www.youtube.com/watch?v=C0BK_Mip9oM",
+      "added": "2026-11-22",
+      "tags": [
+        "sector rotation",
+        "business cycle",
+        "US"
+      ]
+    },
+    {
+      "slug": "sector-rotation-7-indian-bull-runs",
+      "title": "Sector rotation: 7 Indian bull runs, and why the leaders keep changing",
+      "file": "sector-rotation-7-indian-bull-runs.md",
+      "source": "SOIC (YouTube)",
+      "source_url": "https://www.youtube.com/watch?v=WuipYcJcChU",
+      "added": "2026-11-22",
+      "tags": [
+        "sector rotation",
+        "Nifty",
+        "capital cycle",
+        "valuation",
+        "cycles"
+      ]
+    }
+  ]
+}

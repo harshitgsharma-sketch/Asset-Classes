@@ -34,7 +34,7 @@ async function fetchLive(){
     fetch('https://api.frankfurter.app/latest?from=USD&to=INR').then(r=>r.json()).then(j=>{LIVE.usdinr={value:j.rates.INR,source:'ECB reference, live',at:new Date().toISOString()}}),
   ];
   await Promise.allSettled(tasks);
-  if((location.hash||'#month')==='#month')freshLine();route();fetchLive();
+  if((location.hash||'#month')==='#month'){freshLine();route()}
 }
 const BANDS=[['Strong buy',0,20,'--b1'],['Buy',20,35,'--b2'],['Accumulate',35,50,'--b3'],['Hold',50,65,'--b4'],['Trim',65,80,'--b5'],['Exit',80,100,'--b6']];
 const MODELS={core:'Gold & Nifty 50',sectors:'Nifty sectors & size',factors:'Nifty factors',stocks:'Nifty 500 stocks',global:'Global markets',commodities:'Commodities',crypto:'Bitcoin',bonds:'Bonds & deposits',carry:'Arbitrage & covered call',reits:'REITs & InvITs',property:'Housing by city'};
@@ -49,6 +49,7 @@ const items=DATA.items.filter(i=>i.score!=null);
 items.forEach(i=>{i.wide=i.model==='stocks'&&(i.meta||{}).Universe==='Nifty 500'});
 const headline=items.filter(i=>!i.wide);
 const byId=Object.fromEntries(DATA.items.map(i=>[i.id,i]));
+const pct=x=>Math.round(x*100)+'%';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const notInvestable=i=>/Not investable/i.test(i.action||'');
 /* ---------- SIGNAL MEASURES ---------- */
@@ -414,6 +415,8 @@ function viewAlerts(){
   withHist.forEach(i=>{const h=i.history.slice(-4).map(x=>x[1]);if(h.length===4&&h.every((v,k)=>!k||v<h[k-1]))fired.push(['3-month drift',i,`Falling three months in a row: ${h.join(' → ')}`]);});
   const b=byId.BTC;if(b.buckets.Filter>65)fired.push(['Staging rule',b,`Score in Buy but macro filter ${b.buckets.Filter}: enter in tranches, not lump sum`]);
   items.filter(i=>i.score>80).forEach(i=>fired.push(['Exit zone',i,`Score ${i.score} (>80)`]));
+  items.filter(i=>i.parabolic&&i.parabolic.status!=='Normal').sort((a,b)=>b.parabolic.gap-a.parabolic.gap).forEach(i=>fired.push([i.parabolic.status==='Parabolic'?'Parabolic move':'Stretched',i,`${pct(i.parabolic.gap)} above its 150-day EMA (${i.parabolic.asof}). Flag only, score unchanged.`]));
+  const PS=DATA.parabolic&&DATA.parabolic.summary;
   const rules=[
     ['Band change','Any model you follow moves band month on month',1],
     ['Entry trigger','Score crosses down through 35 (into Buy) or 20 (Strong buy)',1],
@@ -423,12 +426,24 @@ function viewAlerts(){
     ['Disagreement','Two models on the same asset differ by 10+ points',1],
     ['Stale input','An input is older than 35 days, or the monthly run failed',1],
     ['Concentration','A position already above its cap (e.g. Bitcoin >5%) gets a Buy',0],
+    ['Thematic froth','AMFI sectoral/thematic froth reaches 80+ (top fifth of its history): flags the size indices, CPSE, Defence and Infra',1],
+    ['Parabolic move',`Price 70%+ above its 150-day EMA (50%+ = Stretched). Daily, ${PS?PS.covered+' assets':'when data is available'}. A late-stage warning, not a sell signal: see the back-test below.`,1],
   ];
+  const BT=PS&&PS['6m']?`<div class="card" style="grid-column:1/-1"><h2>Parabolic-move back-test</h2><p class="hint">Every time an asset first closed 70%+ above its 150-day EMA in the last ~10 years of daily data (Yahoo Finance), and what the price did next. Rule from the <a href="#knowledge/sector-rotation-7-indian-bull-runs">sector rotation note</a>.</p>
+  <div class="kv" style="max-width:640px"><div>Episodes</div><div>${PS.episodes} across ${PS.assets_with_episodes} of ${PS.covered} assets</div>${['3m','6m','12m'].filter(h=>PS[h]).map(h=>`<div>${h.replace('m',' months')} later</div><div>median ${PS[h].median>0?'+':''}${pct(PS[h].median)}; lower in ${pct(PS[h].share_lower)} of ${PS[h].n} cases</div>`).join('')}<div>Firing now</div><div>${PS.parabolic_now.length?PS.parabolic_now.map(k=>byId[k]?byId[k].name:k).join(', '):'None'}${PS.stretched_now.length?` · Stretched: ${PS.stretched_now.map(k=>byId[k]?byId[k].name:k).join(', ')}`:''}</div></div>
+  <p class="hint" style="margin-top:10px">Read it as: prices usually kept rising for months after the rule fired, but with deep swings, so it marks a late, volatile stage rather than a top. That is why it stays a flag and does not move scores.</p></div>`:'';
+  const AM=DATA.amfi;
+  if(AM&&AM.froth>=80)AM.applies_to.forEach(id=>{if(byId[id])fired.push(['Thematic froth',byId[id],`AMFI sectoral/thematic froth ${AM.froth}/100 (${AM.month}); adds to this index's Sector cycle score`])});
+  const FR=AM&&AM.history&&AM.history.length?(()=>{const W=640,H=120,h=AM.history,x=k=>8+k/(h.length-1)*(W-16),y=v=>H-14-(v/100)*(H-28);
+    const yr=h.map((p,k)=>[p[0],k]).filter(p=>p[0].endsWith('-01'));
+    return `<div class="card" style="grid-column:1/-1"><h2>Thematic-fund froth (AMFI)</h2><p class="hint">How hard money is chasing sectoral/thematic funds, against its own history since 2019 (0 = quiet, 100 = most intense). Feeds the Sector cycle bucket of the size indices, CPSE, Defence and Infra (indicator S4). Latest: <b>${AM.froth}</b> for ${AM.month}; peak ${AM.peak[1]} in ${AM.peak[0]}.</p>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" role="img" aria-label="Thematic-fund froth history, latest ${AM.froth}"><rect x="8" y="${y(100)}" width="${W-16}" height="${y(80)-y(100)}" fill="var(--b6)" opacity=".12"/><line x1="8" x2="${W-8}" y1="${y(50)}" y2="${y(50)}" stroke="var(--line-2)" stroke-dasharray="3 3"/><polyline fill="none" stroke="var(--ink)" stroke-width="1.5" points="${h.map((p,k)=>`${x(k).toFixed(1)},${y(p[1]).toFixed(1)}`).join(' ')}"/>${yr.map(([m,k])=>`<text x="${x(k)}" y="${H-2}" font-size="10" text-anchor="middle" style="fill:var(--ink-3)">${m.slice(0,4)}</text>`).join('')}</svg>
+    <p class="hint" style="margin-top:6px">Back-check 2019–2026: after months in the top third, the Nifty 500 returned a median +4–5% over 12 months, vs +15–28% after the bottom third. One cycle only. <a href="#knowledge/sector-froth-signals">Evidence</a></p></div>`})():'';
   return `<div class="grid g2">
   <div class="card"><h2>Triggered by the November run</h2><p class="hint">Computed from the logs. In the real build these would arrive as a digest after the monthly refresh on the 3rd.</p>
   <table><tr><th>Rule</th><th>Signal</th><th>Why</th></tr>${fired.map(f=>`<tr class="row" data-id="${f[1].id}" style="display:table-row"><td><span class="pill">${f[0]}</span></td><td><b>${esc(f[1].name)}</b> ${f[1].score}</td><td>${esc(f[2])}</td></tr>`).join('')}</table></div>
   <div class="card"><h2>Alert rules (proposed)</h2><p class="hint">Toggles are illustrative. "On something you hold" needs your holdings, see Design notes.</p>
-  <table>${rules.map(r=>`<tr><td><span class="pill ${r[2]?'on':''}">${r[2]?'On':'Off'}</span></td><td><b>${r[0]}</b><br><span style="color:var(--ink-2)">${r[1]}</span></td></tr>`).join('')}</table></div></div>`;
+  <table>${rules.map(r=>`<tr><td><span class="pill ${r[2]?'on':''}">${r[2]?'On':'Off'}</span></td><td><b>${r[0]}</b><br><span style="color:var(--ink-2)">${r[1]}</span></td></tr>`).join('')}</table></div>${BT}${FR}</div>`;
 }
 
 /* ---------- NOTES ---------- */
@@ -463,6 +478,28 @@ function viewNotes(){
   <p style="margin-top:10px">Mid-range scores (36–65) are close to neutral in every model; the readings are most useful at the extremes. Not investment advice: anchors are judgment-based.</p></div>`;
 }
 
+/* ---------- KNOWLEDGE ---------- */
+let KNOW=null,MARKED=null;
+function loadMarked(){if(MARKED)return MARKED;MARKED=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js';s.onload=()=>ok(window.marked);s.onerror=()=>{MARKED=null;no(new Error('could not load the Markdown renderer'))};document.head.appendChild(s)});return MARKED}
+function viewKnowledge(){return `<div class="know"><div class="card klist" id="klist"><h2>Notes</h2><p class="hint">Loading…</p></div><div class="card prose kbody" id="kbody"><p class="hint">Loading…</p></div></div>`}
+async function drawKnowledge(){
+  const list=document.getElementById('klist'),body=document.getElementById('kbody');
+  const slug=decodeURIComponent((location.hash.split('/')[1])||'');
+  try{
+    if(!KNOW){const r=await fetch('knowledge/index.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('index '+r.status);KNOW=((await r.json()).notes||[]).sort((a,b)=>(!!b.pinned-!!a.pinned)||(b.added||'').localeCompare(a.added||''))}
+    const cur=KNOW.find(n=>n.slug===slug)||KNOW[0];
+    list.innerHTML=`<h2>Notes</h2><p class="hint">${KNOW.length} note${KNOW.length===1?'':'s'} · backlog first, then newest</p>${KNOW.map(n=>`<a class="kitem${cur&&n.slug===cur.slug?' on':''}" href="#knowledge/${encodeURIComponent(n.slug)}"${cur&&n.slug===cur.slug?' aria-current="page"':''}><span class="kt">${esc(n.title)}</span><span class="km">${esc(n.source||'')} · ${esc(n.added||'')}</span></a>`).join('')}`;
+    if(!cur){body.innerHTML='<p class="hint">No notes yet. Add one to the knowledge/ folder.</p>';return}
+    const [md,mk]=await Promise.all([fetch('knowledge/'+cur.file+'?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('note '+r.status);return r.text()}),loadMarked()]);
+    body.innerHTML=mk.parse(md);
+    body.querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');const m=h.match(/^(?:\.\/)?([\w.-]+)\.md(#.*)?$/);
+      if(m){const n=KNOW.find(k=>k.file===m[1]+'.md');a.href=n?'#knowledge/'+encodeURIComponent(n.slug):'https://github.com/harshitgsharma-sketch/Asset-Classes/blob/main/knowledge/'+m[1]+'.md'+(m[2]||'');if(!n){a.target='_blank';a.rel='noopener'}}
+      else if(/^(?:\.\.\/)?models\//.test(h)){a.href='https://github.com/harshitgsharma-sketch/Asset-Classes/blob/main/'+h.replace(/^\.\.\//,'');a.target='_blank';a.rel='noopener'}
+      else if(/^https?:/.test(h)){a.target='_blank';a.rel='noopener'}});
+    window.scrollTo(0,0);
+  }catch(e){body.innerHTML=`<p class="hint">Could not load the knowledge notes (${esc(e.message)}). If you opened the file directly, serve the folder instead.</p>`}
+}
+
 /* ---------- DRAWER ---------- */
 const dr=document.getElementById('drawer');
 let lastFocus=null;
@@ -476,6 +513,13 @@ function openDrawer(id){
   const bars=bk.length?`<h3>What drives the score</h3><svg width="${W}" height="${bk.length*26}">${bk.map(([k,v],r)=>`<text x="0" y="${r*26+15}" style="fill:var(--ink)">${k==='Filter'?'Macro filter':k}</text><rect x="130" y="${r*26+5}" width="${W-170}" height="12" rx="3" fill="var(--surface-2)"/><rect x="130" y="${r*26+5}" width="${(W-170)*v/100}" height="12" rx="3" fill="${bcol(v)}"/><text x="${W}" y="${r*26+15}" text-anchor="end" style="fill:var(--ink)">${v}</text>`).join('')}</svg><div class="note">Each bucket is itself on 1–100. ${bk.find(b=>b[0]==='Filter')&&bk.find(b=>b[0]==='Filter')[1]>65?'<b>Macro filter is high:</b> the backdrop argues for staging entries, not a lump sum.':'Low supports buying; high argues against it.'}</div>`:'';
   const hst=i.history&&i.history.length>1?`<h3>Last 24 months</h3>${spark(i.history.slice(-24),W,90)}<div class="tag">Shaded: Buy zone (≤35, blue) and Trim zone (>65, red). Pre-Nov-2026 values reconstructed.</div>`:`<h3>History</h3><div class="note">Only one month so far. The trend line starts after the next monthly run.</div>`;
   const meta=Object.entries(i.meta||{}).filter(([k,v])=>v!=null&&v!=='');
+  const P=i.parabolic,PE=P&&P.last_episode;
+  const para=P?`<h3>Parabolic check</h3><div class="kv"><div>Above 150-day EMA</div><div><b>${P.gap>0?'+':''}${pct(P.gap)}</b> · ${P.status==='Normal'?'Normal (flags at +70%)':`<span class="pill">${P.status}</span>`}</div><div>Highest in the last year</div><div>${P.max_gap_1y>0?'+':''}${pct(P.max_gap_1y)}</div><div>Past episodes above +70%</div><div>${P.episodes?`${P.episodes} since ${P.from.slice(0,4)}; last ${PE.start} (peak +${pct(PE.peak_gap)})${PE.ret_after['6m']!=null?`, then ${PE.ret_after['6m']>0?'+':''}${pct(PE.ret_after['6m'])} over 6 months`:''}`:`None since ${P.from.slice(0,4)}`}</div></div><div class="tag">Daily, ${P.asof}${P.stale?' (latest fetch failed, older reading)':''}. Flag only: it does not change the score.</div>`:'';
+  const DD=i.drawdown;
+  const ddWord=d=>d.now>-0.05?'near its high':d.share_of_days_deeper<=0.1?'one of its deepest falls of the decade':d.share_of_days_deeper<=0.3?'deeper than usual':'within its normal range';
+  const ddh=DD?`<h3>Distance from high</h3><div class="kv"><div>Now vs 10-year high</div><div><b>${DD.now>-0.0005?'At high':pct(DD.now)}</b>${DD.now<=-0.0005?` · ${DD.years_below_high<0.1?'set recently':DD.years_below_high.toFixed(1)+' yrs since the high'} (${DD.high_date})`:''}</div><div>How unusual</div><div>${DD.now<=-0.0005?(DD.share_of_days_deeper<0.005?`<b>Deepest point since ${DD.window_from.slice(0,4)}</b>`:`Only ${pct(DD.share_of_days_deeper)} of days since ${DD.window_from.slice(0,4)} were further below the high: ${ddWord(DD)}`):'—'}</div><div>Worst fall</div><div>${pct(DD.worst)} (${DD.worst_date})</div><div>Longest below a high</div><div>${DD.longest_below_high_years.toFixed(1)} yrs</div></div><div class="tag">Daily closes since ${DD.window_from.slice(0,4)} (Yahoo Finance, price only), ${DD.asof}${DD.stale?', latest fetch failed':''}. Context only: it does not change the score.</div>`:'';
+  const A=DATA.amfi;
+  const froth=A&&A.froth!=null&&A.applies_to.includes(i.id)?`<h3>Thematic-fund froth (S4)</h3><div class="kv"><div>Reading</div><div><b>${A.froth}</b> / 100 · ${A.froth>=80?'<span class="pill">High</span>':A.froth>=50?'Moderate':'Low'} (peak ${A.peak[1]} in ${A.peak[0]})</div><div>Sectoral/thematic net inflow</div><div>₹${Math.round(A.them_net_cr).toLocaleString('en-IN')} cr in ${A.month}; ${A.share_3m!=null?pct(A.share_3m)+' of equity inflows (3 m)':''}</div><div>New schemes, 6 m</div><div>${A.new_schemes_6m}</div></div><div class="tag">AMFI monthly data, scored against its own history since 2019. Part of this index's Sector cycle bucket. <a href="#knowledge/sector-froth-signals">Why</a></div>`:'';
   dr.innerHTML=`<button class="x" onclick="closeDrawer()" aria-label="Close">✕</button>
   <div class="tag">${esc(MODELS[i.model])}</div>
   <h2 id="drh" style="margin:4px 40px 12px 0;font-size:18px">${esc(i.name)}</h2>
@@ -486,7 +530,7 @@ function openDrawer(id){
   ${i.action?`<div class="note"><b>Model's action:</b> ${esc(i.action)}</div>`:''}
   ${i.score!=null?`<h3>Signal strength</h3><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span class="big" style="font-size:26px">${i.conv}</span><span class="cbar" style="width:160px;height:8px"><i style="width:${i.conv}%;background:${i.side==='buy'?'var(--b2)':'var(--b6)'}"></i></span><span>${convWord(i.conv)} ${i.side} signal</span></div>
   <div class="kv"><div>Distance from neutral</div><div>${Math.abs(i.score-50).toFixed(1)} pts (${Math.round(i.ext*100)}% of full scale)</div><div>Drivers agreeing</div><div>${i.bkN?`${i.agreeN} of ${i.bkN} point the same way`:'Single score, no buckets'}</div><div>Confidence weight</div><div>${TIERNAME[i.tier]} (×${CW[i.tier]})</div>${i.d1!=null?`<div>Momentum</div><div>${i.d1>0?'+':''}${i.d1} in 1 month, ${i.d3>0?'+':''}${i.d3} in 3 (${i.d3<0?'toward Buy':'toward Sell'})</div>`:''}${i.lane?`<div>Action lane</div><div><b>${LANES[i.lane][0]}</b></div>`:''}</div>`:''}
-  ${bars}${hst}
+  ${bars}${hst}${ddh}${para}${froth}
   ${meta.length?`<h3>Key facts</h3><div class="kv">${meta.map(([k,v])=>`<div>${esc(k)}</div><div>${esc(v)}</div>`).join('')}</div>`:''}
   <h3>Confidence</h3><div class="kv"><div>Level</div><div>${tierTag(i.tier)} ${TIERS[i.tier]}</div>${i.coverage!=null?`<div>Indicator coverage</div><div>${Math.round(i.coverage*100)}%</div>`:''}<div>Back-tested</div><div>No</div></div>
   ${i.flags?`<div class="note warn">${esc(i.flags)}</div>`:''}`;
@@ -496,9 +540,9 @@ function closeDrawer(){if(!dr.classList.contains('open'))return;dr.classList.rem
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 
 /* ---------- ROUTER ---------- */
-const VIEWS={month:[viewMonth],signals:[viewSignals,drawSignals],map:[viewMap,bindMap],classes:[viewClasses,drawClasses],trends:[viewTrends,bindTrends],alerts:[viewAlerts],notes:[viewNotes]};
+const VIEWS={month:[viewMonth],signals:[viewSignals,drawSignals],map:[viewMap,bindMap],classes:[viewClasses,drawClasses],trends:[viewTrends,bindTrends],alerts:[viewAlerts],knowledge:[viewKnowledge,drawKnowledge],notes:[viewNotes]};
 function route(){
-  const h=(location.hash||'#month').slice(1);const v=VIEWS[h]||VIEWS.month;
+  const h=(location.hash||'#month').slice(1).split('/')[0];const v=VIEWS[h]||VIEWS.month;
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+(VIEWS[h]?h:'month')));
   const m=document.getElementById('view');m.innerHTML=v[0]();bindRows(m);if(v[1])v[1]();
 }

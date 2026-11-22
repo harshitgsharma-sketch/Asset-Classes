@@ -29,11 +29,11 @@ for key,f,nm in [('GOLD','gold-score-log.csv','Gold'),('NIFTY50','nifty-score-lo
 # sectors
 d=pd.read_csv(C+'nifty-sectors-score-log.csv')
 for _,r in d.iterrows():
-    add(id='SEC_'+r['index'],name=r['name'],model='sectors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Sector cycle':num(r.sector_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier='B' if r.coverage>=0.8 else 'C',action=r.quadrant,meta={'PE':num(r.pe),'Core indicators':r.core_of_17+' (v1)'},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='SEC_'+r['index'],name=r['name'],model='sectors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Sector cycle':num(r.sector_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier='B' if r.coverage>=0.8 else 'C',action=r.quadrant,meta={'PE':num(r.pe),'Core indicators':r.core_of_17+' (v1)'},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # factors
 d=pd.read_csv(P+'nifty-factors-score-log.csv')
 for _,r in d.iterrows():
-    add(id='FAC_'+r['index'],name=r['name'],model='factors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Factor cycle':num(r.factor_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.quadrant,meta={'PE':num(r.pe),'Indicators':r.indicators},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='FAC_'+r['index'],name=r['name'],model='factors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Factor cycle':num(r.factor_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.quadrant,meta={'PE':num(r.pe),'Indicators':r.indicators},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # stocks
 d=pd.read_csv(P+'nifty500-stocks-score-log.csv')
 import json as _j
@@ -41,12 +41,12 @@ N50={x['ticker'] for x in _j.load(open(P+'nifty500-stocks-config.json'))['stocks
 d=d[d.month==d.month.max()]
 for _,r in d.iterrows():
     c=cov(r.coverage)
-    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Universe':'Nifty 50' if r.ticker in N50 else 'Nifty 500','Sector':r.sector,'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Universe':'Nifty 50' if r.ticker in N50 else 'Nifty 500','Sector':r.sector,'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r['flags'] if isinstance(r['flags'],str) else '')
 # global
 d=pd.read_csv(C+'global-indices-score-log.csv')
 for _,r in d.iterrows():
     nm=r['name'] if r['index']!='NIFTY50' else 'Nifty 50 (global 5-yr lens)'
-    add(id='GLB_'+r['index'],name=f"{nm}" ,model='global',score=num(r.five_yr),signal=r.signal,buckets={'Valuation':num(r.valuation),'Macro':num(r.macro),'Currency':num(r.currency),'Timing':num(r.timing),'Filter':num(r['filter'])},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.entry_plan,meta={'Economy':r.economy,'Exp. INR return % p.a. (net)':num(r.exp_inr_net),'Range':r.exp_inr_range if isinstance(r.exp_inr_range,str) else None,'Access':r.access},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='GLB_'+r['index'],name=f"{nm}" ,model='global',score=num(r.five_yr),signal=r.signal,buckets={'Valuation':num(r.valuation),'Macro':num(r.macro),'Currency':num(r.currency),'Timing':num(r.timing),'Filter':num(r['filter'])},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.entry_plan,meta={'Economy':r.economy,'Exp. INR return % p.a. (net)':num(r.exp_inr_net),'Range':r.exp_inr_range if isinstance(r.exp_inr_range,str) else None,'Access':r.access},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # commodities
 d=pd.read_csv(P+'commodities-score-log.csv')
 for c,nm in [('SILVER','Silver'),('BRENT','Brent crude'),('COPPER','Copper')]:
@@ -67,7 +67,7 @@ for _,r in d.iterrows():
 d=pd.read_csv(P+'real-assets-score-log.csv')
 for _,r in d.iterrows():
     c=cov(r.indicators_live)
-    add(id='RE_'+r.key,name=r['name'],model='reits',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Filter':num(r['filter']),'Timing':num(r.timing)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Type':r.family,'Distribution yield %':num(r.dist_yield_pct),'Spread vs G-sec (pp)':num(r.spread_vs_gsec_pp),'Price/NAV':num(r.price_to_nav),'Post-tax yield %':num(r.post_tax_yield_pct)},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='RE_'+r.key,name=r['name'],model='reits',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Filter':num(r['filter']),'Timing':num(r.timing)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Type':r.family,'Distribution yield %':num(r.dist_yield_pct),'Spread vs G-sec (pp)':num(r.spread_vs_gsec_pp),'Price/NAV':num(r.price_to_nav),'Post-tax yield %':num(r.post_tax_yield_pct)},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # cities
 d=pd.read_csv(P+'real-assets-city-log.csv')
 for _,r in d.iterrows():
@@ -118,7 +118,42 @@ pp=os.path.join(ROOT,'data','prices.json')
 if os.path.exists(pp):
     try: prices=json.load(open(pp))
     except Exception: prices=None
-out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac}
+# parabolic-move flag (scripts/fetch_parabolic.py): shown on the board, never changes a score
+parabolic=None
+pq=os.path.join(ROOT,'data','parabolic.json')
+if os.path.exists(pq):
+    try:
+        pj=json.load(open(pq))
+        for it in items:
+            p=pj['items'].get(it['id'])
+            if p and 'gap' in p:
+                eps=p.get('episodes',[])
+                it['parabolic']={'gap':p['gap'],'status':p['status'],'asof':p['asof'],'max_gap_1y':p['max_gap_1y'],
+                    'from':p.get('history_from'),'episodes':len(eps),'last_episode':eps[-1] if eps else None,
+                    'stale':bool(p.get('note'))}
+                if p.get('drawdown'): it['drawdown']=dict(p['drawdown'],asof=p['asof'],stale=bool(p.get('note')))
+        parabolic={'built_at':pj['built_at'],'rule':pj['rule'],'summary':pj['summary']}
+    except Exception as e:
+        print('WARN parabolic.json unreadable:',e)
+# thematic-fund froth (sectors model S4): latest reading + history for the board
+amfi=None
+aq=os.path.join(M,'amfi-thematic-monthly.csv')
+if os.path.exists(aq):
+    try:
+        import sys; sys.path.insert(0,M)
+        cwd=os.getcwd(); os.chdir(M)
+        import sector_oscillator as so
+        fr=so.amfi_froth(); os.chdir(cwd)
+        ad=pd.read_csv(aq,dtype={'month':str})
+        last=ad.iloc[-1]
+        amfi={'month':last.month,'froth':fr.get(last.month),'history':[[m,fr[m]] for m in sorted(fr)],
+              'them_net_cr':float(last.them_net_cr),'flow_3m_pct_aum':float(last.flow_3m_pct_aum),'share_3m':float(last.share_3m),
+              'new_schemes_6m':int(last.new_schemes_6m),'aum_share':float(last.aum_share),
+              'peak':(lambda r:[r.month,fr.get(r.month)])(ad.loc[ad.flow_3m_pct_aum.idxmax()]),
+              'applies_to':['SEC_NEXT50','SEC_MIDSELECT','SEC_MIDCAP150','SEC_SMALLCAP250','SEC_NIFTY500','SEC_CPSE','SEC_DEFENCE','SEC_INFRA']}
+    except Exception as e:
+        print('WARN amfi froth:',e)
+out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi}
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(out,open(os.path.join(ROOT,'data','signals.json'),'w'),separators=(',',':'),allow_nan=False)
 print('signals.json:',len(items),'items;',{k:v['asof'] for k,v in meta.items()})

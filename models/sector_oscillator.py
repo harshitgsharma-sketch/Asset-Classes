@@ -45,6 +45,10 @@ SPEC = {
  "S1":  ("Index PE / Nifty 50 PE",                     "S", "Leading", 4, 4, 0.875, 0.875, 0.9, 1.8, ["size"], False),
  "S2":  ("MTF book YoY (%)",                           "S", "Leading", 3, 3, 0.625, 0.75, -10, 60, ["size"], False),
  "S3":  ("Small/mid MF net inflow, 3-m avg (Rs '000 cr)", "S", "Coincident", 3, 3, 0.75, 0.75, 2, 12, ["size"], False),
+ # S4: AMFI sectoral/thematic fund froth (backlog #17, knowledge/sector-froth-signals.md). Average
+ # own-history percentile of three measures from amfi-thematic-monthly.csv. Applied to the
+ # market-wide size indices and the themes the 2024 NFO wave targeted.
+ "S4":  ("Thematic-fund froth, AMFI (pctl)",           "S", "Coincident", 3, 3, 0.75, 0.75, 0, 100, ["size", "psu", "defence", "infra"], False),
  "B1":  ("System credit growth YoY (%)",               "S", "Coincident", 4, 4, 0.875, 0.75, 8, 18, ["bank"], False),
  "B2":  ("Credit minus deposit growth (pp)",           "S", "Leading", 4, 3, 0.875, 1.0, -3, 5, ["bank"], False),
  "B3":  ("Expected repo change ~6m (bp)",              "S", "Leading", 4, 3, 0.75, 1.0, 50, -75, ["bank"], False),
@@ -89,6 +93,36 @@ def num(v):
     except (TypeError, ValueError):
         return None
 
+AMFI_FILE = "amfi-thematic-monthly.csv"
+AMFI_MEASURES = ["flow_3m_pct_aum", "share_3m", "new_schemes_6m"]
+_AMFI = None
+
+def amfi_froth():
+    """month -> froth score 0-100: mean percentile of AMFI_MEASURES against all months up to
+    and including that month (expanding window, needs 24 months of history)."""
+    global _AMFI
+    if _AMFI is not None: return _AMFI
+    _AMFI = {}
+    try:
+        a = pd.read_csv(AMFI_FILE, dtype={"month": str}).sort_values("month").reset_index(drop=True)
+    except FileNotFoundError:
+        return _AMFI
+    for i in range(len(a)):
+        pcts = []
+        for m in AMFI_MEASURES:
+            hist = a.loc[:i, m].dropna()
+            x = a.loc[i, m]
+            if len(hist) >= 24 and not pd.isna(x):
+                pcts.append(100*(hist < x).sum()/(len(hist) - 1) if len(hist) > 1 else 50)
+        if pcts: _AMFI[a.loc[i, "month"]] = round(float(np.mean(pcts)), 1)
+    return _AMFI
+
+def amfi_froth_for(month):
+    """Froth score for the latest AMFI month on or before `month` (AMFI publishes ~10 days after month end)."""
+    f = amfi_froth()
+    ms = [m for m in f if m <= month]
+    return f[max(ms)] if ms else None
+
 def derive(row, nifty, cfg_i):
     """Turn raw columns into indicator inputs. row/nifty are dicts for the same month."""
     out = {}
@@ -119,6 +153,8 @@ def derive(row, nifty, cfg_i):
     if e5 is not None: out["C14"] = e5
     if None not in (e5, p5): out["C19"] = p5 - e5
     out["C4"] = num(nifty.get("nifty_timing"))
+    froth = amfi_froth_for(str(row.get("month", "")))
+    if froth is not None: out["S4"] = froth
     for k_ in SPEC:                       # direct sector-cycle inputs
         if k_[0] in "SBIKAPMRG" and k_ not in out:
             v = num(row.get(k_))
@@ -140,8 +176,34 @@ def anchors(k, cfg_i):
     ov = cfg_i.get("anchors", {}).get(k)
     return (ov[0], ov[1]) if ov else (SPEC[k][7], SPEC[k][8])
 
+COMMODITY_GUARD = {"ENERGY"}
+
+def peak_earnings_guard(ind, cfg_i):
+    """Backlog #19 (knowledge/valuing-cyclical-sectors.md): in a deep cyclical, a low P/E on
+    peak earnings is not cheap. Returns the list of reasons the guard is on (empty = off).
+    Proxies for 'margins at a cycle peak', from inputs the model already collects."""
+    if cfg_i["buckets"] != "cyclic":
+        return []
+    why = []
+    e5, rerate = ind.get("C14"), ind.get("C19")          # EPS CAGR 5y; price CAGR minus EPS CAGR
+    if e5 is not None and rerate is not None and e5 >= 20 and rerate <= -10:
+        why.append(f"EPS grew {e5:.0f}%/yr over 5 yrs, {-rerate:.0f} pp/yr faster than the price")
+    # Commodity trigger only where it back-tested (scripts/research/peak_earnings_guard_test.py):
+    # Energy after Brent in its top fifth -> median -1% next 12 m vs +14% otherwise (11 months, 2021-22).
+    # Metal vs copper failed (+17% vs +14%), so Metal relies on the EPS trigger only.
+    if cfg_i["key"] in COMMODITY_GUARD and (ind.get("M1") or 0) >= 80:
+        why.append(f"commodity price in the top fifth of its 5-yr range (pctl {ind['M1']:.0f})")
+    if cfg_i["module"] == "bank" and ind.get("B4") is not None and ind["B4"] <= 3:
+        why.append(f"bank GNPA {ind['B4']:.1f}%: credit costs near the cycle low")
+    return why
+
+def pe_keys(cfg_i):
+    """Valuation indicators that read off P/E (and so flatter peak earnings)."""
+    return {"C18", "C3", "C1" if cfg_i["primary"] == "pe" else "C12"}
+
 def score_index(ind, cfg_i):
     bw = FAMILY_BUCKETS[cfg_i["buckets"]]
+    guard = peak_earnings_guard(ind, cfg_i)
     res, drivers, cov_have, cov_all = {}, [], 0.0, 0.0
     rel_num = rel_den = 0.0
     for b in bw:
@@ -153,9 +215,11 @@ def score_index(ind, cfg_i):
             x = ind.get(k)
             if x is None: continue
             c, r = anchors(k, cfg_i); s = ind_score(c, r, x)
+            guarded = bool(guard) and k in pe_keys(cfg_i) and s < 50
+            if guarded: s = 50.0                 # peak-earnings guard: P/E may not read as cheap
             num_ += w*s; den += w; cov_have += w
             drivers.append({"id": k, "name": SPEC[k][0], "bucket": b, "type": SPEC[k][2],
-                            "value": round(x, 2), "score": round(s), "w": round(w, 1)})
+                            "value": round(x, 2), "score": round(s), "w": round(w, 1), **({"guard": True} if guarded else {})})
             if SPEC[k][10]: rel_num += w*s; rel_den += w
         res[b] = num_/den if den else None
         n_in = sum(1 for d in drivers if d["bucket"] == b)
@@ -174,6 +238,10 @@ def score_index(ind, cfg_i):
     rel = rel_num/rel_den if rel_den else None
     sig = band(osc) if osc is not None else "n/a"
     flags = list(cfg_i.get("flags", []))
+    if guard:
+        capped = sorted(d["id"] for d in drivers if d.get("guard"))
+        flags.append("peak-earnings guard: " + "; ".join(guard) + (f" -> {', '.join(capped)} held at neutral 50" if capped
+                     else " (P/E readings not cheap, nothing capped)"))
     # Veto 1 falling knife (needs Filter; EPS revisions not yet sourced)
     if osc is not None and osc <= 35 and (res.get("F") or 0) >= 70:
         sig = "BUY VETOED - wait (falling knife)"

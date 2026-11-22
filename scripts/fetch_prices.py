@@ -63,3 +63,14 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # Daily parabolic-move check (data/parabolic.json). Run from here so the refresh
+    # Action picks it up without a workflow change. Best effort: never fails the step.
+    # Also the AMFI thematic-fund froth history (models/amfi-thematic-monthly.csv, sectors
+    # model S4). Only new months are downloaded, so on most days this does nothing; the
+    # sectors model picks up a new month on the next run.
+    import subprocess, sys
+    for script in ('fetch_parabolic.py', 'fetch_amfi_thematic.py'):
+        try:
+            subprocess.run([sys.executable, '-I', os.path.join(ROOT, 'scripts', script)], timeout=600)
+        except Exception as e:
+            print(f'WARN {script}: {type(e).__name__}: {e}')
