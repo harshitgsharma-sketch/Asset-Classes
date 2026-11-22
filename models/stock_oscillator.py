@@ -195,6 +195,10 @@ def run(keys=None, verbose=True):
             ind, notes = derive(r.to_dict(), bench, spe, ci)
             s = score_stock(ind, ci, num(r.get("pg_ttm")))
             if s["osc"] is None: continue
+            bv_, eq_ = num(r.get("bv")), num(r.get("equity"))
+            if (bv_ is not None and bv_ <= 0) or (eq_ is not None and eq_ <= 0):
+                s["signal"] = "NOT RATED (negative equity)"   # PE/ROE meaningless; profits often one-off
+                notes.append("negative book value: PE and ROE not meaningful")
             if smonth and smonth != month: notes.append(f"sector PE from {smonth} (stale)")
             flags = s["flags"] + list(ci.get("flags", [])) + notes
             bk = s["buckets"]

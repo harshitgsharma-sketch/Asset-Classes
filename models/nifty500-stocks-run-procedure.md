@@ -72,6 +72,7 @@ Plain language, tables, explain jargon the first time, phone-readable.
 
 ## 6. Change log
 
+- 22-Nov-2026 (later): first Action run filled 449 of 450 non-Nifty-50 stocks (VISL had no Yahoo data). Added a negative-equity guard: book value ≤0 → "NOT RATED (negative equity)" (Vodafone Idea scored 18 on a one-off profit).
 - 22-Nov-2026: universe extended to the Nifty 500 (files renamed nifty200-stocks-* → nifty500-stocks-*). New `scripts/fetch_stock_fundamentals.py` downloads NSE's `ind_nifty500list.csv` (saved as `nifty500-constituents.csv`), pulls Yahoo Finance data for every constituent without a row this month, and writes name/sector/sector_index/type columns; the engine uses those for stocks not in the config. V2 uses a 3-yr window when only 4 years of EPS are known. The board keeps non-Nifty-50 stocks out of its headline counts and signal lanes.
 
 - 21-Nov-2026: v1 built and run on the 50 Nifty 50 constituents (screener.in data, close 20-Nov-2026). V2 is skipped on a loss-year EPS base; "NOT RATED" was added for stocks with no valuation input; Q1/Q4/V4 fall back to 3-yr ROE when there is no 5-yr figure.
@@ -87,6 +88,7 @@ Plain language, tables, explain jargon the first time, phone-readable.
 
 | Run date | Month | Cheapest | Richest | Notes |
 |---|---|---|---|---|
+| 22-Nov-2026 | 2026-11 (Nifty 500) | National Aluminium 12.2 · J&K Bank 12.7 · Emmvee 16.4 · PFC 16.8 · LIC Housing 17.4 (Strong buy) | CleanMax 92.6 · Max Financial 91.0 · Jio Financial 89.8 · PolicyBazaar 87.2 · HPCL 86.1 (Exit) | 499 scored; Yahoo Finance close 20-Nov-26 for 449; 23 not rated; 12 buys vetoed |
 | 21-Nov-2026 | 2026-11 | Hindalco 23.2 Buy · Coal India 24.3 Buy · ONGC 28.2 Buy · Infosys 29.4 Buy · TCS 30.6 Buy · SBI 32.7 Buy | Jio Financial 89.8 Exit · Grasim 80.8 Exit · Bharti Airtel 78.1 Trim · Max Healthcare 77.2 Trim · Eternal 73.4 Trim (IndiGo 81.4, not rated) | First run, 50 stocks, screener.in close 20-Nov-26; Nifty 25,514 (19-Nov-26); 1-yr −2.6%, 3-yr CAGR 9.0%; G-sec 7.20 |
 
 ## 9. Learnings and pitfalls
