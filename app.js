@@ -468,13 +468,17 @@ async function drawKnowledge(){
   const list=document.getElementById('klist'),body=document.getElementById('kbody');
   const slug=decodeURIComponent((location.hash.split('/')[1])||'');
   try{
-    if(!KNOW){const r=await fetch('knowledge/index.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('index '+r.status);KNOW=((await r.json()).notes||[]).sort((a,b)=>(b.added||'').localeCompare(a.added||''))}
+    if(!KNOW){const r=await fetch('knowledge/index.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('index '+r.status);KNOW=((await r.json()).notes||[]).sort((a,b)=>(!!b.pinned-!!a.pinned)||(b.added||'').localeCompare(a.added||''))}
     const cur=KNOW.find(n=>n.slug===slug)||KNOW[0];
-    list.innerHTML=`<h2>Notes</h2><p class="hint">${KNOW.length} note${KNOW.length===1?'':'s'} · newest first</p>${KNOW.map(n=>`<a class="kitem${cur&&n.slug===cur.slug?' on':''}" href="#knowledge/${encodeURIComponent(n.slug)}"${cur&&n.slug===cur.slug?' aria-current="page"':''}><span class="kt">${esc(n.title)}</span><span class="km">${esc(n.source||'')} · ${esc(n.added||'')}</span></a>`).join('')}`;
+    list.innerHTML=`<h2>Notes</h2><p class="hint">${KNOW.length} note${KNOW.length===1?'':'s'} · backlog first, then newest</p>${KNOW.map(n=>`<a class="kitem${cur&&n.slug===cur.slug?' on':''}" href="#knowledge/${encodeURIComponent(n.slug)}"${cur&&n.slug===cur.slug?' aria-current="page"':''}><span class="kt">${esc(n.title)}</span><span class="km">${esc(n.source||'')} · ${esc(n.added||'')}</span></a>`).join('')}`;
     if(!cur){body.innerHTML='<p class="hint">No notes yet. Add one to the knowledge/ folder.</p>';return}
     const [md,mk]=await Promise.all([fetch('knowledge/'+cur.file+'?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('note '+r.status);return r.text()}),loadMarked()]);
     body.innerHTML=mk.parse(md);
-    body.querySelectorAll('a[href^="http"]').forEach(a=>{a.target='_blank';a.rel='noopener'});
+    body.querySelectorAll('a[href]').forEach(a=>{const h=a.getAttribute('href');const m=h.match(/^(?:\.\/)?([\w.-]+)\.md(#.*)?$/);
+      if(m){const n=KNOW.find(k=>k.file===m[1]+'.md');a.href=n?'#knowledge/'+encodeURIComponent(n.slug):'https://github.com/harshitgsharma-sketch/Asset-Classes/blob/main/knowledge/'+m[1]+'.md'+(m[2]||'');if(!n){a.target='_blank';a.rel='noopener'}}
+      else if(/^(?:\.\.\/)?models\//.test(h)){a.href='https://github.com/harshitgsharma-sketch/Asset-Classes/blob/main/'+h.replace(/^\.\.\//,'');a.target='_blank';a.rel='noopener'}
+      else if(/^https?:/.test(h)){a.target='_blank';a.rel='noopener'}});
+    window.scrollTo(0,0);
   }catch(e){body.innerHTML=`<p class="hint">Could not load the knowledge notes (${esc(e.message)}). If you opened the file directly, serve the folder instead.</p>`}
 }
 

@@ -92,10 +92,10 @@ Before investing, study the sector's history, including in other countries. For 
 3. **Custom sector indices with stage analysis or Dow theory.** Look for a sector breaking into an uptrend (stage 2), or a pattern of lower highs. Examples: CDMOs up about 50–60% in six months; hospitals recovering after better Q2 profits.
 4. **Results across the whole sector.** Are several companies growing operating profit or expanding margins together? Sector profits tend to rise and fall together, because "liquidity creates fundamentals, and fundamentals create charts." Examples: margins falling together across transformers and smart meters; order books growing together in electronics manufacturing (Syrma, Centum and others).
 
-## How this could feed the board
+## What this means for the board
 
-Ideas to consider, not yet built:
+Triaged on 2026-11-22 (full reasons in the [board backlog](board-backlog.md)):
 
-- Add a **euphoria flag** to the Nifty sectors model: the share of a sector's stocks more than 70% above their 150-day EMA, plus a count of the sector's IPOs and QIPs in the last 12 months.
-- Tag each sector with a **cycle length** (long, medium or short) so exit timing can differ by sector.
-- Track a **rate-of-change** indicator on revenue growth, as an exit trigger for highly valued names.
+- **Board candidates:** the parabolic-move rule (more than 70% above the 150-day EMA), issuance froth by sector, rate of change of revenue growth for richly valued stocks, and a cycle-length tag per sector. None is built yet; each needs data the monthly run doesn't collect today.
+- **Already covered:** market breadth (the sectors model's euphoria veto) and P/E against its own history (every Valuation bucket).
+- **Knowledge only:** the relative strength screen, the industry capital-cycle calls, and the bubble frameworks.
