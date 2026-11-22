@@ -115,7 +115,23 @@ pp=os.path.join(ROOT,'data','prices.json')
 if os.path.exists(pp):
     try: prices=json.load(open(pp))
     except Exception: prices=None
-out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac}
+# parabolic-move flag (scripts/fetch_parabolic.py): shown on the board, never changes a score
+parabolic=None
+pq=os.path.join(ROOT,'data','parabolic.json')
+if os.path.exists(pq):
+    try:
+        pj=json.load(open(pq))
+        for it in items:
+            p=pj['items'].get(it['id'])
+            if p and 'gap' in p:
+                eps=p.get('episodes',[])
+                it['parabolic']={'gap':p['gap'],'status':p['status'],'asof':p['asof'],'max_gap_1y':p['max_gap_1y'],
+                    'from':p.get('history_from'),'episodes':len(eps),'last_episode':eps[-1] if eps else None,
+                    'stale':bool(p.get('note'))}
+        parabolic={'built_at':pj['built_at'],'rule':pj['rule'],'summary':pj['summary']}
+    except Exception as e:
+        print('WARN parabolic.json unreadable:',e)
+out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic}
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(out,open(os.path.join(ROOT,'data','signals.json'),'w'),separators=(',',':'),allow_nan=False)
 print('signals.json:',len(items),'items;',{k:v['asof'] for k,v in meta.items()})

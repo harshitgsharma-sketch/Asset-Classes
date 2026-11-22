@@ -46,6 +46,7 @@ const bandOf=s=>s==null?null:BANDS.find(b=>s<=b[2])||BANDS[5];
 const bcol=s=>{const b=bandOf(s);return b?`var(${b[3]})`:'var(--line-2)'};
 const items=DATA.items.filter(i=>i.score!=null);
 const byId=Object.fromEntries(DATA.items.map(i=>[i.id,i]));
+const pct=x=>Math.round(x*100)+'%';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const notInvestable=i=>/Not investable/i.test(i.action||'');
 /* ---------- SIGNAL MEASURES ---------- */
@@ -411,6 +412,8 @@ function viewAlerts(){
   withHist.forEach(i=>{const h=i.history.slice(-4).map(x=>x[1]);if(h.length===4&&h.every((v,k)=>!k||v<h[k-1]))fired.push(['3-month drift',i,`Falling three months in a row: ${h.join(' → ')}`]);});
   const b=byId.BTC;if(b.buckets.Filter>65)fired.push(['Staging rule',b,`Score in Buy but macro filter ${b.buckets.Filter}: enter in tranches, not lump sum`]);
   items.filter(i=>i.score>80).forEach(i=>fired.push(['Exit zone',i,`Score ${i.score} (>80)`]));
+  items.filter(i=>i.parabolic&&i.parabolic.status!=='Normal').sort((a,b)=>b.parabolic.gap-a.parabolic.gap).forEach(i=>fired.push([i.parabolic.status==='Parabolic'?'Parabolic move':'Stretched',i,`${pct(i.parabolic.gap)} above its 150-day EMA (${i.parabolic.asof}). Flag only, score unchanged.`]));
+  const PS=DATA.parabolic&&DATA.parabolic.summary;
   const rules=[
     ['Band change','Any model you follow moves band month on month',1],
     ['Entry trigger','Score crosses down through 35 (into Buy) or 20 (Strong buy)',1],
@@ -420,12 +423,16 @@ function viewAlerts(){
     ['Disagreement','Two models on the same asset differ by 10+ points',1],
     ['Stale input','An input is older than 35 days, or the monthly run failed',1],
     ['Concentration','A position already above its cap (e.g. Bitcoin >5%) gets a Buy',0],
+    ['Parabolic move',`Price 70%+ above its 150-day EMA (50%+ = Stretched). Daily, ${PS?PS.covered+' assets':'when data is available'}. A late-stage warning, not a sell signal: see the back-test below.`,1],
   ];
+  const BT=PS&&PS['6m']?`<div class="card" style="grid-column:1/-1"><h2>Parabolic-move back-test</h2><p class="hint">Every time an asset first closed 70%+ above its 150-day EMA in the last ~10 years of daily data (Yahoo Finance), and what the price did next. Rule from the <a href="#knowledge/sector-rotation-7-indian-bull-runs">sector rotation note</a>.</p>
+  <div class="kv" style="max-width:640px"><div>Episodes</div><div>${PS.episodes} across ${PS.assets_with_episodes} of ${PS.covered} assets</div>${['3m','6m','12m'].filter(h=>PS[h]).map(h=>`<div>${h.replace('m',' months')} later</div><div>median ${PS[h].median>0?'+':''}${pct(PS[h].median)}; lower in ${pct(PS[h].share_lower)} of ${PS[h].n} cases</div>`).join('')}<div>Firing now</div><div>${PS.parabolic_now.length?PS.parabolic_now.map(k=>byId[k]?byId[k].name:k).join(', '):'None'}${PS.stretched_now.length?` · Stretched: ${PS.stretched_now.map(k=>byId[k]?byId[k].name:k).join(', ')}`:''}</div></div>
+  <p class="hint" style="margin-top:10px">Read it as: prices usually kept rising for months after the rule fired, but with deep swings, so it marks a late, volatile stage rather than a top. That is why it stays a flag and does not move scores.</p></div>`:'';
   return `<div class="grid g2">
   <div class="card"><h2>Triggered by the November run</h2><p class="hint">Computed from the logs. In the real build these would arrive as a digest after the monthly refresh on the 3rd.</p>
   <table><tr><th>Rule</th><th>Signal</th><th>Why</th></tr>${fired.map(f=>`<tr class="row" data-id="${f[1].id}" style="display:table-row"><td><span class="pill">${f[0]}</span></td><td><b>${esc(f[1].name)}</b> ${f[1].score}</td><td>${esc(f[2])}</td></tr>`).join('')}</table></div>
   <div class="card"><h2>Alert rules (proposed)</h2><p class="hint">Toggles are illustrative. "On something you hold" needs your holdings, see Design notes.</p>
-  <table>${rules.map(r=>`<tr><td><span class="pill ${r[2]?'on':''}">${r[2]?'On':'Off'}</span></td><td><b>${r[0]}</b><br><span style="color:var(--ink-2)">${r[1]}</span></td></tr>`).join('')}</table></div></div>`;
+  <table>${rules.map(r=>`<tr><td><span class="pill ${r[2]?'on':''}">${r[2]?'On':'Off'}</span></td><td><b>${r[0]}</b><br><span style="color:var(--ink-2)">${r[1]}</span></td></tr>`).join('')}</table></div>${BT}</div>`;
 }
 
 /* ---------- NOTES ---------- */
@@ -495,6 +502,8 @@ function openDrawer(id){
   const bars=bk.length?`<h3>What drives the score</h3><svg width="${W}" height="${bk.length*26}">${bk.map(([k,v],r)=>`<text x="0" y="${r*26+15}" style="fill:var(--ink)">${k==='Filter'?'Macro filter':k}</text><rect x="130" y="${r*26+5}" width="${W-170}" height="12" rx="3" fill="var(--surface-2)"/><rect x="130" y="${r*26+5}" width="${(W-170)*v/100}" height="12" rx="3" fill="${bcol(v)}"/><text x="${W}" y="${r*26+15}" text-anchor="end" style="fill:var(--ink)">${v}</text>`).join('')}</svg><div class="note">Each bucket is itself on 1–100. ${bk.find(b=>b[0]==='Filter')&&bk.find(b=>b[0]==='Filter')[1]>65?'<b>Macro filter is high:</b> the backdrop argues for staging entries, not a lump sum.':'Low supports buying; high argues against it.'}</div>`:'';
   const hst=i.history&&i.history.length>1?`<h3>Last 24 months</h3>${spark(i.history.slice(-24),W,90)}<div class="tag">Shaded: Buy zone (≤35, blue) and Trim zone (>65, red). Pre-Nov-2026 values reconstructed.</div>`:`<h3>History</h3><div class="note">Only one month so far. The trend line starts after the next monthly run.</div>`;
   const meta=Object.entries(i.meta||{}).filter(([k,v])=>v!=null&&v!=='');
+  const P=i.parabolic,PE=P&&P.last_episode;
+  const para=P?`<h3>Parabolic check</h3><div class="kv"><div>Above 150-day EMA</div><div><b>${P.gap>0?'+':''}${pct(P.gap)}</b> · ${P.status==='Normal'?'Normal (flags at +70%)':`<span class="pill">${P.status}</span>`}</div><div>Highest in the last year</div><div>${P.max_gap_1y>0?'+':''}${pct(P.max_gap_1y)}</div><div>Past episodes above +70%</div><div>${P.episodes?`${P.episodes} since ${P.from.slice(0,4)}; last ${PE.start} (peak +${pct(PE.peak_gap)})${PE.ret_after['6m']!=null?`, then ${PE.ret_after['6m']>0?'+':''}${pct(PE.ret_after['6m'])} over 6 months`:''}`:`None since ${P.from.slice(0,4)}`}</div></div><div class="tag">Daily, ${P.asof}${P.stale?' (latest fetch failed, older reading)':''}. Flag only: it does not change the score.</div>`:'';
   dr.innerHTML=`<button class="x" onclick="closeDrawer()" aria-label="Close">✕</button>
   <div class="tag">${esc(MODELS[i.model])}</div>
   <h2 id="drh" style="margin:4px 40px 12px 0;font-size:18px">${esc(i.name)}</h2>
@@ -505,7 +514,7 @@ function openDrawer(id){
   ${i.action?`<div class="note"><b>Model's action:</b> ${esc(i.action)}</div>`:''}
   ${i.score!=null?`<h3>Signal strength</h3><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span class="big" style="font-size:26px">${i.conv}</span><span class="cbar" style="width:160px;height:8px"><i style="width:${i.conv}%;background:${i.side==='buy'?'var(--b2)':'var(--b6)'}"></i></span><span>${convWord(i.conv)} ${i.side} signal</span></div>
   <div class="kv"><div>Distance from neutral</div><div>${Math.abs(i.score-50).toFixed(1)} pts (${Math.round(i.ext*100)}% of full scale)</div><div>Drivers agreeing</div><div>${i.bkN?`${i.agreeN} of ${i.bkN} point the same way`:'Single score, no buckets'}</div><div>Confidence weight</div><div>${TIERNAME[i.tier]} (×${CW[i.tier]})</div>${i.d1!=null?`<div>Momentum</div><div>${i.d1>0?'+':''}${i.d1} in 1 month, ${i.d3>0?'+':''}${i.d3} in 3 (${i.d3<0?'toward Buy':'toward Sell'})</div>`:''}${i.lane?`<div>Action lane</div><div><b>${LANES[i.lane][0]}</b></div>`:''}</div>`:''}
-  ${bars}${hst}
+  ${bars}${hst}${para}
   ${meta.length?`<h3>Key facts</h3><div class="kv">${meta.map(([k,v])=>`<div>${esc(k)}</div><div>${esc(v)}</div>`).join('')}</div>`:''}
   <h3>Confidence</h3><div class="kv"><div>Level</div><div>${tierTag(i.tier)} ${TIERS[i.tier]}</div>${i.coverage!=null?`<div>Indicator coverage</div><div>${Math.round(i.coverage*100)}%</div>`:''}<div>Back-tested</div><div>No</div></div>
   ${i.flags?`<div class="note warn">${esc(i.flags)}</div>`:''}`;

@@ -96,6 +96,7 @@ Before investing, study the sector's history, including in other countries. For 
 
 Triaged on 2026-11-22 (full reasons in the [board backlog](board-backlog.md)):
 
-- **Board candidates:** the parabolic-move rule (more than 70% above the 150-day EMA), issuance froth by sector, rate of change of revenue growth for richly valued stocks, and a cycle-length tag per sector. None is built yet; each needs data the monthly run doesn't collect today.
+- **Built as a flag:** the parabolic-move rule (more than 70% above the 150-day EMA); its back-test showed it is not a sell signal on its own.
+- **Board candidates:** issuance froth by sector, rate of change of revenue growth for richly valued stocks, and a cycle-length tag per sector. None of these is built yet; each needs data the monthly run doesn't collect today.
 - **Already covered:** market breadth (the sectors model's euphoria veto) and P/E against its own history (every Valuation bucket).
 - **Knowledge only:** the relative strength screen, the industry capital-cycle calls, and the bubble frameworks.
