@@ -29,21 +29,21 @@ for key,f,nm in [('GOLD','gold-score-log.csv','Gold'),('NIFTY50','nifty-score-lo
 # sectors
 d=pd.read_csv(C+'nifty-sectors-score-log.csv')
 for _,r in d.iterrows():
-    add(id='SEC_'+r['index'],name=r['name'],model='sectors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Sector cycle':num(r.sector_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier='B' if r.coverage>=0.8 else 'C',action=r.quadrant,meta={'PE':num(r.pe),'Core indicators':r.core_of_17+' (v1)'},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='SEC_'+r['index'],name=r['name'],model='sectors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Sector cycle':num(r.sector_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier='B' if r.coverage>=0.8 else 'C',action=r.quadrant,meta={'PE':num(r.pe),'Core indicators':r.core_of_17+' (v1)'},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # factors
 d=pd.read_csv(P+'nifty-factors-score-log.csv')
 for _,r in d.iterrows():
-    add(id='FAC_'+r['index'],name=r['name'],model='factors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Factor cycle':num(r.factor_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.quadrant,meta={'PE':num(r.pe),'Indicators':r.indicators},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='FAC_'+r['index'],name=r['name'],model='factors',score=num(r.absolute),signal=r.signal,buckets={'Valuation':num(r.valuation),'Factor cycle':num(r.factor_cycle),'Timing':num(r.timing),'Filter':num(r['filter']),'Relative vs Nifty':num(r.relative)},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.quadrant,meta={'PE':num(r.pe),'Indicators':r.indicators},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # stocks
 d=pd.read_csv(P+'nifty200-stocks-score-log.csv')
 for _,r in d.iterrows():
     c=cov(r.coverage)
-    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Sector':r.sector,'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Sector':r.sector,'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r['flags'] if isinstance(r['flags'],str) else '')
 # global
 d=pd.read_csv(C+'global-indices-score-log.csv')
 for _,r in d.iterrows():
     nm=r['name'] if r['index']!='NIFTY50' else 'Nifty 50 (global 5-yr lens)'
-    add(id='GLB_'+r['index'],name=f"{nm}" ,model='global',score=num(r.five_yr),signal=r.signal,buckets={'Valuation':num(r.valuation),'Macro':num(r.macro),'Currency':num(r.currency),'Timing':num(r.timing),'Filter':num(r['filter'])},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.entry_plan,meta={'Economy':r.economy,'Exp. INR return % p.a. (net)':num(r.exp_inr_net),'Range':r.exp_inr_range if isinstance(r.exp_inr_range,str) else None,'Access':r.access},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='GLB_'+r['index'],name=f"{nm}" ,model='global',score=num(r.five_yr),signal=r.signal,buckets={'Valuation':num(r.valuation),'Macro':num(r.macro),'Currency':num(r.currency),'Timing':num(r.timing),'Filter':num(r['filter'])},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.entry_plan,meta={'Economy':r.economy,'Exp. INR return % p.a. (net)':num(r.exp_inr_net),'Range':r.exp_inr_range if isinstance(r.exp_inr_range,str) else None,'Access':r.access},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # commodities
 d=pd.read_csv(P+'commodities-score-log.csv')
 for c,nm in [('SILVER','Silver'),('BRENT','Brent crude'),('COPPER','Copper')]:
@@ -64,7 +64,7 @@ for _,r in d.iterrows():
 d=pd.read_csv(P+'real-assets-score-log.csv')
 for _,r in d.iterrows():
     c=cov(r.indicators_live)
-    add(id='RE_'+r.key,name=r['name'],model='reits',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Filter':num(r['filter']),'Timing':num(r.timing)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Type':r.family,'Distribution yield %':num(r.dist_yield_pct),'Spread vs G-sec (pp)':num(r.spread_vs_gsec_pp),'Price/NAV':num(r.price_to_nav),'Post-tax yield %':num(r.post_tax_yield_pct)},flags=r.flags if isinstance(r.flags,str) else '')
+    add(id='RE_'+r.key,name=r['name'],model='reits',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Filter':num(r['filter']),'Timing':num(r.timing)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Type':r.family,'Distribution yield %':num(r.dist_yield_pct),'Spread vs G-sec (pp)':num(r.spread_vs_gsec_pp),'Price/NAV':num(r.price_to_nav),'Post-tax yield %':num(r.post_tax_yield_pct)},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # cities
 d=pd.read_csv(P+'real-assets-city-log.csv')
 for _,r in d.iterrows():

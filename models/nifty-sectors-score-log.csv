@@ -2,9 +2,9 @@ month,index,name,family,absolute,valuation,sector_cycle,timing,filter,relative,s
 2026-11,IT,Nifty IT,it,27.9,12.3,22.1,59.5,21.5,26.6,BUY,Strongest buy: add + overweight,1.0,7/17,AI-disruption: guidance cuts may justify permanently lower PE anchors,18.79,indexpe.in 19-Nov-26; Q2FY27 results (TCS/INFY/HCL cc avg)
 2026-11,FMCG,Nifty FMCG,consumption,38.2,29.9,53.4,40.9,39.3,27.3,ACCUMULATE,Overweight vs Nifty,1.0,7/17,,33.37,indexpe.in 18-Nov-26; NIQ AMJ-26 (stale); MoSPI Oct-26; IMD 2026
 2026-11,NEXT50,Nifty Next 50,size,38.9,26.4,26.9,63.7,34.6,44.5,ACCUMULATE,Neutral,0.91,6/17,concentration: group and PSU names,17.39,indexpe.in 18-Nov-26; MTF est.
-2026-11,REALTY,Nifty Realty,realty,42.6,39.4,47.7,55.0,20.7,41.6,ACCUMULATE,Neutral,1.0,7/17,,38.59,indexpe.in 18-Nov-26; Anarock Q3-26; repo 5.50
 2026-11,BANK,Nifty Bank,banks,44.2,27.3,65.4,61.5,18.4,49.4,ACCUMULATE,Neutral,0.96,7/17,concentration: two largest banks ~half the index,13.94,indexpe.in 19-Nov-26; RBI 31-Oct-26
 2026-11,FINSERV,Nifty Financial Services,banks,45.7,30.2,65.4,58.7,24.9,51.5,ACCUMULATE,Neutral,0.96,7/17,,16.65,indexpe.in 19-Nov-26 (band 1 <16.8 -> pctl 18 est.); RBI 31-Oct-26
+2026-11,REALTY,Nifty Realty,realty,45.8,50.0,47.7,55.0,20.7,50.3,ACCUMULATE,Neutral,1.0,7/17,"peak-earnings guard: EPS grew 24%/yr over 5 yrs, 13 pp/yr faster than the price -> C18, C3 held at neutral 50",38.59,indexpe.in 18-Nov-26; Anarock Q3-26; repo 5.50
 2026-11,CONSUMPTION,Nifty India Consumption,consumption,47.4,44.7,53.4,54.8,37.6,53.6,ACCUMULATE,Neutral,1.0,7/17,,38.8,indexpe.in 18-Nov-26; MoSPI Oct-26; IMD 2026
 2026-11,PVTBANK,Nifty Private Bank,banks,48.4,37.1,65.4,63.0,21.0,58.2,ACCUMULATE,Neutral,0.96,7/17,concentration: two largest banks dominate,17.38,indexpe.in 18-Nov-26; RBI 31-Oct-26
 2026-11,MIDCAP150,Nifty Midcap 150,size,48.6,37.8,50.0,62.2,49.0,59.8,ACCUMULATE,Neutral,0.96,7/17,,27.76,indexpe.in 18-Nov-26; MTF est.
@@ -13,7 +13,7 @@ month,index,name,family,absolute,valuation,sector_cycle,timing,filter,relative,s
 2026-11,DEFENCE,Nifty India Defence,psu,50.3,52.9,11.3,72.0,73.4,74.2,HOLD,Underweight vs Nifty,0.96,6/17,"short history: 3-yr medians, PB pctl over 3 yrs; 5-yr growth fields use 3-yr values; v1 primary P/B because no PE band is published",53.78,indexpe.in 18-Nov-26 (3-yr data); Budget FY27 defence capital
 2026-11,CPSE,Nifty CPSE,psu,53.1,43.4,41.6,60.0,83.5,55.9,HOLD,Neutral,1.0,7/17,v1 uses PE (design: dividend yield first; DY not sourced),10.9,indexpe.in 18-Nov-26; Budget FY27 capex
 2026-11,NIFTY500,Nifty 500,size,53.4,53.1,50.7,59.8,44.2,53.9,HOLD,Neutral,0.91,6/17,,22.32,indexpe.in 19-Nov-26; MTF est.
-2026-11,AUTO,Nifty Auto,auto,53.5,55.9,57.5,62.0,28.3,71.5,HOLD,Underweight vs Nifty,1.0,7/17,v1 uses trailing PE (design: forward PE); Oct-26 volumes distorted by Diwali shifting to Nov,31.22,indexpe.in 19-Nov-26; FADA Sep+Oct-26 avg YoY; IMD 2026
+2026-11,AUTO,Nifty Auto,auto,53.5,55.9,57.5,62.0,28.3,71.5,HOLD,Underweight vs Nifty,1.0,7/17,"v1 uses trailing PE (design: forward PE); Oct-26 volumes distorted by Diwali shifting to Nov; peak-earnings guard: EPS grew 38%/yr over 5 yrs, 19 pp/yr faster than the price (P/E readings not cheap, nothing capped)",31.22,indexpe.in 19-Nov-26; FADA Sep+Oct-26 avg YoY; IMD 2026
 2026-11,INFRA,Nifty Infrastructure,capex,54.1,52.9,41.6,59.4,68.5,64.5,HOLD,Neutral,1.0,7/17,,22.24,indexpe.in 19-Nov-26; Budget FY27 capex
 2026-11,PSUBANK,Nifty PSU Bank,banks,60.5,64.5,65.4,66.2,33.6,72.2,HOLD,Underweight vs Nifty,0.96,7/17,,8.36,indexpe.in 19-Nov-26; RBI 31-Oct-26
 2026-11,SMALLCAP250,Nifty Smallcap 250,size,63.3,60.0,74.5,63.3,60.5,75.2,HOLD,Underweight vs Nifty,0.96,7/17,"index PE, not median-stock PE (v1)",31.91,indexpe.in 18-Nov-26; MTF est.

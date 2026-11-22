@@ -77,6 +77,7 @@ Two outputs per index: **Absolute** = four-bucket oscillator; **Relative** = sam
 
 Vetoes:
 1. Falling knife: absolute ≤35 and (Filter ≥70 or index 3-m EPS revisions ≤−3%) → "Buy vetoed, wait".
+**Peak-earnings guard (built 22-Nov-2026, deep cyclicals):** when 5-yr EPS CAGR ≥ 20% and outruns price CAGR by ≥ 10 pp/yr (or Brent ≥ 80th pctl of its 5-yr range for Energy, or GNPA ≤ 3% for PSU Bank), P/E-based valuation indicators are floored at 50. See run procedure §6.
 2. Euphoria: absolute ≥66, index ÷ 200-DMA ≥1.15 (≥1.20 mid/small) and % members above 200-DMA ≥85% → Trim.
 3. Value trap (cyclicals): PE score ≤25 while operating margin in top 20% of history → drop PE, score on P/B or EV/EBITDA only.
 4. Concentration: top 3 stocks >50% of index → check their own valuations; if >20 pts apart from index score, report both and flag.

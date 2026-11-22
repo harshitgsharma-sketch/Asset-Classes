@@ -176,8 +176,34 @@ def anchors(k, cfg_i):
     ov = cfg_i.get("anchors", {}).get(k)
     return (ov[0], ov[1]) if ov else (SPEC[k][7], SPEC[k][8])
 
+COMMODITY_GUARD = {"ENERGY"}
+
+def peak_earnings_guard(ind, cfg_i):
+    """Backlog #19 (knowledge/valuing-cyclical-sectors.md): in a deep cyclical, a low P/E on
+    peak earnings is not cheap. Returns the list of reasons the guard is on (empty = off).
+    Proxies for 'margins at a cycle peak', from inputs the model already collects."""
+    if cfg_i["buckets"] != "cyclic":
+        return []
+    why = []
+    e5, rerate = ind.get("C14"), ind.get("C19")          # EPS CAGR 5y; price CAGR minus EPS CAGR
+    if e5 is not None and rerate is not None and e5 >= 20 and rerate <= -10:
+        why.append(f"EPS grew {e5:.0f}%/yr over 5 yrs, {-rerate:.0f} pp/yr faster than the price")
+    # Commodity trigger only where it back-tested (scripts/research/peak_earnings_guard_test.py):
+    # Energy after Brent in its top fifth -> median -1% next 12 m vs +14% otherwise (11 months, 2021-22).
+    # Metal vs copper failed (+17% vs +14%), so Metal relies on the EPS trigger only.
+    if cfg_i["key"] in COMMODITY_GUARD and (ind.get("M1") or 0) >= 80:
+        why.append(f"commodity price in the top fifth of its 5-yr range (pctl {ind['M1']:.0f})")
+    if cfg_i["module"] == "bank" and ind.get("B4") is not None and ind["B4"] <= 3:
+        why.append(f"bank GNPA {ind['B4']:.1f}%: credit costs near the cycle low")
+    return why
+
+def pe_keys(cfg_i):
+    """Valuation indicators that read off P/E (and so flatter peak earnings)."""
+    return {"C18", "C3", "C1" if cfg_i["primary"] == "pe" else "C12"}
+
 def score_index(ind, cfg_i):
     bw = FAMILY_BUCKETS[cfg_i["buckets"]]
+    guard = peak_earnings_guard(ind, cfg_i)
     res, drivers, cov_have, cov_all = {}, [], 0.0, 0.0
     rel_num = rel_den = 0.0
     for b in bw:
@@ -189,9 +215,11 @@ def score_index(ind, cfg_i):
             x = ind.get(k)
             if x is None: continue
             c, r = anchors(k, cfg_i); s = ind_score(c, r, x)
+            guarded = bool(guard) and k in pe_keys(cfg_i) and s < 50
+            if guarded: s = 50.0                 # peak-earnings guard: P/E may not read as cheap
             num_ += w*s; den += w; cov_have += w
             drivers.append({"id": k, "name": SPEC[k][0], "bucket": b, "type": SPEC[k][2],
-                            "value": round(x, 2), "score": round(s), "w": round(w, 1)})
+                            "value": round(x, 2), "score": round(s), "w": round(w, 1), **({"guard": True} if guarded else {})})
             if SPEC[k][10]: rel_num += w*s; rel_den += w
         res[b] = num_/den if den else None
         n_in = sum(1 for d in drivers if d["bucket"] == b)
@@ -210,6 +238,10 @@ def score_index(ind, cfg_i):
     rel = rel_num/rel_den if rel_den else None
     sig = band(osc) if osc is not None else "n/a"
     flags = list(cfg_i.get("flags", []))
+    if guard:
+        capped = sorted(d["id"] for d in drivers if d.get("guard"))
+        flags.append("peak-earnings guard: " + "; ".join(guard) + (f" -> {', '.join(capped)} held at neutral 50" if capped
+                     else " (P/E readings not cheap, nothing capped)"))
     # Veto 1 falling knife (needs Filter; EPS revisions not yet sourced)
     if osc is not None and osc <= 35 and (res.get("F") or 0) >= 70:
         sig = "BUY VETOED - wait (falling knife)"

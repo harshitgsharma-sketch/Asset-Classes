@@ -70,7 +70,7 @@ The academic evidence for the supply side is in the [froth note](sector-froth-si
 Triaged in the [board backlog](board-backlog.md) (research batch, 2026-11-22):
 
 - **Already covered:** P/B for cyclicals (C1), a secondary metric (C12), ROE against own range (C15), own-history anchors.
-- **Board candidate:** a **"peak margin" guard** for cyclical families. When operating margin is in the top decile of its own 10-year history *and* P/E is in the bottom quartile, treat the low P/E as not cheap (cap the valuation contribution). Blocker: needs a 10-year sector margin history.
+- **Built 2026-11-22: peak-earnings guard.** In the five deep-cyclical indices, a P/E that looks cheap no longer counts as cheap when earnings look like they're at a peak: an EPS boom that outran the price, Brent in its top fifth for Energy, or bad loans ≤ 3% for PSU Bank. The commodity test failed for Metal against copper, so Metal uses only the EPS test. Details in the [backlog](board-backlog.md#built).
 - **Knowledge only:** capital-cycle stage calls for industries outside the board's indices.
 
 ## Sources
