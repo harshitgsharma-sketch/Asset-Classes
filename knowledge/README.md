@@ -2,6 +2,21 @@
 
 Notes from videos, articles and books that inform the Entry/Exit Board models. They can be read here on GitHub, or in the **Knowledge** tab of the site.
 
+**Start here:**
+- [Sector investing playbook](sector-investing-playbook.md): the rules the notes add up to.
+- [Board backlog](board-backlog.md): what moved into the board and why.
+
+### Research notes
+
+| Note | Source | Added | Tags |
+|---|---|---|---|
+| [Sector rotation: what the research says](sector-rotation-research-evidence.md) | Desk research (academic papers, SPIVA, our tests) | 2026-11-22 | momentum, reversal, business cycle, monetary policy |
+| [Sector froth: fund launches, IPO waves and capex booms](sector-froth-signals.md) | Desk research (papers, AMFI, Morningstar) | 2026-11-22 | froth, thematic funds, IPO waves, capital cycle |
+| [Valuing cyclical sectors](valuing-cyclical-sectors.md) | Desk research (Lynch, Marathon, McKinsey) | 2026-11-22 | valuation, cyclicals, capital cycle, ROIC |
+| [India sector facts, 2016–2026](india-sector-facts-2016-2026.md) | Our data + NSE, RBI, S&P | 2026-11-22 | dispersion, persistence, drawdowns, concentration |
+
+### Video notes
+
 | Note | Source | Added | Tags |
 |---|---|---|---|
 | [Flat markets are not dead markets: sectors keep rotating](flat-markets-are-not-dead-markets.md) | [WeekendInvesting (YouTube)](https://www.youtube.com/watch?v=90xkdiThhcY) | 2026-11-22 | sector rotation, consolidation, defensives, momentum |

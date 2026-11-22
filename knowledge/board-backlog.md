@@ -2,7 +2,14 @@
 
 Every actionable idea from the knowledge notes, and what was decided for the Entry/Exit Board. Rules are in the [knowledge README](README.md#how-ideas-are-triaged). Newest week first.
 
-**Open candidates:** 4 · **Built:** 1 (as a flag) · **Checked against data:** 1
+**Open candidates:** 8 · **Built:** 1 (as a flag) · **Checked against data:** 1
+
+**Next to build, in order:**
+1. #17, AMFI sectoral/thematic flows and NFOs as froth. Free monthly data and strong evidence.
+2. #20, sector drawdown and time below the high in the drawer. Display only, and the data is already downloaded.
+3. #19, a peak-margin guard for cyclicals.
+
+Everything else is blocked on data.
 
 ## Built
 
@@ -11,6 +18,29 @@ Every actionable idea from the knowledge notes, and what was decided for the Ent
 | Parabolic move (70%+ above the 150-day EMA) | 2026-11-22 | `scripts/fetch_parabolic.py`, run daily by the refresh Action (started from `fetch_prices.py`), writes `data/parabolic.json`. 97 assets: gold, silver, Brent, copper, Bitcoin, Nifty 50, 13 Nifty sector indices, the Nifty 50 stocks, 19 global indices, 7 listed REITs and InvITs. Shown in each item's panel and on the Alerts tab, with a back-test card. **Does not change any score.** | Back-test on ~10 years of daily prices: 12 episodes in 7 assets (mostly Bitcoin and Indian stocks in 2020–21; never an equity index). Prices were usually *higher* afterwards: median +16% after 3 months, +60% after 6, +80% after 12; lower in 17%, 25% and 36% of cases. Silver in January 2026 was the clean hit (−38% in 6 months). Verdict: a late-stage volatility warning, not a sell signal, so it stays a flag. Revisit if it is ever combined with a valuation score above 65. |
 
 No Yahoo history for Nifty Private Bank, Midcap 150, Smallcap 250, Midcap Select, CPSE and Defence, the factor indices, CSI 300, MOEX, Tadawul and WIG20, so these have no flag yet.
+
+## Research batch, 2026-11-22: desk research on sector investing
+
+Notes:
+- [What the research says](sector-rotation-research-evidence.md)
+- [Sector froth signals](sector-froth-signals.md)
+- [Valuing cyclical sectors](valuing-cyclical-sectors.md)
+- [India sector facts 2016–2026](india-sector-facts-2016-2026.md)
+- [Playbook](sector-investing-playbook.md)
+
+| # | Idea | Decision | Where it would go | Why / blocker |
+|---|---|---|---|---|
+| 17 | **Sectoral/thematic fund flows and NFO collections** as froth (market-wide), and **thematic NFOs by theme** (sector-level) | **Board: candidate, next to build** | Nifty 50 model and size indices: a froth input next to the existing small/mid MF inflow indicator. Sectors model: an NFO-cluster input in the Sector cycle bucket for the matching theme (defence, PSU, infra, healthcare, consumption). | Strongest evidence of the batch: thematic ETFs lost about 30% risk-adjusted over five years after launch (Ben-David et al.), sector funds have the widest investor-return gap (Morningstar), and India's June 2024 record was followed by −16% three-year category returns. Data is free monthly from AMFI (PDF and Excel). Replaces item 2's missing data source at the theme level. To do: parse the AMFI monthly Excel, build a history back to 2019, and set percentile anchors. |
+| 18 | **RBI policy direction** (easing vs tightening) tilts cyclicals vs defensives | **Board: candidate** | Sectors model, Sector cycle bucket for the deep-cyclical and defensive families | One US study (1973–2005) found 2–5% a year. Blocker: check first whether C4 (Nifty 50 Timing import) already carries the rate signal, and test on Indian sector data since 2016 (only about 3 easing and tightening phases, so weak evidence). |
+| 19 | **Peak-margin guard for cyclicals:** a low P/E on top-decile margins is not cheap | **Board: candidate** | Sectors model, deep-cyclical family: cap C1/C12's "cheap" contribution when operating margin is in the top decile of its 10-year range | Directly prevents the classic cyclical trap (graphite electrodes 2018, metals at commodity peaks). Blocker: needs a 10-year operating-margin history per sector index. |
+| 20 | **Drawdown from high and years below it,** shown in each sector's panel | **Board: candidate, display only** | Sector drawer, next to the parabolic check | Gives context for Buy readings on beaten-down sectors (IT −32%, FMCG −27% today). Uses the daily history the parabolic check already downloads. No score change. |
+| 21 | Long-term industry reversal (3–5 years) | **Already covered** | C8 and C16, contrarian | Supported by UK, US and our India data. No change. |
+| 22 | Value cyclicals on P/B or normalised earnings | **Already covered** | C1 uses P/B for banks, PSU banks, metal, energy, realty; C12, C15 | No change. |
+| 23 | Credit cycle (credit growth, GNPA) drives bank stocks | **Already covered** | Banking module (design §5.2) | The 2018 NPA peak and 2022 PSU Bank surge line up with it. |
+| 24 | Business-cycle phase rotation | **Knowledge only** | — | About 2% a year with perfect foresight; nil after costs and timing errors. |
+| 25 | Momentum crashes after market falls | **Knowledge only** | — | Matters only if a momentum overlay is ever added. |
+| 26 | Nifty 50 concentration in financials (33–38%) | **Knowledge only** | — | An allocation point, not entry/exit timing. |
+| 27 | Returns on capital by industry persist for decades | **Already covered** | Own-history anchors per index | Explains why each sector is scored against its own range. |
 
 ## Week of 2026-11-22, second batch: three sector-rotation videos
 

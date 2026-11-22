@@ -14,6 +14,74 @@
       "pinned": true
     },
     {
+      "slug": "sector-investing-playbook",
+      "title": "Sector investing playbook: rules distilled from the knowledge base",
+      "file": "sector-investing-playbook.md",
+      "source": "Synthesis",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "playbook",
+        "rules"
+      ],
+      "pinned": true
+    },
+    {
+      "slug": "sector-rotation-research-evidence",
+      "title": "Sector rotation: what the research says",
+      "file": "sector-rotation-research-evidence.md",
+      "source": "Desk research",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "momentum",
+        "reversal",
+        "business cycle"
+      ]
+    },
+    {
+      "slug": "sector-froth-signals",
+      "title": "Sector froth: fund launches, IPO waves and capex booms",
+      "file": "sector-froth-signals.md",
+      "source": "Desk research",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "froth",
+        "thematic funds",
+        "IPO waves"
+      ]
+    },
+    {
+      "slug": "valuing-cyclical-sectors",
+      "title": "Valuing cyclical sectors: P/E traps, the capital cycle and lasting returns on capital",
+      "file": "valuing-cyclical-sectors.md",
+      "source": "Desk research",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "valuation",
+        "cyclicals",
+        "capital cycle"
+      ]
+    },
+    {
+      "slug": "india-sector-facts-2016-2026",
+      "title": "India sector facts, 2016–2026: dispersion, persistence, drawdowns and concentration",
+      "file": "india-sector-facts-2016-2026.md",
+      "source": "Our data + NSE, RBI, S&P",
+      "source_url": "",
+      "added": "2026-11-22",
+      "tags": [
+        "research",
+        "India",
+        "data"
+      ]
+    },
+    {
       "slug": "flat-markets-are-not-dead-markets",
       "title": "Flat markets are not dead markets: sectors keep rotating",
       "file": "flat-markets-are-not-dead-markets.md",
