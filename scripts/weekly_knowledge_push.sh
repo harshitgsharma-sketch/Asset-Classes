@@ -23,9 +23,26 @@ if [ -n "$(git status --porcelain -- knowledge)" ]; then
 fi
 
 if ! git pull -q --rebase --autostash origin main; then
-  echo "pull/rebase failed; aborting so nothing is pushed half-merged"
-  git rebase --abort 2>/dev/null
-  exit 1
+  # The daily refresh Action rewrites data/*.json on GitHub. If those generated files are
+  # the only conflicts, keep GitHub's copy (the next daily run rebuilds them) and go on.
+  # Any other conflict: abort and push nothing.
+  while [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; do
+    conflicts="$(git diff --name-only --diff-filter=U)"
+    if [ -z "$conflicts" ]; then
+      GIT_EDITOR=true git rebase --continue >/dev/null 2>&1 || break
+      continue
+    fi
+    if echo "$conflicts" | grep -qv '^data/.*\.json$'; then
+      echo "conflict outside data/ ($(echo $conflicts | tr '\n' ' ')); aborting, nothing pushed"
+      git rebase --abort; exit 1
+    fi
+    echo "conflict only in generated files ($(echo $conflicts | tr '\n' ' ')); keeping GitHub's copy"
+    git checkout --ours -- $conflicts && git add -- $conflicts
+    GIT_EDITOR=true git rebase --continue >/dev/null 2>&1 || true
+  done
+  if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+    echo "rebase did not finish; aborting, nothing pushed"; git rebase --abort; exit 1
+  fi
 fi
 
 ahead="$(git rev-list --count origin/main..HEAD)"
