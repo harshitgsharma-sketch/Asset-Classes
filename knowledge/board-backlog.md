@@ -2,12 +2,12 @@
 
 Every actionable idea from the knowledge notes, and what was decided for the Entry/Exit Board. Rules are in the [knowledge README](README.md#how-ideas-are-triaged). Newest week first.
 
-**Open candidates:** 8 · **Built:** 1 (as a flag) · **Checked against data:** 1
+**Open candidates:** 7 · **Built:** 2 (1 flag, 1 scored input) · **Checked against data:** 1
 
 **Next to build, in order:**
-1. #17, AMFI sectoral/thematic flows and NFOs as froth. Free monthly data and strong evidence.
-2. #20, sector drawdown and time below the high in the drawer. Display only, and the data is already downloaded.
-3. #19, a peak-margin guard for cyclicals.
+1. #20, sector drawdown and time below the high in the drawer. Display only, and the data is already downloaded.
+2. #19, a peak-margin guard for cyclicals.
+3. #17b, thematic NFOs by theme. Needs scheme-level launch data.
 
 Everything else is blocked on data.
 
@@ -15,6 +15,7 @@ Everything else is blocked on data.
 
 | Idea | Built on | What shipped | Result |
 |---|---|---|---|
+| Thematic-fund froth (#17) | 2026-11-22 | `scripts/fetch_amfi_thematic.py` reads AMFI's monthly report (open-ended equity section; "Sectoral/Thematic", split into "Sectoral" and "Thematic" in 2025) and keeps `models/amfi-thematic-monthly.csv` (Apr 2019 onward, 91 months). Runs daily from `fetch_prices.py`, standard library only, and downloads only new months. The sectors model scores it as **S4** (Sector cycle bucket, weight 5.1): the mean own-history percentile of 3-month inflow ÷ equity AUM, share of equity inflows, and 6-month rise in scheme count. Applies to the five size indices plus CPSE, Defence and Infra. On the board: a panel section on those indices, an alert at 80+, and a history chart on the Alerts tab. **Changes scores.** | Back-check (`scripts/research/amfi_froth_test.py`): after months in the top third of thematic buying, the Nifty 500 returned a median +4–5% over 12 months, against +15–28% after the bottom third; the Jul–Aug 2024 peak was followed by −12% to −16% over 6 months. One cycle with overlapping windows, so the weight is kept modest. Today's reading is 24 (low), which moved 8 indices down 0.1–3.6 points: Smallcap 250 Trim → Hold, Midcap Select Hold → Accumulate. |
 | Parabolic move (70%+ above the 150-day EMA) | 2026-11-22 | `scripts/fetch_parabolic.py`, run daily by the refresh Action (started from `fetch_prices.py`), writes `data/parabolic.json`. 97 assets: gold, silver, Brent, copper, Bitcoin, Nifty 50, 13 Nifty sector indices, the Nifty 50 stocks, 19 global indices, 7 listed REITs and InvITs. Shown in each item's panel and on the Alerts tab, with a back-test card. **Does not change any score.** | Back-test on ~10 years of daily prices: 12 episodes in 7 assets (mostly Bitcoin and Indian stocks in 2020–21; never an equity index). Prices were usually *higher* afterwards: median +16% after 3 months, +60% after 6, +80% after 12; lower in 17%, 25% and 36% of cases. Silver in January 2026 was the clean hit (−38% in 6 months). Verdict: a late-stage volatility warning, not a sell signal, so it stays a flag. Revisit if it is ever combined with a valuation score above 65. |
 
 No Yahoo history for Nifty Private Bank, Midcap 150, Smallcap 250, Midcap Select, CPSE and Defence, the factor indices, CSI 300, MOEX, Tadawul and WIG20, so these have no flag yet.
@@ -30,7 +31,7 @@ Notes:
 
 | # | Idea | Decision | Where it would go | Why / blocker |
 |---|---|---|---|---|
-| 17 | **Sectoral/thematic fund flows and NFO collections** as froth (market-wide), and **thematic NFOs by theme** (sector-level) | **Board: candidate, next to build** | Nifty 50 model and size indices: a froth input next to the existing small/mid MF inflow indicator. Sectors model: an NFO-cluster input in the Sector cycle bucket for the matching theme (defence, PSU, infra, healthcare, consumption). | Strongest evidence of the batch: thematic ETFs lost about 30% risk-adjusted over five years after launch (Ben-David et al.), sector funds have the widest investor-return gap (Morningstar), and India's June 2024 record was followed by −16% three-year category returns. Data is free monthly from AMFI (PDF and Excel). Replaces item 2's missing data source at the theme level. To do: parse the AMFI monthly Excel, build a history back to 2019, and set percentile anchors. |
+| 17 | **Sectoral/thematic fund flows and NFO collections** as froth (market-wide), and **thematic NFOs by theme** (sector-level) | **Built (market-wide part), 2026-11-22**; theme-level part open as #17b | Nifty 50 model and size indices: a froth input next to the existing small/mid MF inflow indicator. Sectors model: an NFO-cluster input in the Sector cycle bucket for the matching theme (defence, PSU, infra, healthcare, consumption). | Strongest evidence of the batch: thematic ETFs lost about 30% risk-adjusted over five years after launch (Ben-David et al.), sector funds have the widest investor-return gap (Morningstar), and India's June 2024 record was followed by −16% three-year category returns. Data is free monthly from AMFI (PDF and Excel). Replaces item 2's missing data source at the theme level. To do: parse the AMFI monthly Excel, build a history back to 2019, and set percentile anchors. |
 | 18 | **RBI policy direction** (easing vs tightening) tilts cyclicals vs defensives | **Board: candidate** | Sectors model, Sector cycle bucket for the deep-cyclical and defensive families | One US study (1973–2005) found 2–5% a year. Blocker: check first whether C4 (Nifty 50 Timing import) already carries the rate signal, and test on Indian sector data since 2016 (only about 3 easing and tightening phases, so weak evidence). |
 | 19 | **Peak-margin guard for cyclicals:** a low P/E on top-decile margins is not cheap | **Board: candidate** | Sectors model, deep-cyclical family: cap C1/C12's "cheap" contribution when operating margin is in the top decile of its 10-year range | Directly prevents the classic cyclical trap (graphite electrodes 2018, metals at commodity peaks). Blocker: needs a 10-year operating-margin history per sector index. |
 | 20 | **Drawdown from high and years below it,** shown in each sector's panel | **Board: candidate, display only** | Sector drawer, next to the parabolic check | Gives context for Buy readings on beaten-down sectors (IT −32%, FMCG −27% today). Uses the daily history the parabolic check already downloads. No score change. |

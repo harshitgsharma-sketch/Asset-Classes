@@ -131,7 +131,25 @@ if os.path.exists(pq):
         parabolic={'built_at':pj['built_at'],'rule':pj['rule'],'summary':pj['summary']}
     except Exception as e:
         print('WARN parabolic.json unreadable:',e)
-out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic}
+# thematic-fund froth (sectors model S4): latest reading + history for the board
+amfi=None
+aq=os.path.join(M,'amfi-thematic-monthly.csv')
+if os.path.exists(aq):
+    try:
+        import sys; sys.path.insert(0,M)
+        cwd=os.getcwd(); os.chdir(M)
+        import sector_oscillator as so
+        fr=so.amfi_froth(); os.chdir(cwd)
+        ad=pd.read_csv(aq,dtype={'month':str})
+        last=ad.iloc[-1]
+        amfi={'month':last.month,'froth':fr.get(last.month),'history':[[m,fr[m]] for m in sorted(fr)],
+              'them_net_cr':float(last.them_net_cr),'flow_3m_pct_aum':float(last.flow_3m_pct_aum),'share_3m':float(last.share_3m),
+              'new_schemes_6m':int(last.new_schemes_6m),'aum_share':float(last.aum_share),
+              'peak':(lambda r:[r.month,fr.get(r.month)])(ad.loc[ad.flow_3m_pct_aum.idxmax()]),
+              'applies_to':['SEC_NEXT50','SEC_MIDSELECT','SEC_MIDCAP150','SEC_SMALLCAP250','SEC_NIFTY500','SEC_CPSE','SEC_DEFENCE','SEC_INFRA']}
+    except Exception as e:
+        print('WARN amfi froth:',e)
+out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi}
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(out,open(os.path.join(ROOT,'data','signals.json'),'w'),separators=(',',':'),allow_nan=False)
 print('signals.json:',len(items),'items;',{k:v['asof'] for k,v in meta.items()})

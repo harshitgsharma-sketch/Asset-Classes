@@ -60,6 +60,7 @@ Project files (all under `claude/`):
 | R1, R2 | Housing sales YoY; repo level | Anarock quarterly; RBI repo | Quarterly |
 | G1 | Govt capex growth | Union Budget BE vs prior BE; CGA YTD when available | Yearly/Monthly |
 | G2 | Defence capital outlay growth | Union Budget | Yearly |
+| S4 | Thematic-fund froth (size, CPSE, Defence, Infra) | **Automatic:** `models/amfi-thematic-monthly.csv`, refreshed daily by `scripts/fetch_amfi_thematic.py` from AMFI's monthly report (portal.amfiindia.com/spages/am<mon><yyyy>repo.xls). The engine computes the score itself (mean own-history percentile of `flow_3m_pct_aum`, `share_3m`, `new_schemes_6m`, expanding window, ≥24 months). No manual input; check only that the CSV's last month is ≤45 days old. | Monthly |
 
 indexpe.in slugs used: nifty-50, nifty-bank, nifty-financial-services, nifty-next-50, nifty-midcap-select, nifty-midcap-150, nifty-smallcap-250, nifty-500, nifty-private-bank, nifty-psu-bank, nifty-it, nifty-auto, nifty-fmcg, nifty-pharma, nifty-metal, nifty-energy, nifty-realty, nifty-cpse, nifty-india-defence, nifty-infrastructure, nifty-india-consumption.
 
@@ -84,6 +85,8 @@ indexpe.in slugs used: nifty-50, nifty-bank, nifty-financial-services, nifty-nex
 Plain language, tables, explain jargon the first time, phone-readable.
 
 ## 6. Change log
+
+- 22-Nov-2026: **S4 thematic-fund froth added** (knowledge/board-backlog.md #17). Sector cycle bucket, weight 3×3×0.75×0.75 = 5.1, anchors 0 → 100, for the size module plus CPSE, Defence and Infra. Back-check 2019–2026: months in the top third of thematic buying were followed by a median +4–5% Nifty 500 return over 12 months vs +15–28% after the bottom third (one cycle, overlapping windows: indicative only; `scripts/research/amfi_froth_test.py`). Effect on the Nov-2026 run: −0.1 to −3.6 points on 8 indices (froth reads 24, low); Smallcap 250 Trim → Hold (65.6 → 63.3), Midcap Select Hold → Accumulate (50.4 → 49.2). Defence's Sector cycle bucket also stops being "thin" (now two indicators), which is most of its −3.6.
 
 - 20-Nov-2026 (10:55 IST): v1.0 published as the current release at the user's request, with the partial indicator set as is. Coverage reporting rule added (quote `core_of_17`).
 - 20-Nov-2026: v1 built and run for all 20 indices. Pilot on Bank, IT, FMCG, Midcap 150 first, then extended. Added C20 Defence guard and the thin-bucket rule after the first full run.

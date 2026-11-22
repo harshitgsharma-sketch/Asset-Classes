@@ -119,6 +119,7 @@ High = cycle near peak / turning against sector. The engine's live module inputs
 | Mid/small fwd EPS growth minus Nifty's | Leading | 10.5 | +10 pp → −5 pp | Consensus |
 | Small/mid MF net inflows, 3-m avg | Coincident (froth) | 6.8 | Pctl | AMFI |
 | IPO + SME issuance & listing gains, 3-m | Leading (froth) | 6.8 | Pctl | NSE, Prime Database |
+| **S4 (built 22-Nov-2026):** sectoral/thematic MF froth: mean own-history pctl of 3-m net inflow ÷ equity AUM, share of equity net inflow, and 6-m rise in scheme count (NFO proxy). Also applied to CPSE, Defence, Infra. | Coincident (froth) | 5.1 | Pctl 0 → 100 | AMFI monthly report (automatic) |
 | MTF book YoY | Leading (froth) | 5.1 | −10% → +60% | NSE/BSE |
 | Advance–decline ratio, 3-m avg | Coincident | 4.5 | 0.7 → 1.6 | NSE |
 

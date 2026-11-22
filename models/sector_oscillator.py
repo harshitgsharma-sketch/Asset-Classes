@@ -45,6 +45,10 @@ SPEC = {
  "S1":  ("Index PE / Nifty 50 PE",                     "S", "Leading", 4, 4, 0.875, 0.875, 0.9, 1.8, ["size"], False),
  "S2":  ("MTF book YoY (%)",                           "S", "Leading", 3, 3, 0.625, 0.75, -10, 60, ["size"], False),
  "S3":  ("Small/mid MF net inflow, 3-m avg (Rs '000 cr)", "S", "Coincident", 3, 3, 0.75, 0.75, 2, 12, ["size"], False),
+ # S4: AMFI sectoral/thematic fund froth (backlog #17, knowledge/sector-froth-signals.md). Average
+ # own-history percentile of three measures from amfi-thematic-monthly.csv. Applied to the
+ # market-wide size indices and the themes the 2024 NFO wave targeted.
+ "S4":  ("Thematic-fund froth, AMFI (pctl)",           "S", "Coincident", 3, 3, 0.75, 0.75, 0, 100, ["size", "psu", "defence", "infra"], False),
  "B1":  ("System credit growth YoY (%)",               "S", "Coincident", 4, 4, 0.875, 0.75, 8, 18, ["bank"], False),
  "B2":  ("Credit minus deposit growth (pp)",           "S", "Leading", 4, 3, 0.875, 1.0, -3, 5, ["bank"], False),
  "B3":  ("Expected repo change ~6m (bp)",              "S", "Leading", 4, 3, 0.75, 1.0, 50, -75, ["bank"], False),
@@ -89,6 +93,36 @@ def num(v):
     except (TypeError, ValueError):
         return None
 
+AMFI_FILE = "amfi-thematic-monthly.csv"
+AMFI_MEASURES = ["flow_3m_pct_aum", "share_3m", "new_schemes_6m"]
+_AMFI = None
+
+def amfi_froth():
+    """month -> froth score 0-100: mean percentile of AMFI_MEASURES against all months up to
+    and including that month (expanding window, needs 24 months of history)."""
+    global _AMFI
+    if _AMFI is not None: return _AMFI
+    _AMFI = {}
+    try:
+        a = pd.read_csv(AMFI_FILE, dtype={"month": str}).sort_values("month").reset_index(drop=True)
+    except FileNotFoundError:
+        return _AMFI
+    for i in range(len(a)):
+        pcts = []
+        for m in AMFI_MEASURES:
+            hist = a.loc[:i, m].dropna()
+            x = a.loc[i, m]
+            if len(hist) >= 24 and not pd.isna(x):
+                pcts.append(100*(hist < x).sum()/(len(hist) - 1) if len(hist) > 1 else 50)
+        if pcts: _AMFI[a.loc[i, "month"]] = round(float(np.mean(pcts)), 1)
+    return _AMFI
+
+def amfi_froth_for(month):
+    """Froth score for the latest AMFI month on or before `month` (AMFI publishes ~10 days after month end)."""
+    f = amfi_froth()
+    ms = [m for m in f if m <= month]
+    return f[max(ms)] if ms else None
+
 def derive(row, nifty, cfg_i):
     """Turn raw columns into indicator inputs. row/nifty are dicts for the same month."""
     out = {}
@@ -119,6 +153,8 @@ def derive(row, nifty, cfg_i):
     if e5 is not None: out["C14"] = e5
     if None not in (e5, p5): out["C19"] = p5 - e5
     out["C4"] = num(nifty.get("nifty_timing"))
+    froth = amfi_froth_for(str(row.get("month", "")))
+    if froth is not None: out["S4"] = froth
     for k_ in SPEC:                       # direct sector-cycle inputs
         if k_[0] in "SBIKAPMRG" and k_ not in out:
             v = num(row.get(k_))

@@ -60,7 +60,8 @@ When a sector or theme gets popular, three kinds of supply arrive: new funds to 
 
 Triaged in the [board backlog](board-backlog.md) (research batch, 2026-11-22):
 
-- **Board candidate, top of the list:** monthly **sectoral/thematic fund flows and NFO collections** from AMFI as a market-wide froth input, plus a count of thematic NFOs by theme as a sector-level input. Free monthly data and strong evidence. It extends backlog item 2 (issuance froth), which had no free source.
+- **Built 2026-11-22:** monthly **sectoral/thematic fund flows and a new-scheme count** from AMFI, scored as indicator S4 in the sectors model (size indices, CPSE, Defence, Infra). On our 2019–2026 data, the top third of thematic-buying months was followed by a median +4–5% Nifty 500 return over 12 months, against +15–28% after the bottom third. See the [backlog](board-backlog.md#built).
+- **Still a candidate:** thematic NFOs counted *by theme*, as a sector-level input (#17b). AMFI's monthly report only gives the category total.
 - **Already covered:** small/mid-cap MF inflows and IPO issuance in the size-index module.
 - **Knowledge only:** the capex evidence. Capacity data is too patchy to collect monthly.
 
