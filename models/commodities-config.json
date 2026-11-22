@@ -1,0 +1,68 @@
+{
+ "version": "v1 (21-Nov-2026), indicative",
+ "note": "Silver and commodities entry/exit oscillator for an INR investor (holding period up to 5 years). Score 1 = cheap / tailwind (buy), 100 = rich / headwind (sell). Per-indicator score = clamp(1 + 99*(x - cheap)/(rich - cheap), 1, 100). Weight W = I x S x R x St. Blank inputs skipped and weights re-normalised inside each bucket; a bucket resting on one live indicator moves only half-way from 50. Oscillator = bucket weights x bucket scores (buckets with no live input drop out and the rest re-normalise). Anchors are judgment-based (est. from 2010-2026 ranges). 'derive' = formula key in commodities_oscillator.py DERIVE.",
+ "bands": "<=20 STRONG BUY | 21-35 BUY | 36-50 ACCUMULATE | 51-65 HOLD | 66-80 TRIM | >80 EXIT. Veto: Filter >= 70 while Oscillator <= 35 -> BUY VETOED - wait.",
+ "commodities": [
+  {"key": "SILVER", "name": "Silver (INR)", "status": "v1 full model", "price_col": "silver_usd", "unit": "$/oz", "ath": 121.65, "ath_note": "intraday record 26/29-Jan-2026 (Kitco 13-Nov-2026)",
+   "access": "Silver ETF / silver FoF (direct, cheapest); MCX silver futures (roll cost, margin)",
+   "buckets": {"Valuation": 0.35, "Timing": 0.45, "Filter": 0.20},
+   "indicators": [
+    {"id": "SV1", "name": "Gold / silver ratio (high = silver cheap)", "bucket": "Valuation", "type": "Leading", "derive": "gsr", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 95, "rich": 55, "unit": "x"},
+    {"id": "SV2", "name": "Silver / US CPI x100 (real price)", "bucket": "Valuation", "type": "Leading", "derive": "silver_real", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 5.0, "rich": 22.0, "unit": "ratio"},
+    {"id": "SV3", "name": "INR price vs its 36-m average (%)", "bucket": "Valuation", "type": "Leading", "derive": "silver_inr_vs_36m", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": -15, "rich": 60, "unit": "%"},
+    {"id": "SV4", "name": "Gold model Valuation bucket (import; monetary-metal level)", "bucket": "Valuation", "type": "Leading", "derive": "imp_gold_v", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"},
+    {"id": "ST1", "name": "US 10-yr real yield (TIPS) [= gold i01]", "bucket": "Timing", "type": "Coincident", "derive": "tips10", "I": 4, "S": 4, "R": 0.875, "St": 0.75, "cheap": -0.5, "rich": 3.0, "unit": "%"},
+    {"id": "ST2", "name": "Expected Fed change next ~6m [= gold i02]", "bucket": "Timing", "type": "Leading", "derive": "fed_exp_bp", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": -100, "rich": 75, "unit": "bp"},
+    {"id": "ST3", "name": "Dollar index (DXY) [= gold i04]", "bucket": "Timing", "type": "Coincident", "derive": "dxy", "I": 3, "S": 4, "R": 0.875, "St": 1.0, "cheap": 90, "rich": 110, "unit": "index"},
+    {"id": "ST4", "name": "USD/INR 12-m change [= gold i13]", "bucket": "Timing", "type": "Coincident", "derive": "usdinr_12m", "I": 3, "S": 3, "R": 1.0, "St": 1.0, "cheap": 8, "rich": -3, "unit": "%"},
+    {"id": "ST5", "name": "Silver / 200-day MA (10-month proxy)", "bucket": "Timing", "type": "Leading at extremes", "derive": "px_ma10", "I": 4, "S": 5, "R": 1.0, "St": 1.0, "cheap": 0.75, "rich": 1.40, "unit": "ratio"},
+    {"id": "ST6", "name": "Monthly RSI(14) of silver", "bucket": "Timing", "type": "Leading at extremes", "derive": "rsi14", "I": 2, "S": 4, "R": 0.75, "St": 1.0, "cheap": 30, "rich": 85, "unit": "RSI"},
+    {"id": "ST7", "name": "COMEX silver non-commercial net long (% OI)", "bucket": "Timing", "type": "Leading (contrarian)", "derive": "cftc_net_pct", "I": 3, "S": 4, "R": 0.875, "St": 1.0, "cheap": 0, "rich": 40, "unit": "% OI"},
+    {"id": "ST8", "name": "Global silver ETP flow, last month", "bucket": "Timing", "type": "Coincident", "derive": "etf_flow_moz", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": 30, "rich": -30, "unit": "Moz"},
+    {"id": "ST9", "name": "Distance from all-time high", "bucket": "Timing", "type": "Coincident", "derive": "dist_ath", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": -65, "rich": 0, "unit": "%"},
+    {"id": "ST10", "name": "J.P. Morgan Global Manufacturing PMI (industrial demand)", "bucket": "Timing", "type": "Leading", "derive": "pmi_global", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": 54, "rich": 47, "unit": "index"},
+    {"id": "SF1", "name": "Silver / 200-week MA (46-month proxy)", "bucket": "Filter", "type": "Lagging", "derive": "px_ma46", "I": 3, "S": 4, "R": 1.0, "St": 1.0, "cheap": 0.90, "rich": 2.20, "unit": "ratio"},
+    {"id": "SF2", "name": "Silver market balance, current year (Silver Institute; - = deficit)", "bucket": "Filter", "type": "Lagging", "derive": "balance", "I": 4, "S": 3, "R": 0.75, "St": 0.75, "cheap": -200, "rich": 50, "unit": "Moz"},
+    {"id": "SF3", "name": "Silver USD 12-m change", "bucket": "Filter", "type": "Lagging", "derive": "chg12", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": -30, "rich": 80, "unit": "%"}
+   ]},
+  {"key": "BRENT", "name": "Crude oil (Brent, INR)", "status": "v1 indicative", "price_col": "brent_usd", "unit": "$/bbl", "ath": null,
+   "access": "MCX crude futures only (monthly roll, margin, STCG at slab); no Indian crude ETF. Overseas energy ETFs via LRS (TCS, overseas-fund limit). Treat as a trading/tilt signal, not a 5-yr hold.",
+   "buckets": {"Valuation": 0.35, "Timing": 0.45, "Filter": 0.20},
+   "indicators": [
+    {"id": "OV1", "name": "Brent / US CPI x100 (real price)", "bucket": "Valuation", "type": "Leading", "derive": "brent_real", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 16, "rich": 36, "unit": "ratio"},
+    {"id": "OV2", "name": "Gold / Brent (high = oil cheap vs gold) [= gold i30]", "bucket": "Valuation", "type": "Leading", "derive": "gold_brent", "I": 2, "S": 2, "R": 0.5, "St": 0.75, "cheap": 60, "rich": 15, "unit": "ratio"},
+    {"id": "OT1", "name": "Brent / 200-day MA (10-month proxy)", "bucket": "Timing", "type": "Leading at extremes", "derive": "px_ma10", "I": 4, "S": 5, "R": 1.0, "St": 1.0, "cheap": 0.75, "rich": 1.30, "unit": "ratio"},
+    {"id": "OT2", "name": "Monthly RSI(14) of Brent", "bucket": "Timing", "type": "Leading at extremes", "derive": "rsi14", "I": 2, "S": 4, "R": 0.75, "St": 1.0, "cheap": 30, "rich": 80, "unit": "RSI"},
+    {"id": "OT3", "name": "Brent 1st minus 12th month spread (+ = backwardation)", "bucket": "Timing", "type": "Coincident", "derive": "curve_m1m12", "I": 4, "S": 4, "R": 0.75, "St": 0.75, "cheap": -5, "rich": 12, "unit": "$/bbl"},
+    {"id": "OT4", "name": "EIA STEO global stock change, next 2 qtrs (+ = build)", "bucket": "Timing", "type": "Leading", "derive": "stock_chg_mbd", "I": 5, "S": 4, "R": 0.75, "St": 0.75, "cheap": -1.5, "rich": 2.0, "unit": "mb/d"},
+    {"id": "OT5", "name": "Dollar index (DXY) [= gold i04]", "bucket": "Timing", "type": "Coincident", "derive": "dxy", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": 90, "rich": 110, "unit": "index"},
+    {"id": "OT6", "name": "USD/INR 12-m change [= gold i13]", "bucket": "Timing", "type": "Coincident", "derive": "usdinr_12m", "I": 3, "S": 3, "R": 1.0, "St": 1.0, "cheap": 8, "rich": -3, "unit": "%"},
+    {"id": "OT7", "name": "J.P. Morgan Global Manufacturing PMI", "bucket": "Timing", "type": "Leading", "derive": "pmi_global", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": 54, "rich": 47, "unit": "index"},
+    {"id": "OF1", "name": "Brent / 200-week MA (46-month proxy)", "bucket": "Filter", "type": "Lagging", "derive": "px_ma46", "I": 3, "S": 4, "R": 1.0, "St": 1.0, "cheap": 0.75, "rich": 1.60, "unit": "ratio"},
+    {"id": "OF2", "name": "Brent USD 12-m change", "bucket": "Filter", "type": "Lagging", "derive": "chg12", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": -40, "rich": 60, "unit": "%"}
+   ]},
+  {"key": "COPPER", "name": "Copper (LME, INR)", "status": "v1 indicative (no price history yet)", "price_col": "copper_usd_t", "unit": "$/t", "ath": 14700, "ath_note": "LME record 'above $14,700', Sep-2026 (SMM); est. until the exact print is sourced",
+   "access": "MCX copper futures only (roll cost, margin, STCG at slab); no Indian copper ETF. Global copper-miner ETFs via LRS. Treat as a trading/tilt signal.",
+   "buckets": {"Valuation": 0.35, "Timing": 0.45, "Filter": 0.20},
+   "indicators": [
+    {"id": "CV1", "name": "Copper / US CPI (real price, $/t per CPI point)", "bucket": "Valuation", "type": "Leading", "derive": "copper_real", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 20, "rich": 45, "unit": "ratio"},
+    {"id": "CV2", "name": "Copper ($/lb) / gold ($/oz) x1000 (low = copper cheap vs gold)", "bucket": "Valuation", "type": "Leading", "derive": "copper_gold", "I": 2, "S": 3, "R": 0.625, "St": 0.75, "cheap": 1.2, "rich": 3.0, "unit": "ratio"},
+    {"id": "CT1", "name": "COMEX copper non-commercial net long (% OI)", "bucket": "Timing", "type": "Leading (contrarian)", "derive": "cftc_net_pct", "I": 3, "S": 4, "R": 0.875, "St": 1.0, "cheap": -10, "rich": 30, "unit": "% OI"},
+    {"id": "CT2", "name": "ICSG refined balance, next year (+ = surplus)", "bucket": "Timing", "type": "Leading", "derive": "balance_next", "I": 4, "S": 4, "R": 0.75, "St": 0.75, "cheap": -400, "rich": 400, "unit": "kt"},
+    {"id": "CT3", "name": "Distance from all-time high", "bucket": "Timing", "type": "Coincident", "derive": "dist_ath", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": -45, "rich": 0, "unit": "%"},
+    {"id": "CT4", "name": "Dollar index (DXY) [= gold i04]", "bucket": "Timing", "type": "Coincident", "derive": "dxy", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": 90, "rich": 110, "unit": "index"},
+    {"id": "CT5", "name": "USD/INR 12-m change [= gold i13]", "bucket": "Timing", "type": "Coincident", "derive": "usdinr_12m", "I": 3, "S": 3, "R": 1.0, "St": 1.0, "cheap": 8, "rich": -3, "unit": "%"},
+    {"id": "CT6", "name": "J.P. Morgan Global Manufacturing PMI", "bucket": "Timing", "type": "Leading", "derive": "pmi_global", "I": 4, "S": 4, "R": 0.75, "St": 0.75, "cheap": 54, "rich": 47, "unit": "index"},
+    {"id": "CT7", "name": "Copper / 200-day MA (10-month proxy)", "bucket": "Timing", "type": "Leading at extremes", "derive": "px_ma10", "I": 4, "S": 5, "R": 1.0, "St": 1.0, "cheap": 0.80, "rich": 1.30, "unit": "ratio"},
+    {"id": "CF1", "name": "ICSG refined balance, current year (+ = surplus)", "bucket": "Filter", "type": "Lagging", "derive": "balance", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": -400, "rich": 400, "unit": "kt"},
+    {"id": "CF2", "name": "Copper / 200-week MA (46-month proxy)", "bucket": "Filter", "type": "Lagging", "derive": "px_ma46", "I": 3, "S": 4, "R": 1.0, "St": 1.0, "cheap": 0.85, "rich": 1.60, "unit": "ratio"}
+   ]}
+ ],
+ "excluded": {
+  "Natural gas": "MCX only; seasonal and weather-driven, no stable 5-yr anchor",
+  "Aluminium / zinc / nickel": "MCX only, thin retail liquidity; add once the copper module has history",
+  "Platinum / palladium": "no Indian ETF or liquid MCX contract",
+  "Broad commodity index (BCOM)": "no INR-accessible product; add as a cycle context indicator later",
+  "Agri (MCX/NCDEX)": "many contracts suspended by SEBI; policy-driven"
+ }
+}

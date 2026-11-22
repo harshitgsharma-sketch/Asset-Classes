@@ -1,0 +1,353 @@
+index,metric,period,value,source
+KOSPI,fpe,Oct 2026,4.16,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2025 Dec,10.43,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2024 Dec,7.85,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2023 Dec,11.44,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2022 Dec,10.51,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2021 Dec,10.49,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2020 Dec,14.05,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2019 Dec,11.74,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2018 Dec,8.89,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2017 Dec,8.69,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,fpe,2016 Dec,9.02,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,Oct 2026,26.2,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2025 Dec,21.22,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2024 Dec,12.6,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2023 Dec,13.94,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2022 Dec,11.96,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2021 Dec,17.14,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2020 Dec,16.94,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2019 Dec,12.36,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2018 Dec,11.94,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2017 Dec,15.04,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+KOSPI,cape,2016 Dec,12.64,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/kospi-korea-pe-earnings
+CSI300,fpe,Oct 2026,11.92,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2025 Dec,14.93,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2024 Dec,13.05,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2023 Dec,10.74,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2022 Dec,11.63,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2021 Dec,15.19,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2020 Dec,17.06,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2019 Dec,12.43,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2018 Dec,10.0,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2017 Dec,13.99,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,fpe,2016 Dec,14.3,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,Oct 2026,15.97,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2025 Dec,17.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2024 Dec,14.98,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2023 Dec,13.18,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2022 Dec,13.73,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2021 Dec,16.59,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2020 Dec,16.47,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2019 Dec,14.7,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2018 Dec,12.92,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2017 Dec,18.05,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+CSI300,cape,2016 Dec,18.02,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/china-shanghai-pe-cape-ratio (SSE Composite as China A proxy)
+DAX,fpe,Oct 2026,14.66,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2025 Dec,15.62,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2024 Dec,13.99,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2023 Dec,11.52,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2022 Dec,10.96,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2021 Dec,14.34,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2020 Dec,15.06,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2019 Dec,13.83,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2018 Dec,10.81,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2017 Dec,13.27,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,fpe,2016 Dec,13.29,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,Oct 2026,23.19,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2025 Dec,24.08,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2024 Dec,21.08,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2023 Dec,19.3,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2022 Dec,17.53,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2021 Dec,23.37,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2020 Dec,21.85,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2019 Dec,21.31,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2018 Dec,18.67,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2017 Dec,24.55,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+DAX,cape,2016 Dec,22.42,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/dax-pe-ratio-yield
+FTSE100,fpe,Oct 2026,11.97,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2025 Dec,13.35,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2024 Dec,11.24,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2023 Dec,10.65,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2022 Dec,9.99,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2021 Dec,11.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2020 Dec,14.09,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2019 Dec,12.96,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2018 Dec,11.39,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2017 Dec,14.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,fpe,2016 Dec,14.69,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,Oct 2026,19.58,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2025 Dec,20.19,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2024 Dec,18.2,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2023 Dec,18.33,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2022 Dec,19.28,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2021 Dec,20.4,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2020 Dec,17.09,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2019 Dec,18.84,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2018 Dec,18.31,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2017 Dec,20.7,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+FTSE100,cape,2016 Dec,18.01,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ftse-100-cape-pe-yield
+CAC40,fpe,Oct 2026,13.31,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2025 Dec,15.2,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2024 Dec,13.52,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2023 Dec,13.29,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2022 Dec,11.86,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2021 Dec,16.26,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2020 Dec,17.85,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2019 Dec,14.52,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2018 Dec,11.72,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2017 Dec,14.73,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,fpe,2016 Dec,15.3,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,Oct 2026,19.27,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2025 Dec,21.18,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2024 Dec,20.46,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2023 Dec,23.4,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2022 Dec,22.93,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2021 Dec,27.95,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2020 Dec,21.06,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2019 Dec,22.3,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2018 Dec,18.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2017 Dec,20.88,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+CAC40,cape,2016 Dec,18.22,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/france-pe-ratio-yield
+TSX,fpe,Oct 2026,15.95,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2025 Dec,17.17,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2024 Dec,15.28,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2023 Dec,13.61,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2022 Dec,12.03,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2021 Dec,14.08,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2020 Dec,23.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2019 Dec,14.91,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2018 Dec,11.95,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2017 Dec,15.88,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,fpe,2016 Dec,15.82,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,Oct 2026,27.2,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2025 Dec,26.2,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2024 Dec,21.84,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2023 Dec,19.5,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2022 Dec,19.53,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2021 Dec,23.66,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2020 Dec,20.33,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2019 Dec,20.35,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2018 Dec,17.88,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2017 Dec,20.53,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+TSX,cape,2016 Dec,19.55,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/canada-pe-earnings
+HSCEI,fpe,Oct 2026,9.56,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2025 Dec,13.75,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2024 Dec,9.74,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2023 Dec,9.12,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2022 Dec,10.91,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2021 Dec,11.93,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2020 Dec,15.57,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2019 Dec,10.49,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2018 Dec,9.83,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2017 Dec,11.66,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,fpe,2016 Dec,11.27,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,Oct 2026,9.6,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2025 Dec,10.74,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2024 Dec,8.61,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2023 Dec,7.53,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2022 Dec,9.13,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2021 Dec,11.36,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2020 Dec,13.82,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2019 Dec,14.46,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2018 Dec,14.32,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2017 Dec,17.68,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+HSCEI,cape,2016 Dec,13.51,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/hang-seng-cape (Hang Seng as proxy)
+IBOV,fpe,Oct 2026,7.74,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2025 Dec,9.25,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2024 Dec,7.09,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2023 Dec,8.18,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2022 Dec,6.81,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2021 Dec,7.51,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2020 Dec,12.55,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2019 Dec,12.95,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2018 Dec,10.99,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2017 Dec,12.49,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,fpe,2016 Dec,12.48,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,Oct 2026,13.23,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2025 Dec,14.64,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2024 Dec,12.62,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2023 Dec,16.34,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2022 Dec,16.21,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2021 Dec,18.59,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2020 Dec,23.04,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2019 Dec,21.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2018 Dec,16.6,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2017 Dec,13.99,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+IBOV,cape,2016 Dec,10.62,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/ibovespa-pe-ratio
+NIFTY50,fpe,Oct 2026,18.29,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2025 Dec,22.38,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2024 Dec,22.05,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2023 Dec,22.03,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2022 Dec,21.69,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2021 Dec,23.32,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2020 Dec,23.9,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2019 Dec,18.58,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2018 Dec,16.86,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2017 Dec,17.56,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,fpe,2016 Dec,15.59,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,Oct 2026,27.85,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2025 Dec,35.09,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2024 Dec,34.09,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2023 Dec,34.87,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2022 Dec,32.42,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2021 Dec,34.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2020 Dec,29.91,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2019 Dec,27.49,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2018 Dec,25.86,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2017 Dec,25.33,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIFTY50,cape,2016 Dec,20.21,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratio-india-nifty
+NIKKEI,fpe,Oct 2026,14.73,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2025 Dec,16.87,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2024 Dec,14.64,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2023 Dec,13.79,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2022 Dec,11.96,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2021 Dec,13.84,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2020 Dec,18.17,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2019 Dec,14.43,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2018 Dec,11.12,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2017 Dec,14.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,fpe,2016 Dec,14.79,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,Oct 2026,33.23,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2025 Dec,29.38,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2024 Dec,26.14,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2023 Dec,24.93,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2022 Dec,22.04,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2021 Dec,28.73,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2020 Dec,30.33,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2019 Dec,27.23,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2018 Dec,26.47,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2017 Dec,32.75,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+NIKKEI,cape,2016 Dec,28.59,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/japan-nikkei-pe-cape
+SP500,cape,Oct 2026,35.1,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2025 Dec,34.7,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2024 Dec,32.4,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2023 Dec,28.3,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2022 Dec,24.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2021 Dec,34.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2020 Dec,30.4,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2019 Dec,27.6,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2018 Dec,23.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2017 Dec,27.0,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+SP500,cape,2016 Dec,23.3,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (United States)
+ASX200,cape,Oct 2026,20.1,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2025 Dec,21.0,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2024 Dec,20.6,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2023 Dec,19.9,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2022 Dec,20.4,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2021 Dec,23.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2020 Dec,20.6,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2019 Dec,20.7,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2018 Dec,18.3,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2017 Dec,19.4,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+ASX200,cape,2016 Dec,17.5,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/cape-ratios-by-country (Australia)
+SP500,dy,Jun 2026,1.12,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2025 Dec,1.18,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2024 Dec,1.24,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2023 Dec,1.5,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2022 Dec,1.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2021 Dec,1.29,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2020 Dec,1.53,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2019 Dec,1.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2018 Dec,1.98,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2017 Dec,1.83,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+SP500,dy,2016 Dec,2.03,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,Jun 2026,1.96,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2025 Dec,2.01,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2024 Dec,2.12,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2023 Dec,2.17,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2022 Dec,2.36,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2021 Dec,1.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2020 Dec,1.89,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2019 Dec,1.9,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2018 Dec,1.9,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2017 Dec,1.44,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIKKEI,dy,2016 Dec,1.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,Jun 2026,3.04,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2025 Dec,3.1,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2024 Dec,3.62,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2023 Dec,3.86,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2022 Dec,3.65,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2021 Dec,3.37,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2020 Dec,3.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2019 Dec,4.36,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2018 Dec,4.68,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2017 Dec,3.81,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+FTSE100,dy,2016 Dec,3.65,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,Jun 2026,2.59,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2025 Dec,2.41,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2024 Dec,2.8,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2023 Dec,3.26,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2022 Dec,3.68,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2021 Dec,2.26,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2020 Dec,2.55,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2019 Dec,2.54,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2018 Dec,2.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2017 Dec,2.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+DAX,dy,2016 Dec,2.47,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,Jun 2026,2.97,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2025 Dec,2.94,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2024 Dec,3.19,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2023 Dec,2.98,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2022 Dec,2.92,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2021 Dec,2.03,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2020 Dec,1.98,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2019 Dec,2.96,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2018 Dec,3.54,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2017 Dec,2.34,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CAC40,dy,2016 Dec,3.41,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,Jun 2026,2.09,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2025 Dec,2.23,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2024 Dec,2.92,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2023 Dec,3.15,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2022 Dec,3.21,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2021 Dec,2.59,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2020 Dec,2.93,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2019 Dec,3.01,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2018 Dec,3.45,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2017 Dec,2.71,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+TSX,dy,2016 Dec,2.76,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,Jun 2026,3.33,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2025 Dec,3.17,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2024 Dec,3.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2023 Dec,4.02,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2022 Dec,4.61,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2021 Dec,3.6,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2020 Dec,2.84,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2019 Dec,3.95,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2018 Dec,4.5,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2017 Dec,4.13,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+ASX200,dy,2016 Dec,4.25,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,Jun 2026,2.24,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2025 Dec,2.24,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2024 Dec,2.69,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2023 Dec,2.9,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2022 Dec,2.64,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2021 Dec,1.99,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2020 Dec,2.02,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2019 Dec,2.24,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2018 Dec,2.7,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2017 Dec,1.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+CSI300,dy,2016 Dec,1.83,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,Jun 2026,3.27,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2025 Dec,3.09,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2024 Dec,3.59,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2023 Dec,3.97,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2022 Dec,3.31,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2021 Dec,2.54,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2020 Dec,3.18,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2019 Dec,3.52,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2018 Dec,4.15,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2017 Dec,2.98,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+HSCEI,dy,2016 Dec,3.77,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,Jun 2026,1.23,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2025 Dec,1.29,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2024 Dec,1.25,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2023 Dec,1.28,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2022 Dec,1.27,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2021 Dec,1.16,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2020 Dec,1.14,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2019 Dec,1.24,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2018 Dec,1.24,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2017 Dec,1.08,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)
+NIFTY50,dy,2016 Dec,1.35,siblisresearch.com (fetched 21-Nov-2026; month-end Oct 2026 + year-ends)/data/global-dividend-yields (country level; latest Jun 2026)

@@ -1,0 +1,95 @@
+{
+ "version": "v1 (21-Nov-2026), indicative",
+ "note": "Credit & fixed-income entry/exit oscillator for an INR investor (holding period up to 5 years). Score 1 = cheap (yields high vs history and likely to fall: lock in / add duration), 100 = rich (yields low or likely to rise: stay short / floating). Anchors are judgment-based (est. from ~2010-2026 ranges) until back-filled. Indicator: id, name, derive (formula key in fixed_income_oscillator.py DERIVE), type, I/S/R/St (W = product), cheap, rich, unit. Valuation anchors of GSEC_10Y, CORP_AAA_5Y, CREDIT_AA_3Y and SHORT_1Y are identical to asset-classes-config.json (B1-B7) so the Valuation bucket equals that model's score.",
+ "bucket_weights": {
+  "duration": {"Valuation": 0.45, "Timing": 0.40, "Filter": 0.15},
+  "credit":   {"Valuation": 0.50, "Timing": 0.35, "Filter": 0.15},
+  "short":    {"Valuation": 0.70, "Timing": 0.20, "Filter": 0.10},
+  "floating": {"Valuation": 0.55, "Timing": 0.35, "Filter": 0.10}
+ },
+ "shared": {
+  "rate_cycle_timing": [
+   {"id": "T1", "name": "Expected RBI repo change, ~6 m (bp)", "derive": "repo_chg_6m", "type": "Leading", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": -75, "rich": 75, "unit": "bp"},
+   {"id": "T2", "name": "Real policy rate: repo minus expected CPI (pp; high = room to cut)", "derive": "real_repo", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 1.0, "cheap": 2.0, "rich": -1.0, "unit": "pp"},
+   {"id": "T3", "name": "Inflation turn: expected CPI minus current CPI (pp)", "derive": "cpi_turn", "type": "Leading", "I": 4, "S": 3, "R": 0.75, "St": 1.0, "cheap": -1.5, "rich": 1.5, "unit": "pp"},
+   {"id": "T4", "name": "10-yr G-sec 6-m change (bp; momentum)", "derive": "gsec10_6m_chg", "type": "Coincident", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": -75, "rich": 75, "unit": "bp"},
+   {"id": "T5", "name": "India CPI YoY (%)", "derive": "cpi_yoy", "type": "Coincident", "I": 3, "S": 3, "R": 0.875, "St": 0.75, "cheap": 2, "rich": 7, "unit": "%"},
+   {"id": "T6", "name": "System liquidity, net LAF % NDTL (surplus +)", "derive": "liquidity", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": 1.5, "rich": -1.0, "unit": "%"},
+   {"id": "T7", "name": "Brent crude ($/bbl)", "derive": "brent", "type": "Coincident", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": 55, "rich": 110, "unit": "$"},
+   {"id": "T8", "name": "FPI net flow into Indian debt, 3 m (Rs '000 cr)", "derive": "fpi_debt_3m", "type": "Coincident", "I": 3, "S": 3, "R": 0.625, "St": 0.75, "cheap": 40, "rich": -40, "unit": "k cr"},
+   {"id": "T9", "name": "UST 10-yr yield (%; high = global pressure on yields)", "derive": "us10y", "type": "Coincident", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": 3.0, "rich": 5.5, "unit": "%"}
+  ],
+  "credit_timing": [
+   {"id": "K1", "name": "US high-yield OAS (%; tight = credit rich)", "derive": "hy_oas", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 6.0, "rich": 2.5, "unit": "%"}
+  ],
+  "supply_filter": [
+   {"id": "F1", "name": "Bank credit growth minus deposit growth (pp)", "derive": "credit_dep_gap", "type": "Lagging", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": -3.0, "rich": 5.0, "unit": "pp"},
+   {"id": "F2", "name": "Centre fiscal deficit, budget year (% GDP)", "derive": "fiscal_def", "type": "Lagging", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 3.0, "rich": 6.5, "unit": "%"}
+  ]
+ },
+ "instruments": [
+  {"key": "GSEC_10Y", "name": "Long G-sec (10-yr gilt / constant-maturity fund)", "family": "G-sec duration", "profile": "duration", "yield_col": "gsec10", "mod_dur": 7.0,
+   "access": "Gilt or 10-yr constant-maturity fund; RBI Retail Direct", "tax": "Slab rate (fund or direct); no indexation",
+   "valuation": [
+    {"id": "B1", "name": "Real 10-yr yield vs expected CPI (pp)", "derive": "gsec_real", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 3.0, "rich": 0.0, "unit": "pp"},
+    {"id": "B2", "name": "Term spread: 10-yr G-sec minus repo (pp)", "derive": "term_spread", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 2.0, "rich": 0.0, "unit": "pp"},
+    {"id": "B3", "name": "10-yr yield level vs 10-yr range (%)", "derive": "gsec10", "type": "Leading", "I": 3, "S": 4, "R": 0.875, "St": 1.0, "cheap": 7.8, "rich": 5.9, "unit": "%"},
+    {"id": "B4", "name": "India minus US 10-yr spread (pp; low = FPI outflow risk)", "derive": "in_us_spread", "type": "Coincident", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": 4.5, "rich": 1.5, "unit": "pp"}
+   ], "timing": ["rate_cycle_timing"], "filter": ["supply_filter"]},
+  {"key": "GSEC_5Y", "name": "Medium G-sec (5-yr gilt / target-maturity fund)", "family": "G-sec duration", "profile": "duration", "yield_col": "gsec5", "mod_dur": 4.2,
+   "access": "Target-maturity gilt index fund (2030-31), RBI Retail Direct", "tax": "Slab rate",
+   "valuation": [
+    {"id": "B1", "name": "Real 5-yr yield vs expected CPI (pp)", "derive": "gsec5_real", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 2.75, "rich": -0.25, "unit": "pp"},
+    {"id": "B2", "name": "5-yr G-sec minus repo (pp)", "derive": "gsec5_minus_repo", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 1.75, "rich": -0.25, "unit": "pp"},
+    {"id": "B3", "name": "5-yr yield level vs 10-yr range (%)", "derive": "gsec5", "type": "Leading", "I": 3, "S": 4, "R": 0.875, "St": 1.0, "cheap": 7.6, "rich": 5.5, "unit": "%"}
+   ], "timing": ["rate_cycle_timing"], "filter": ["supply_filter"]},
+  {"key": "CORP_AAA_5Y", "name": "AAA corporate / PSU bonds (~5-yr)", "family": "Credit", "profile": "credit", "yield_col": "aaa5y", "mod_dur": 4.1,
+   "access": "Corporate bond / Banking & PSU fund, AAA target-maturity fund", "tax": "Slab rate",
+   "valuation": [
+    {"id": "B5", "name": "Real 5-yr AAA yield vs expected CPI (pp)", "derive": "aaa5_real", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 3.5, "rich": 0.5, "unit": "pp"},
+    {"id": "B6", "name": "5-yr AAA spread over G-sec (bp)", "derive": "aaa5_spread", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 120, "rich": 30, "unit": "bp"}
+   ], "timing": ["rate_cycle_timing", "credit_timing"], "filter": ["supply_filter"]},
+  {"key": "CREDIT_AA_3Y", "name": "AA credit (~3-yr)", "family": "Credit", "profile": "credit", "yield_col": "aa3y", "mod_dur": 2.6,
+   "access": "Credit-risk fund (default and exit-load risk); listed AA NCDs", "tax": "Slab rate",
+   "valuation": [
+    {"id": "B5", "name": "Real 3-yr AA yield vs expected CPI (pp)", "derive": "aa3_real", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 1.0, "cheap": 4.5, "rich": 1.5, "unit": "pp"},
+    {"id": "B6", "name": "3-yr AA spread over G-sec (bp)", "derive": "aa3_spread", "type": "Leading", "I": 5, "S": 4, "R": 0.75, "St": 1.0, "cheap": 250, "rich": 100, "unit": "bp"}
+   ], "timing": ["credit_timing", "rate_cycle_timing"], "filter": ["supply_filter"]},
+  {"key": "SHORT_1Y", "name": "Short-term debt (1-yr AAA / CDs)", "family": "Short / cash", "profile": "short", "yield_col": "aaa1y", "mod_dur": 0.9,
+   "access": "Money-market / ultra-short / short-duration fund", "tax": "Slab rate",
+   "valuation": [
+    {"id": "B7", "name": "1-yr AAA yield minus expected avg repo, next 12 m (pp)", "derive": "aaa1_minus_repo_exp", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 1.75, "rich": 0.0, "unit": "pp"},
+    {"id": "B5", "name": "Real 1-yr AAA yield vs expected CPI (pp)", "derive": "aaa1_real", "type": "Leading", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 3.0, "rich": 0.0, "unit": "pp"}
+   ], "timing": ["rate_cycle_timing"], "filter": ["supply_filter"]},
+  {"key": "BANK_FD_5Y", "name": "Bank FD, 5-yr (large bank)", "family": "Deposits", "profile": "duration", "yield_col": "fd5y", "mod_dur": 0.0,
+   "access": "Large-bank 5-yr FD (DICGC cover Rs 5 lakh per bank); small-finance banks pay more for more risk", "tax": "Slab rate, TDS; 80C only for 5-yr tax-saver",
+   "valuation": [
+    {"id": "D1", "name": "Real 5-yr FD rate vs expected CPI (pp)", "derive": "fd5_real", "type": "Leading", "I": 5, "S": 4, "R": 0.75, "St": 1.0, "cheap": 2.5, "rich": -0.5, "unit": "pp"},
+    {"id": "D2", "name": "5-yr FD rate level vs history (%)", "derive": "fd5y", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 1.0, "cheap": 7.5, "rich": 5.5, "unit": "%"},
+    {"id": "D3", "name": "5-yr FD minus 5-yr G-sec (bp; FD normally below)", "derive": "fd5_minus_gsec5", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 25, "rich": -125, "unit": "bp"}
+   ], "timing": ["rate_cycle_timing"], "filter": ["supply_filter"]},
+  {"key": "FRSB", "name": "RBI Floating Rate Savings Bond 2020 (T), 7-yr", "family": "Floating", "profile": "floating", "yield_col": "frsb", "mod_dur": 0.4,
+   "access": "RBI Retail Direct / bank branch; 7-yr lock-in (early exit only for seniors)", "tax": "Slab rate, TDS",
+   "invert_timing": true,
+   "valuation": [
+    {"id": "L1", "name": "Real FRSB coupon vs expected CPI (pp)", "derive": "frsb_real", "type": "Leading", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 3.0, "rich": 0.5, "unit": "pp"},
+    {"id": "L2", "name": "FRSB coupon minus 5-yr G-sec (pp; floater premium)", "derive": "frsb_minus_gsec5", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 1.25, "rich": -0.25, "unit": "pp"}
+   ], "timing": ["rate_cycle_timing"], "filter": ["supply_filter"]}
+ ],
+ "horizon_shocks_bp": [-100, -50, 0, 50, 100],
+ "lockin_scenarios": {
+  "note": "5-yr lock-in comparison (judgment paths, est.). short1y = 1-yr AAA/CD yield at the start of years 1-5 (year 1 = today's input). nsc = NSC rate in force in years 1-5 (FRSB = NSC + 0.35). gsec5_end = 5-yr G-sec yield at year 5, used to price a 10-yr bond sold after 5 years. credit_loss = expected annual loss on AAA/AA (pp).",
+  "credit_loss": {"CORP_AAA_5Y": 0.10, "CREDIT_AA_3Y": 0.60},
+  "paths": {
+   "Bear (rates higher for longer)": {"p": 0.25, "short1y": [null, 8.40, 8.20, 7.80, 7.50], "nsc": [7.70, 8.00, 8.20, 8.00, 7.80], "gsec5_end": 7.60},
+   "Base (one more hike, easing from 2027-28)": {"p": 0.50, "short1y": [null, 7.40, 7.00, 6.90, 6.90], "nsc": [7.70, 7.60, 7.40, 7.20, 7.10], "gsec5_end": 6.90},
+   "Bull (CPI falls fast, deep cuts)": {"p": 0.25, "short1y": [null, 6.80, 6.30, 6.20, 6.20], "nsc": [7.70, 7.30, 7.00, 6.80, 6.70], "gsec5_end": 6.30}
+  }
+ },
+ "excluded": {
+  "SDLs, PSU tax-free bonds, 54EC bonds": "add when a yield series is sourced",
+  "Small-finance-bank FDs": "shown as information (sfb5y); credit risk above DICGC cover makes them a credit, not a deposit, decision",
+  "US Treasuries": "covered by the asset-class model (US_TREASURY)",
+  "Arbitrage funds": "planned with the covered-call / carry model"
+ }
+}

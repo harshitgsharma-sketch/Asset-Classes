@@ -1,0 +1,116 @@
+month,index,sector,weight,source
+2026-11,NIFTY50,Financial Services,37.13,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,"Oil, Gas & Consumable Fuels",9.00,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Information Technology,8.80,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Automobile and Auto Components,6.28,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Telecommunication,5.63,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Fast Moving Consumer Goods,5.36,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Healthcare,4.68,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Metals & Mining,4.45,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Construction,4.25,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Consumer Services,3.28,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Consumer Durables,2.70,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Power,2.53,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Services,2.39,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Construction Materials,2.28,NSE factsheet 30-Oct-26
+2026-11,NIFTY50,Capital Goods,1.24,NSE factsheet 30-Oct-26
+2026-11,MOM30,Capital Goods,23.25,NSE factsheet 30-Oct-26
+2026-11,MOM30,Financial Services,21.57,NSE factsheet 30-Oct-26
+2026-11,MOM30,Metals & Mining,17.73,NSE factsheet 30-Oct-26
+2026-11,MOM30,Power,14.33,NSE factsheet 30-Oct-26
+2026-11,MOM30,Healthcare,12.83,NSE factsheet 30-Oct-26
+2026-11,MOM30,Automobile and Auto Components,6.26,NSE factsheet 30-Oct-26
+2026-11,MOM30,Chemicals,2.13,NSE factsheet 30-Oct-26
+2026-11,MOM30,Telecommunication,1.91,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Financial Services,29.29,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Capital Goods,22.54,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Healthcare,19.12,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Metals & Mining,8.10,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Telecommunication,5.09,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Fast Moving Consumer Goods,3.86,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Automobile and Auto Components,3.57,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Power,2.12,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Consumer Services,1.85,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,"Oil, Gas & Consumable Fuels",1.67,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Information Technology,1.17,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Services,0.92,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Chemicals,0.48,NSE factsheet 30-Oct-26
+2026-11,MIDMOM50,Diversified,0.23,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Capital Goods,23.87,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Financial Services,22.91,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Telecommunication,12.35,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Fast Moving Consumer Goods,9.14,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Automobile and Auto Components,8.53,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Metals & Mining,8.21,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Healthcare,6.92,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Power,3.57,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Chemicals,3.09,NSE factsheet 30-Oct-26
+2026-11,ALPHA50,Consumer Services,1.41,NSE factsheet 30-Oct-26
+2026-11,ALPHALV30,Financial Services,23.08,Dhan 20-Nov-26
+2026-11,ALPHALV30,Energy,18.84,Dhan 20-Nov-26
+2026-11,ALPHALV30,Consumer Discretionary,16.45,Dhan 20-Nov-26
+2026-11,ALPHALV30,Telecom,12.08,Dhan 20-Nov-26
+2026-11,ALPHALV30,Healthcare,8.73,Dhan 20-Nov-26
+2026-11,ALPHALV30,FMCG,5.44,Dhan 20-Nov-26
+2026-11,ALPHALV30,Construction Materials,5.30,Dhan 20-Nov-26
+2026-11,ALPHALV30,Metals & Mining,4.80,Dhan 20-Nov-26
+2026-11,ALPHALV30,Utilities,2.79,Dhan 20-Nov-26
+2026-11,ALPHALV30,Chemicals,1.48,Dhan 20-Nov-26
+2026-11,ALPHALV30,Capital Goods,1.02,Dhan 20-Nov-26
+2026-11,LOWVOL30,Financial Services,23.92,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Healthcare,17.68,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Fast Moving Consumer Goods,13.39,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Power,10.33,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Information Technology,6.60,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Automobile and Auto Components,5.91,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Consumer Durables,5.78,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Telecommunication,4.05,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,"Oil, Gas & Consumable Fuels",3.36,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Construction Materials,3.14,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Chemicals,2.93,NSE factsheet 30-Oct-26
+2026-11,LOWVOL30,Construction,2.91,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Information Technology,27.83,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Fast Moving Consumer Goods,23.92,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Capital Goods,14.89,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Consumer Durables,8.39,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Automobile and Auto Components,7.51,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Chemicals,5.49,NSE factsheet 30-Oct-26
+2026-11,QUAL30,"Oil, Gas & Consumable Fuels",3.86,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Financial Services,2.92,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Metals & Mining,2.84,NSE factsheet 30-Oct-26
+2026-11,QUAL30,Textiles,2.34,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Financial Services,17.15,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Information Technology,16.30,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Capital Goods,16.04,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Fast Moving Consumer Goods,10.42,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Consumer Durables,8.88,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Automobile and Auto Components,8.86,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Healthcare,8.44,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Textiles,4.11,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Chemicals,3.09,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,"Oil, Gas & Consumable Fuels",1.98,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Metals & Mining,1.85,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Consumer Services,1.72,NSE factsheet 30-Oct-26
+2026-11,MIDQUAL50,Diversified,1.17,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Financial Services,45.35,NSE factsheet 30-Oct-26
+2026-11,VALUE20,"Oil, Gas & Consumable Fuels",18.78,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Information Technology,14.57,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Fast Moving Consumer Goods,5.52,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Power,5.23,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Metals & Mining,4.55,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Automobile and Auto Components,2.95,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Construction Materials,1.98,NSE factsheet 30-Oct-26
+2026-11,VALUE20,Healthcare,1.08,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Financial Services,25.48,NSE factsheet 30-Oct-26
+2026-11,VALUE50,"Oil, Gas & Consumable Fuels",25.47,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Metals & Mining,14.67,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Power,11.89,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Construction Materials,5.34,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Automobile and Auto Components,4.25,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Services,4.13,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Chemicals,2.90,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Healthcare,2.41,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Construction,1.29,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Information Technology,0.81,NSE factsheet 30-Oct-26
+2026-11,VALUE50,Fast Moving Consumer Goods,0.73,NSE factsheet 30-Oct-26
+2026-11,VALUE50,"Media, Entertainment & Publication",0.65,NSE factsheet 30-Oct-26

@@ -1,0 +1,16 @@
+month,asset,rank,name,family,valuation_score,valuation_read,tilt,income_yield_pct,own_model_oscillator,own_model_signal,indicators_live,coverage,drivers,access
+2026-11,SHORT_DEBT,1,Short-term debt (1-yr AAA / CDs),Indian bonds,9.6,Very cheap,Overweight (add),8.03,,,2/2,1.0,B7 2.18 pp->1; B5 2.53 pp->16,Money-market / ultra-short / short-duration fund
+2026-11,US_TREASURY,2,US Treasuries / TIPS (in INR),Foreign bonds,24.1,Cheap,Overweight (add),5.06,,,3/3,1.0,F1 2.66%->1; F2 0.88 pp->18; X1 92.8 index->83,US bond FoF / LRS (TCS and tax apply)
+2026-11,GSEC_LONG,3,Long G-secs (10-yr gilt / constant-maturity fund),Indian bonds,33.6,Cheap,Overweight (add),7.28,,,4/4,1.0,B1 1.78 pp->41; B2 1.78 pp->12; B3 7.28%->28; B4 2.22 pp->76,"Gilt / 10-yr constant-maturity fund, RBI Retail Direct"
+2026-11,SILVER,4,Silver (INR),Precious metals,38.2,"Fair, cheap side","Neutral, lean add",0.0,,,3/3,1.0,M3 82.27x->32; M2 10.43%->35; M1 56.8 score->57,Silver ETF / FoF
+2026-11,CREDIT_AA,5,AA credit (~3-yr),Indian bonds,42.7,"Fair, cheap side","Neutral, lean add",8.83,,,2/2,1.0,B5 3.33 pp->40; B6 183.0 bp->45,Credit-risk fund (liquidity and default risk)
+2026-11,CORP_AAA,6,AAA corporate bonds (~5-yr),Indian bonds,44.3,"Fair, cheap side","Neutral, lean add",7.85,,,2/2,1.0,B5 2.35 pp->39; B6 73.0 bp->53,Corporate bond fund / Banking & PSU fund / target-maturity fund
+2026-11,RESI_RE,7,Residential property (top cities),Real estate,44.9,"Fair, cheap side","Neutral, lean add",4.3,,,3/3,1.0,R3 -3.7 pp->43; R4 4.3%->32; R5 1.8 pp->60,"Direct purchase (illiquid, high costs)"
+2026-11,CASH,8,Cash (liquid fund / T-bill / bank FD),Cash,47.8,"Fair, cheap side","Neutral, lean add",5.73,,,2/2,1.0,C1 0.23 pp->51; C2 0.75 pp->40,"Liquid fund, T-bills, 1-yr bank FD"
+2026-11,MIDCAP,9,Indian mid caps (Nifty Midcap 150),Indian equity,52.0,"Fair, rich side","Neutral, lean trim",3.6,49.8,ACCUMULATE,3/3,1.0,E1 37.8 score->38; E3 1.35x->64; E2 -3.68 pp->67,Midcap 150 index fund
+2026-11,NIFTY50,10,Indian large caps (Nifty 50),Indian equity,54.6,"Fair, rich side","Neutral, lean trim",4.85,51.3,HOLD,2/2,1.0,E1 47.1 score->47; E2 -2.43 pp->65,Nifty 50 index fund / ETF
+2026-11,GOLD,11,Gold (INR),Precious metals,57.9,"Fair, rich side","Neutral, lean trim",0.0,51.8,HOLD,2/2,1.0,M1 56.8 score->57; M2 20.78%->62,Gold ETF / SGB (secondary) / gold FoF
+2026-11,GLOBAL_EQ,12,"Global equities (MSCI ACWI, in INR)",Foreign equity,64.6,"Fair, rich side","Neutral, lean trim",6.39,55.3,HOLD,2/2,1.0,E1 57.1 score->57; X1 92.8 index->83,International FoF / NSE-listed ETF (overseas limit can pause)
+2026-11,SMALLCAP,13,Indian small caps (Nifty Smallcap 250),Indian equity,67.8,Expensive,Underweight (trim),3.13,65.6,TRIM,3/3,1.0,E1 60.0 score->60; E3 1.55x->81; E2 -4.15 pp->70,Smallcap 250 index fund
+2026-11,US_EQ,14,"US equities (S&P 500, in INR)",Foreign equity,71.1,Expensive,Underweight (trim),5.46,57.3,HOLD,3/3,1.0,E1 62.6 score->63; E4 0.4 pp->77; X1 92.8 index->83,NSE-listed US ETF / FoF (overseas limit can pause)
+2026-11,REIT,15,Listed REITs (office/retail),Real estate,88.0,Very expensive,Underweight (trim),6.0,,,2/2,1.0,R1 6.0%->80; R2 -1.28 pp->93,NSE-listed REIT units

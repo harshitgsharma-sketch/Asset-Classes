@@ -1,0 +1,92 @@
+{
+ "Bear": {
+  "prob": 0.25,
+  "score": [
+   51,
+   35,
+   31,
+   32,
+   36,
+   37
+  ],
+  "nifty": [
+   25200,
+   20990.0,
+   20710.0,
+   22370.0,
+   24380.0,
+   26580.0
+  ],
+  "eps": [
+   1223,
+   1272,
+   1336,
+   1443,
+   1573,
+   1715
+  ],
+  "exit_pe": 15.5,
+  "price_cagr": 1.1,
+  "story": "Oil stays >$100, RBI hikes to ~6.25%, FII selling resumes, EPS growth ~7% CAGR, PE de-rates to ~15.5x."
+ },
+ "Base": {
+  "prob": 0.5,
+  "score": [
+   51,
+   44,
+   46,
+   48,
+   49,
+   49
+  ],
+  "nifty": [
+   25200,
+   26030,
+   29910.0,
+   33500.0,
+   37520.0,
+   42020.0
+  ],
+  "eps": [
+   1223,
+   1370,
+   1534,
+   1718,
+   1924,
+   2155
+  ],
+  "exit_pe": 19.5,
+  "price_cagr": 10.8,
+  "story": "RBI pauses at 5.50-5.75% then eases in 2028, oil ~$80, FII flows normalise, EPS ~12% CAGR, PE holds ~19.5x."
+ },
+ "Bull": {
+  "prob": 0.25,
+  "score": [
+   51,
+   50,
+   56,
+   61,
+   63,
+   60
+  ],
+  "nifty": [
+   25200,
+   30510.0,
+   36720.0,
+   43170,
+   49660,
+   55370.0
+  ],
+  "eps": [
+   1223,
+   1419,
+   1632,
+   1877,
+   2159,
+   2461
+  ],
+  "exit_pe": 22.5,
+  "price_cagr": 17.1,
+  "story": "Oil falls <$70, RBI cuts from 2027, FII ownership rebuilds, capex+earnings boom (~15% EPS CAGR), PE re-rates to ~23x."
+ }
+}

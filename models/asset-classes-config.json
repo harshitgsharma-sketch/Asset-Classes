@@ -1,0 +1,94 @@
+{
+ "version": "v1 (21-Nov-2026)",
+ "note": "Cross-asset valuation model for an INR investor (holding period up to 5 years). Score 1 = cheap vs the asset's own history, 100 = rich. Anchors are judgment-based (est. from 10-20 yr ranges) until back-filled. Each indicator: id, name, derive (formula key in asset_class_oscillator.py DERIVE), type, I/S/R/St (W = product), cheap, rich, unit.",
+ "assets": [
+  {"key": "NIFTY50", "name": "Indian large caps (Nifty 50)", "family": "Indian equity", "access": "Nifty 50 index fund / ETF",
+   "indicators": [
+    {"id": "E1", "name": "Nifty model Valuation bucket (import)", "derive": "imp_nifty_v", "type": "Leading", "I": 5, "S": 5, "R": 1.0, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"},
+    {"id": "E2", "name": "Earnings yield minus 10-yr G-sec (pp)", "derive": "nifty_yield_gap", "type": "Leading", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 0.5, "rich": -4.0, "unit": "pp"}
+   ]},
+  {"key": "MIDCAP", "name": "Indian mid caps (Nifty Midcap 150)", "family": "Indian equity", "access": "Midcap 150 index fund",
+   "indicators": [
+    {"id": "E1", "name": "Sector model Valuation bucket (import)", "derive": "imp_mid_v", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"},
+    {"id": "E3", "name": "PE premium to Nifty 50 (x)", "derive": "mid_pe_rel", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 0.75, "cheap": 0.9, "rich": 1.6, "unit": "x"},
+    {"id": "E2", "name": "Earnings yield minus 10-yr G-sec (pp)", "derive": "mid_yield_gap", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 1.0, "cheap": -1.0, "rich": -5.0, "unit": "pp"}
+   ]},
+  {"key": "SMALLCAP", "name": "Indian small caps (Nifty Smallcap 250)", "family": "Indian equity", "access": "Smallcap 250 index fund",
+   "indicators": [
+    {"id": "E1", "name": "Sector model Valuation bucket (import)", "derive": "imp_small_v", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"},
+    {"id": "E3", "name": "PE premium to Nifty 50 (x)", "derive": "small_pe_rel", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 0.75, "cheap": 0.9, "rich": 1.7, "unit": "x"},
+    {"id": "E2", "name": "Earnings yield minus 10-yr G-sec (pp)", "derive": "small_yield_gap", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 1.0, "cheap": -1.0, "rich": -5.5, "unit": "pp"}
+   ]},
+  {"key": "GLOBAL_EQ", "name": "Global equities (MSCI ACWI, in INR)", "family": "Foreign equity", "access": "International FoF / NSE-listed ETF (overseas limit can pause)",
+   "indicators": [
+    {"id": "E1", "name": "Global model ACWI Valuation bucket (import)", "derive": "imp_acwi_v", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"},
+    {"id": "X1", "name": "INR REER (low = rupee cheap = foreign assets dear)", "derive": "inr_reer", "type": "Leading", "I": 3, "S": 4, "R": 0.75, "St": 1.0, "cheap": 106, "rich": 90, "unit": "index"}
+   ]},
+  {"key": "US_EQ", "name": "US equities (S&P 500, in INR)", "family": "Foreign equity", "access": "NSE-listed US ETF / FoF (overseas limit can pause)",
+   "indicators": [
+    {"id": "E1", "name": "Global model S&P 500 Valuation bucket (import)", "derive": "imp_sp500_v", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"},
+    {"id": "E4", "name": "Fwd earnings yield minus UST 10-yr (pp)", "derive": "sp_erp", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 5.0, "rich": -1.0, "unit": "pp"},
+    {"id": "X1", "name": "INR REER (low = rupee cheap = foreign assets dear)", "derive": "inr_reer", "type": "Leading", "I": 3, "S": 4, "R": 0.75, "St": 1.0, "cheap": 106, "rich": 90, "unit": "index"}
+   ]},
+  {"key": "GOLD", "name": "Gold (INR)", "family": "Precious metals", "access": "Gold ETF / SGB (secondary) / gold FoF",
+   "indicators": [
+    {"id": "M1", "name": "Gold model Valuation bucket (import)", "derive": "imp_gold_v", "type": "Leading", "I": 5, "S": 5, "R": 1.0, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"},
+    {"id": "M2", "name": "INR price vs its 36-m average (%)", "derive": "gold_vs_36m", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": -10, "rich": 40, "unit": "%"}
+   ]},
+  {"key": "SILVER", "name": "Silver (INR)", "family": "Precious metals", "access": "Silver ETF / FoF",
+   "indicators": [
+    {"id": "M3", "name": "Gold/silver ratio (high = silver cheap)", "derive": "gsr", "type": "Leading", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 95, "rich": 55, "unit": "x"},
+    {"id": "M2", "name": "INR price vs its 36-m average (%)", "derive": "silver_vs_36m", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": -15, "rich": 60, "unit": "%"},
+    {"id": "M1", "name": "Gold model Valuation bucket (import; monetary-metal level)", "derive": "imp_gold_v", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 1, "rich": 100, "unit": "score"}
+   ]},
+  {"key": "GSEC_LONG", "name": "Long G-secs (10-yr gilt / constant-maturity fund)", "family": "Indian bonds", "access": "Gilt / 10-yr constant-maturity fund, RBI Retail Direct",
+   "indicators": [
+    {"id": "B1", "name": "Real 10-yr yield vs expected CPI (pp)", "derive": "gsec_real", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 3.0, "rich": 0.0, "unit": "pp"},
+    {"id": "B2", "name": "Term spread: 10-yr G-sec minus repo (pp)", "derive": "term_spread", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 2.0, "rich": 0.0, "unit": "pp"},
+    {"id": "B3", "name": "10-yr yield level vs 10-yr range (%)", "derive": "gsec10", "type": "Leading", "I": 3, "S": 4, "R": 0.875, "St": 1.0, "cheap": 7.8, "rich": 5.9, "unit": "%"},
+    {"id": "B4", "name": "India minus US 10-yr spread (pp; low = FPI outflow risk)", "derive": "in_us_spread", "type": "Coincident", "I": 2, "S": 3, "R": 0.75, "St": 1.0, "cheap": 4.5, "rich": 1.5, "unit": "pp"}
+   ]},
+  {"key": "CORP_AAA", "name": "AAA corporate bonds (~5-yr)", "family": "Indian bonds", "access": "Corporate bond fund / Banking & PSU fund / target-maturity fund",
+   "indicators": [
+    {"id": "B5", "name": "Real 5-yr AAA yield vs expected CPI (pp)", "derive": "aaa5_real", "type": "Leading", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 3.5, "rich": 0.5, "unit": "pp"},
+    {"id": "B6", "name": "5-yr AAA spread over G-sec (bp)", "derive": "aaa5_spread", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 120, "rich": 30, "unit": "bp"}
+   ]},
+  {"key": "CREDIT_AA", "name": "AA credit (~3-yr)", "family": "Indian bonds", "access": "Credit-risk fund (liquidity and default risk)",
+   "indicators": [
+    {"id": "B5", "name": "Real 3-yr AA yield vs expected CPI (pp)", "derive": "aa3_real", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 1.0, "cheap": 4.5, "rich": 1.5, "unit": "pp"},
+    {"id": "B6", "name": "3-yr AA spread over G-sec (bp)", "derive": "aa3_spread", "type": "Leading", "I": 5, "S": 4, "R": 0.75, "St": 1.0, "cheap": 250, "rich": 100, "unit": "bp"}
+   ]},
+  {"key": "SHORT_DEBT", "name": "Short-term debt (1-yr AAA / CDs)", "family": "Indian bonds", "access": "Money-market / ultra-short / short-duration fund",
+   "indicators": [
+    {"id": "B7", "name": "1-yr AAA yield minus expected avg repo, next 12 m (pp)", "derive": "aaa1_minus_repo_exp", "type": "Leading", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 1.75, "rich": 0.0, "unit": "pp"},
+    {"id": "B5", "name": "Real 1-yr AAA yield vs expected CPI (pp)", "derive": "aaa1_real", "type": "Leading", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 3.0, "rich": 0.0, "unit": "pp"}
+   ]},
+  {"key": "CASH", "name": "Cash (liquid fund / T-bill / bank FD)", "family": "Cash", "access": "Liquid fund, T-bills, 1-yr bank FD",
+   "indicators": [
+    {"id": "C1", "name": "Real 91-day T-bill yield vs expected CPI (pp)", "derive": "tbill_real", "type": "Coincident", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "cheap": 2.5, "rich": -2.0, "unit": "pp"},
+    {"id": "C2", "name": "Real 1-yr bank FD rate vs expected CPI (pp)", "derive": "fd_real", "type": "Coincident", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 2.5, "rich": -2.0, "unit": "pp"}
+   ]},
+  {"key": "REIT", "name": "Listed REITs (office/retail)", "family": "Real estate", "access": "NSE-listed REIT units",
+   "indicators": [
+    {"id": "R1", "name": "Distribution yield vs own history (%)", "derive": "reit_yield", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 0.75, "cheap": 8.0, "rich": 5.5, "unit": "%"},
+    {"id": "R2", "name": "Distribution yield minus 10-yr G-sec (pp)", "derive": "reit_spread", "type": "Leading", "I": 5, "S": 4, "R": 0.75, "St": 1.0, "cheap": 1.5, "rich": -1.5, "unit": "pp"}
+   ]},
+  {"key": "RESI_RE", "name": "Residential property (top cities)", "family": "Real estate", "access": "Direct purchase (illiquid, high costs)",
+   "indicators": [
+    {"id": "R3", "name": "Gross rental yield minus home-loan rate (pp)", "derive": "rent_minus_loan", "type": "Leading", "I": 5, "S": 4, "R": 0.625, "St": 1.0, "cheap": -2.0, "rich": -6.0, "unit": "pp"},
+    {"id": "R4", "name": "Gross rental yield vs history (%)", "derive": "rent_yield", "type": "Leading", "I": 3, "S": 3, "R": 0.625, "St": 1.0, "cheap": 5.0, "rich": 2.8, "unit": "%"},
+    {"id": "R5", "name": "House-price CAGR minus income CAGR, ~5 yr (pp)", "derive": "px_vs_income", "type": "Lagging", "I": 4, "S": 3, "R": 0.5, "St": 1.0, "cheap": -3.0, "rich": 5.0, "unit": "pp"}
+   ]},
+  {"key": "US_TREASURY", "name": "US Treasuries / TIPS (in INR)", "family": "Foreign bonds", "access": "US bond FoF / LRS (TCS and tax apply)",
+   "indicators": [
+    {"id": "F1", "name": "US 10-yr TIPS real yield (%)", "derive": "tips10", "type": "Leading", "I": 5, "S": 4, "R": 1.0, "St": 1.0, "cheap": 2.5, "rich": -0.5, "unit": "%"},
+    {"id": "F2", "name": "US real yield minus India real yield (pp)", "derive": "real_diff", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 1.0, "cheap": 1.5, "rich": -2.0, "unit": "pp"},
+    {"id": "X1", "name": "INR REER (low = rupee cheap = foreign assets dear)", "derive": "inr_reer", "type": "Leading", "I": 3, "S": 4, "R": 0.75, "St": 1.0, "cheap": 106, "rich": 90, "unit": "index"}
+   ]}
+ ],
+ "excluded": {
+  "Crypto (Bitcoin)": "no cash flow or accepted valuation anchor",
+  "InvITs": "add with REITs when an InvIT yield series is sourced",
+  "Physical gold / SGB primary": "covered by GOLD; SGB primary issues discontinued"
+ }
+}

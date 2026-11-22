@@ -1,0 +1,66 @@
+{
+ "version": "v1 (21-Nov-2026) — indicative",
+ "note": "Real-assets model for an INR investor (holding period up to 5 years). Part 1 scores listed REITs, SM-REITs and InvITs 1 (cheap) to 100 (rich). Part 2 is a rent-vs-buy calculator for residential property with a city valuation score that uses the same R3/R4/R5 anchors as the asset-class model's RESI_RE row. Anchors are judgment-based (est. from listing-to-date ranges) until back-filled.",
+ "bucket_weights": {"V": 0.55, "F": 0.25, "T": 0.20},
+ "indicators": {
+  "V1": {"name": "Distribution yield minus 10-yr G-sec (pp)", "bucket": "V", "type": "Leading", "I": 5, "S": 4, "R": 0.875, "St": 1.0, "unit": "pp"},
+  "V2": {"name": "Price / latest NAV (x)", "bucket": "V", "type": "Leading", "I": 4, "S": 4, "R": 0.75, "St": 0.875, "unit": "x"},
+  "V3": {"name": "Distribution yield level (%)", "bucket": "V", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "unit": "%"},
+  "F1": {"name": "Distribution growth, latest quarter YoY (%)", "bucket": "F", "type": "Lagging", "I": 4, "S": 3, "R": 0.75, "St": 0.75, "unit": "%"},
+  "F2": {"name": "Leverage: net debt / asset value (%)", "bucket": "F", "type": "Lagging", "I": 3, "S": 3, "R": 0.875, "St": 1.0, "unit": "%"},
+  "T1": {"name": "Expected repo change, next 12 m (bp)", "bucket": "T", "type": "Leading", "I": 4, "S": 3, "R": 0.75, "St": 1.0, "unit": "bp"},
+  "T2": {"name": "Position in 52-week price range (%)", "bucket": "T", "type": "Coincident", "I": 3, "S": 3, "R": 0.625, "St": 0.75, "unit": "%"}
+ },
+ "families": {
+  "reit_office": {"label": "Office REIT", "anchors": {"V1": [1.5, -1.5], "V2": [0.80, 1.15], "V3": [8.0, 5.5], "F1": [12, -6], "F2": [15, 45], "T1": [-75, 50], "T2": [0, 100]}, "taxable_share_default": 0.35},
+  "reit_retail": {"label": "Retail REIT", "anchors": {"V1": [1.0, -2.0], "V2": [0.85, 1.20], "V3": [7.0, 4.5], "F1": [12, -6], "F2": [15, 45], "T1": [-75, 50], "T2": [0, 100]}, "taxable_share_default": 0.35},
+  "sm_reit": {"label": "SM-REIT (single asset)", "anchors": {"V1": [3.0, 0.0], "V2": [0.85, 1.15], "V3": [10.0, 7.5], "F1": [5, -10], "F2": [0, 45], "T1": [-75, 50], "T2": [0, 100]}, "taxable_share_default": 0.9},
+  "invit_power": {"label": "Power/transmission InvIT", "anchors": {"V1": [5.0, 1.5], "V2": [0.85, 1.25], "V3": [13.0, 9.0], "F1": [8, -8], "F2": [40, 70], "T1": [-75, 50], "T2": [0, 100]}, "taxable_share_default": 0.75},
+  "invit_road": {"label": "Road InvIT", "anchors": {"V1": [6.0, 2.0], "V2": [0.75, 1.15], "V3": [14.0, 9.5], "F1": [8, -12], "F2": [40, 70], "T1": [-75, 50], "T2": [0, 100]}, "taxable_share_default": 0.85}
+ },
+ "securities": [
+  {"key": "EMBASSY", "name": "Embassy Office Parks REIT", "family": "reit_office", "listing": "NSE 2019"},
+  {"key": "MINDSPACE", "name": "Mindspace Business Parks REIT", "family": "reit_office", "listing": "NSE 2020"},
+  {"key": "BIRET", "name": "Brookfield India Real Estate Trust", "family": "reit_office", "listing": "NSE 2021"},
+  {"key": "KRT", "name": "Knowledge Realty Trust", "family": "reit_office", "listing": "NSE Aug-2025", "flags": ["short history: listed Aug-2025"]},
+  {"key": "BAGMANE", "name": "Bagmane Prime Office REIT", "family": "reit_office", "listing": "NSE May-2026", "flags": ["short history: listed May-2026; no YoY DPU, no NAV sourced"]},
+  {"key": "NXST", "name": "Nexus Select Trust (retail)", "family": "reit_retail", "listing": "NSE 2023"},
+  {"key": "PS_PLATINA", "name": "PropShare Platina (SM-REIT)", "family": "sm_reit", "listing": "BSE Dec-2024", "flags": ["no live price: yield on Rs 10 lakh issue price", "term sheet signed for Rs 410 cr asset sale (exit event)"]},
+  {"key": "PS_TITANIA", "name": "PropShare Titania (SM-REIT)", "family": "sm_reit", "listing": "BSE 2025", "flags": ["no live price: yield on Rs 10 lakh issue price (est.)"]},
+  {"key": "INDIGRID", "name": "IndiGrid Infrastructure Trust", "family": "invit_power", "listing": "NSE 2017"},
+  {"key": "PGINVIT", "name": "Powergrid InvIT", "family": "invit_power", "listing": "NSE 2021"},
+  {"key": "IRBINVIT", "name": "IRB InvIT Fund", "family": "invit_road", "listing": "NSE 2017", "flags": ["NAV is Mar-2026 (stale)", "finite-life toll concessions: part of the yield is return of capital"]},
+  {"key": "CAPINVIT", "name": "Capital Infra Trust", "family": "invit_road", "listing": "NSE Jan-2025", "flags": ["finite-life annuity/toll roads: part of the yield is return of capital"]}
+ ],
+ "tax": {
+  "note": "FY2026-27 (Income-tax Act 2025). Verify each year. Unit gains: LTCG 12.5% above Rs 1.25 lakh/yr (shared with listed equity) after 12 months; STCG 20%. Distributions: interest and dividends from SPVs on the new corporate tax regime are taxed at slab; dividends from SPVs on the old regime are exempt; debt repayment reduces cost and is taxed only once cumulative repayments exceed cost.",
+  "slab_incl_cess": 0.312
+ },
+ "rent_vs_buy": {
+  "note": "City defaults. rent_yield = Anarock gross yield Q2-2026 (Noida, Gurugram, Bengaluru, Hyderabad, Mumbai, Delhi) or est.; px_gain_2019_q2_2026 = Anarock % change in avg price 2019 -> Q2-2026; stamp_reg_pct = stamp duty + registration for a male buyer (women get 1-2 pp off in Delhi, Haryana, UP, Maharashtra), est., verify with the state IGR site.",
+  "income_cagr": 10.5,
+  "home_loan": 8.0,
+  "years_2019_to_q2_2026": 6.5,
+  "anchors": {"R3": [-2.0, -6.0], "R4": [5.0, 2.8], "R5": [-3.0, 5.0]},
+  "weights": {"R3": 12.5, "R4": 5.625, "R5": 6.0},
+  "cities": {
+   "Mumbai":    {"rent_yield": 4.3, "px_gain_2019_q2_2026": 64,  "stamp_reg_pct": 6.0, "stamp_reg_fixed": 30000, "src": "Anarock Q2-26"},
+   "Delhi":     {"rent_yield": 3.2, "px_gain_2019_q2_2026": 47,  "stamp_reg_pct": 7.0, "stamp_reg_fixed": 0, "src": "Anarock Q2-26"},
+   "Gurugram":  {"rent_yield": 4.3, "px_gain_2019_q2_2026": 117, "stamp_reg_pct": 7.0, "stamp_reg_fixed": 50000, "src": "Anarock Q2-26"},
+   "Noida":     {"rent_yield": 3.9, "px_gain_2019_q2_2026": 125, "stamp_reg_pct": 8.0, "stamp_reg_fixed": 0, "src": "Anarock Q2-26"},
+   "Bengaluru": {"rent_yield": 4.6, "px_gain_2019_q2_2026": 90,  "stamp_reg_pct": 6.6, "stamp_reg_fixed": 0, "src": "Anarock Q2-26"},
+   "Hyderabad": {"rent_yield": 3.6, "px_gain_2019_q2_2026": 93,  "stamp_reg_pct": 7.5, "stamp_reg_fixed": 0, "src": "Anarock Q2-26"},
+   "Pune":      {"rent_yield": 3.6, "px_gain_2019_q2_2026": 51,  "stamp_reg_pct": 6.0, "stamp_reg_fixed": 30000, "src": "price: Anarock; yield est. (+65 bp since 2019; Cushman luxury 3.0-3.4)"},
+   "Chennai":   {"rent_yield": 3.3, "px_gain_2019_q2_2026": 47,  "stamp_reg_pct": 9.0, "stamp_reg_fixed": 0, "src": "price: Anarock; yield est. (+55 bp since 2019; Cushman luxury 2.8-3.2)"},
+   "Kolkata":   {"rent_yield": 3.4, "px_gain_2019_q2_2026": 45,  "stamp_reg_pct": 8.0, "stamp_reg_fixed": 0, "src": "price: Anarock; yield est. (+60 bp since 2019)"}
+  },
+  "defaults": {
+   "down_payment_pct": 20, "loan_rate": 8.0, "tenure_yrs": 20, "hold_yrs": 5,
+   "price_growth": 6.0, "rent_growth": 6.0,
+   "maintenance_pct": 0.35, "property_tax_pct": 0.10, "buy_brokerage_pct": 1.0, "sell_cost_pct": 2.0,
+   "gst_pct": 0.0, "deposit_months": 3, "rent_brokerage_months_per_yr": 0.5,
+   "alt_return": 9.0, "alt_tax": 0.125,
+   "tax_regime": "new", "slab": 0.312, "use_80c": false, "hra_tax_saving_per_yr": 0
+  }
+ }
+}

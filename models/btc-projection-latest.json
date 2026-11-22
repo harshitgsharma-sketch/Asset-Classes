@@ -1,0 +1,101 @@
+{
+ "Bear": {
+  "prob": 0.25,
+  "score": [
+   27,
+   25,
+   34,
+   45,
+   24,
+   24
+  ],
+  "btc_usd": [
+   58027,
+   42000,
+   50000,
+   68000,
+   52000,
+   45000
+  ],
+  "story": "No clean 4-year cycle: Fed keeps hiking into 2027, ETF and treasury-company holders keep selling, the 2028-29 rally is weak and BTC ends below today's price.",
+  "hold": {
+   "pre": -2.106534337347332,
+   "vda": -2.4156603923481734,
+   "etf": -2.256117480309505,
+   "mult": 0.8990182732779569
+  },
+  "exit_year": "Nov-31",
+  "exit": {
+   "pre": -2.106534337347332,
+   "vda": -2.4156603923481734,
+   "etf": -2.256117480309505,
+   "mult": 0.8990182732779569
+  }
+ },
+ "Base": {
+  "prob": 0.5,
+  "score": [
+   27,
+   42,
+   51,
+   62,
+   29,
+   29
+  ],
+  "btc_usd": [
+   58027,
+   78000,
+   110000,
+   150000,
+   105000,
+   95000
+  ],
+  "story": "Cycle rhymes with smaller swings: trough by mid-2027, the 2028 halving rally peaks near $150k in late 2029, then a mid-bear market by Nov-31.",
+  "hold": {
+   "pre": 12.56901584351775,
+   "vda": 8.976298341706634,
+   "etf": 10.767360012295901,
+   "mult": 1.807566758646837
+  },
+  "exit_year": "Nov-31",
+  "exit": {
+   "pre": 12.56901584351775,
+   "vda": 8.976298341706634,
+   "etf": 10.767360012295901,
+   "mult": 1.807566758646837
+  }
+ },
+ "Bull": {
+  "prob": 0.25,
+  "score": [
+   27,
+   47,
+   59,
+   72,
+   34,
+   33
+  ],
+  "btc_usd": [
+   58027,
+   95000,
+   160000,
+   260000,
+   190000,
+   170000
+  ],
+  "story": "Recession forces Fed cuts, real yields fall below 1%, the dollar weakens and ETF and sovereign demand returns: a $260k peak in 2029.",
+  "hold": {
+   "pre": 25.223297091076844,
+   "vda": 19.122418921351823,
+   "etf": 22.446588081789407,
+   "mult": 3.0791133182311685
+  },
+  "exit_year": "Nov-29",
+  "exit": {
+   "pre": 66.50826048133469,
+   "vda": 50.96372360374488,
+   "etf": 60.10537461890235,
+   "mult": 4.616441656470265
+  }
+ }
+}

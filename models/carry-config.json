@@ -1,0 +1,45 @@
+{
+ "version": "v1 (21-Nov-2026) — indicative",
+ "note": "Low-risk carry model for an INR investor: Nifty arbitrage funds and Nifty covered calls. Score 1 = carry very attractive (park / sell calls now), 100 = carry poor (stay in liquid funds / hold the Nifty uncapped). Anchors are judgment-based (est. from 2016-2026 ranges) until back-filled. Each indicator: id, name, derive (formula key in carry_oscillator.py DERIVE), type, I/S/R/St (W = product), cheap (= attractive end), rich (= unattractive end), unit. 'band' indicators score the distance from a sweet spot.",
+ "tax": {
+  "scenario": "slab30",
+  "note": "Rates include 4% cess, no surcharge. Arbitrage funds are equity-oriented (STCG 20% if held <12 m, LTCG 12.5% above the Rs 1.25 lakh yearly exemption). Liquid / debt funds are taxed at slab. Option premium written by an individual is non-speculative business income, taxed at slab. A covered-call fund inside an equity MF / SIF would be taxed like equity instead.",
+  "scenarios": {
+   "slab30": {"slab": 31.2, "equity_st": 20.8, "equity_lt": 13.0},
+   "slab20": {"slab": 20.8, "equity_st": 20.8, "equity_lt": 13.0},
+   "slab10": {"slab": 10.4, "equity_st": 20.8, "equity_lt": 13.0},
+   "nil":    {"slab": 0.0,  "equity_st": 20.8, "equity_lt": 0.0}
+  },
+  "arb_holding": "short",
+  "cc_premium_taxed_at": "slab"
+ },
+ "covered_call": {
+  "otm_pct": 2.0,
+  "days": 30,
+  "cost_bp_pa": 40,
+  "call_skew_vol_pts": 1.5,
+  "note": "Sell a 1-month Nifty call ~2% out of the money against a Nifty ETF / futures holding, roll monthly. cost_bp_pa = STT (0.15% of premium on sale and on exercise from 1-Apr-2026), exchange/brokerage, slippage and roll, as % of notional per year (est.). call_skew_vol_pts = how far the 2% OTM call's implied vol sits below ATM IV (Nifty call skew, est.)."
+ },
+ "strategies": [
+  {"key": "ARBITRAGE", "name": "Arbitrage fund (cash-futures carry)", "family": "Low-risk carry",
+   "access": "Arbitrage mutual fund (direct plan); hold 1-12 m as a liquid-fund substitute",
+   "risk": "Near-zero market risk; spread can go flat or negative for a month; exit load ~0.25% for <30 days",
+   "indicators": [
+    {"id": "A1", "name": "Post-tax yield minus post-tax liquid fund (pp)", "derive": "arb_post_tax_edge", "type": "Coincident", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 1.5, "rich": -0.25, "unit": "pp"},
+    {"id": "A2", "name": "Gross 3-m arbitrage return minus liquid fund yield (pp)", "derive": "arb_gross_spread", "type": "Coincident", "I": 4, "S": 4, "R": 0.875, "St": 1.0, "cheap": 0.75, "rich": -1.0, "unit": "pp"},
+    {"id": "A3", "name": "Latest 1-m arbitrage return (annualised) minus liquid yield (pp)", "derive": "arb_1m_spread", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 0.75, "cheap": 1.25, "rich": -1.0, "unit": "pp"},
+    {"id": "A4", "name": "Gross 3-m arbitrage return minus expected avg repo (pp)", "derive": "arb_minus_repo_exp", "type": "Leading", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 1.75, "rich": -0.25, "unit": "pp"},
+    {"id": "A5", "name": "Real post-tax yield vs expected CPI (pp)", "derive": "arb_real_post_tax", "type": "Lagging", "I": 3, "S": 4, "R": 0.875, "St": 1.0, "cheap": 2.0, "rich": -2.0, "unit": "pp"}
+   ]},
+  {"key": "COVERED_CALL", "name": "Nifty covered call (long Nifty + short 1-m 2% OTM call)", "family": "Equity carry",
+   "access": "Nifty ETF/futures + monthly short call (F&O account, margin pledge); or a covered-call / hybrid long-short MF-SIF where offered",
+   "risk": "Full Nifty downside less the premium; upside capped at the strike each month",
+   "indicators": [
+    {"id": "C1", "name": "Post-tax premium yield, annualised net of cost (%)", "derive": "cc_post_tax_yield", "type": "Coincident", "I": 5, "S": 5, "R": 0.875, "St": 1.0, "cheap": 14.0, "rich": 4.0, "unit": "%"},
+    {"id": "C2", "name": "India VIX level (premium richness)", "derive": "vix", "type": "Coincident", "I": 4, "S": 4, "R": 1.0, "St": 1.0, "cheap": 22, "rich": 11, "unit": "index"},
+    {"id": "C3", "name": "Volatility risk premium: ATM IV minus realised vol (pp)", "derive": "vrp", "type": "Leading", "I": 4, "S": 4, "R": 0.625, "St": 0.75, "cheap": 5.0, "rich": -1.0, "unit": "pp"},
+    {"id": "C4", "name": "Regime fit: distance of Nifty oscillator from range-bound sweet spot 58 (pts)", "derive": "cc_regime_gap", "type": "Leading", "I": 4, "S": 3, "R": 0.75, "St": 1.0, "cheap": 0, "rich": 25, "unit": "pts"},
+    {"id": "C5", "name": "Premium cushion as share of a 1-SD monthly fall (%)", "derive": "cc_cushion", "type": "Coincident", "I": 3, "S": 3, "R": 0.75, "St": 1.0, "cheap": 30, "rich": 5, "unit": "%"}
+   ]}
+ ]
+}

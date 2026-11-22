@@ -1,0 +1,9 @@
+{
+ "note": "Saved rent-vs-buy scenarios. Any field left out takes the default in real-assets-config.json rent_vs_buy.defaults; rent left out = price x city gross yield / 12; stamp_reg_pct left out = city default. The four below are ILLUSTRATIONS at city-average yields, not the user's own numbers: replace with your actual flat (price, rent, loan rate, regime, slab).",
+ "scenarios": {
+  "example_bengaluru_1.2cr": {"city": "Bengaluru", "price": 12000000, "hold_yrs": 5},
+  "example_mumbai_2.5cr": {"city": "Mumbai", "price": 25000000, "hold_yrs": 5},
+  "example_gurugram_2cr_old_regime": {"city": "Gurugram", "price": 20000000, "hold_yrs": 5, "tax_regime": "old"},
+  "example_pune_90l_10yr": {"city": "Pune", "price": 9000000, "hold_yrs": 10, "tax_regime": "old"}
+ }
+}
