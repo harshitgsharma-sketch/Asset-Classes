@@ -4,6 +4,9 @@ Notes from videos, articles and books that inform the Entry/Exit Board models. T
 
 | Note | Source | Added | Tags |
 |---|---|---|---|
+| [Flat markets are not dead markets: sectors keep rotating](flat-markets-are-not-dead-markets.md) | [WeekendInvesting (YouTube)](https://www.youtube.com/watch?v=90xkdiThhcY) | 2026-11-22 | sector rotation, consolidation, defensives, momentum |
+| [Identifying winning sectors: four sector-rotation approaches](identifying-winning-sectors.md) | [ET Money (YouTube)](https://www.youtube.com/watch?v=y4xDxyrGqJc) | 2026-11-22 | sector rotation, business cycle, relative valuation, growth vs GDP |
+| [Sector rotation through the economic cycle (the classic US sequence)](sector-rotation-economic-cycle-schwab.md) | [Charles Schwab (YouTube)](https://www.youtube.com/watch?v=C0BK_Mip9oM) | 2026-11-22 | sector rotation, business cycle, US |
 | [Sector rotation: 7 Indian bull runs, and why the leaders keep changing](sector-rotation-7-indian-bull-runs.md) | [SOIC (YouTube)](https://www.youtube.com/watch?v=WuipYcJcChU) | 2026-11-22 | sector rotation, Nifty, capital cycle, valuation, cycles |
 
 Decisions on what moves into the board are logged in [board-backlog.md](board-backlog.md).

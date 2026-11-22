@@ -2,7 +2,7 @@
 
 Every actionable idea from the knowledge notes, and what was decided for the Entry/Exit Board. Rules are in the [knowledge README](README.md#how-ideas-are-triaged). Newest week first.
 
-**Open candidates:** 3 · **Built:** 1 (as a flag)
+**Open candidates:** 4 · **Built:** 1 (as a flag) · **Checked against data:** 1
 
 ## Built
 
@@ -11,6 +11,20 @@ Every actionable idea from the knowledge notes, and what was decided for the Ent
 | Parabolic move (70%+ above the 150-day EMA) | 2026-11-22 | `scripts/fetch_parabolic.py`, run daily by the refresh Action (started from `fetch_prices.py`), writes `data/parabolic.json`. 97 assets: gold, silver, Brent, copper, Bitcoin, Nifty 50, 13 Nifty sector indices, the Nifty 50 stocks, 19 global indices, 7 listed REITs and InvITs. Shown in each item's panel and on the Alerts tab, with a back-test card. **Does not change any score.** | Back-test on ~10 years of daily prices: 12 episodes in 7 assets (mostly Bitcoin and Indian stocks in 2020–21; never an equity index). Prices were usually *higher* afterwards: median +16% after 3 months, +60% after 6, +80% after 12; lower in 17%, 25% and 36% of cases. Silver in January 2026 was the clean hit (−38% in 6 months). Verdict: a late-stage volatility warning, not a sell signal, so it stays a flag. Revisit if it is ever combined with a valuation score above 65. |
 
 No Yahoo history for Nifty Private Bank, Midcap 150, Smallcap 250, Midcap Select, CPSE and Defence, the factor indices, CSI 300, MOEX, Tadawul and WIG20, so these have no flag yet.
+
+## Week of 2026-11-22, second batch: three sector-rotation videos
+
+Notes: [Flat markets are not dead markets](flat-markets-are-not-dead-markets.md) (WeekendInvesting) · [Identifying winning sectors](identifying-winning-sectors.md) (ET Money) · [Sector rotation through the economic cycle](sector-rotation-economic-cycle-schwab.md) (Charles Schwab)
+
+| # | Idea | Decision | Where it would go | Why / blocker |
+|---|---|---|---|---|
+| 10 | **Follow sector strength (momentum):** all three videos say to rotate into the sectors that are leading | **Checked against data: model unchanged** | Sectors model C8 (6-month relative strength vs Nifty 50), scored as contrarian | Tested on 13 Nifty sector indices, Nov 2016 to Nov 2026 (`scripts/research/sector_momentum_test.py`). Ranking by 6-month strength, the top third beat the bottom third by only −0.2 to +1.0 pp over the next 1–6 months (no real momentum), and *trailed* by 4.0 pp over the next 12 months. Ranking by 12-month strength, the top third trailed by 6.5 pp over 12 months and 7.3 pp over 36. For a holding period of up to 5 years, the contrarian reading in C8 is right. Caveat: overlapping windows and 13 indices, so it is indicative only. |
+| 11 | **Sector growth as a multiple of nominal GDP growth:** above GDP is a tailwind; 5–6 times GDP is growth borrowed from the future | **Board: candidate** | Sectors model, as a Sector cycle or Filter input next to C14 (TTM EPS growth) | Adds a scale that works across sectors and links to the earnings-led bubble idea from the first note. Blocker: needs quarterly aggregate revenue per sector index; the stocks model covers only 50 names today. |
+| 12 | Sector P/B premium to Nifty 500 against its own median | **Already covered** | Sectors model C3 (relative P/E vs Nifty 50, z-score vs 10-year mean) | Same idea on a different metric. Possible later refinement: use P/B for financials, as C1 already does. |
+| 13 | Business-cycle phase decides which sectors lead (financials and cyclicals early, defensives late) | **Already covered / knowledge** | C4 imports the Nifty 50 model's Timing bucket; family weights already treat defensives differently | The neat US sequence does not hold well in India (autos and pharma led one flat phase and lagged the next). No separate phase model. |
+| 14 | Defensives win long flat phases | **Knowledge only** | — | Only two past flat phases (2008–14, 2018–21); too few for a rule. |
+| 15 | Earnings beats against estimates | **Knowledge only** | — | Needs paid consensus-estimate data (fails test 4). |
+| 16 | Sunrise themes, policy cycles, seasonality (ACs, hotels, fertilisers) | **Knowledge only** | — | Stock and theme ideas outside the board's indices. |
 
 ## Week of 2026-11-22: [Sector rotation: 7 Indian bull runs](sector-rotation-7-indian-bull-runs.md)
 
