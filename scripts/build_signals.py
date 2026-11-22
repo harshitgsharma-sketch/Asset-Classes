@@ -128,6 +128,7 @@ if os.path.exists(pq):
                 it['parabolic']={'gap':p['gap'],'status':p['status'],'asof':p['asof'],'max_gap_1y':p['max_gap_1y'],
                     'from':p.get('history_from'),'episodes':len(eps),'last_episode':eps[-1] if eps else None,
                     'stale':bool(p.get('note'))}
+                if p.get('drawdown'): it['drawdown']=dict(p['drawdown'],asof=p['asof'],stale=bool(p.get('note')))
         parabolic={'built_at':pj['built_at'],'rule':pj['rule'],'summary':pj['summary']}
     except Exception as e:
         print('WARN parabolic.json unreadable:',e)

@@ -79,7 +79,7 @@ Over 12 months, ranking by trailing 12-month strength, leaders trailed laggards 
 Triaged in the [board backlog](board-backlog.md) (research batch, 2026-11-22):
 
 - **Supports existing design:** contrarian relative strength (C8, C16); own-history anchors.
-- **Board candidate:** show each sector's **drawdown from its high and years below it** in the sector drawer, next to the score. It is computed from data the parabolic check already downloads daily, and gives context for the "Buy" readings on beaten-down sectors (IT, FMCG today). Display only, no score change.
+- **Built 2026-11-22:** each item's panel now shows its **distance from its 10-year high**, time since the high, how unusual the fall is, and its worst fall. It updates daily, is display only, and doesn't change the score.
 - **Knowledge only:** Nifty concentration (affects allocation, not entry/exit timing).
 
 ## Sources

@@ -109,13 +109,36 @@ def analyse(rows):
         episodes.append({'start': dates[s], 'end': dates[e['last_i']], 'peak_date': dates[e['peak_i']],
                          'peak_gap': round(e['peak_gap'], 4), 'ret_after': fwd, 'max_drawdown_12m': dd})
 
+    # drawdown from the running high (backlog #20; display only)
+    peak, peak_i, dd, worst, worst_i, longest, since_i = px[0], 0, [], 0.0, 0, 0, 0
+    for i, p in enumerate(px):
+        if p >= peak:
+            peak, peak_i = p, i
+        d = p / peak - 1
+        dd.append(d)
+        if d < worst:
+            worst, worst_i = d, i
+        days = (datetime.date.fromisoformat(dates[i]) - datetime.date.fromisoformat(dates[peak_i])).days
+        longest = max(longest, days)
+    now = dd[-1]
+    hi_i = max(range(len(px)), key=lambda i: px[i])
+    drawdown = {
+        'now': round(now, 4),                                   # vs highest close in the window
+        'high': round(px[hi_i], 4), 'high_date': dates[hi_i],
+        'years_below_high': round((datetime.date.fromisoformat(dates[-1]) - datetime.date.fromisoformat(dates[hi_i])).days / 365.25, 2),
+        'worst': round(worst, 4), 'worst_date': dates[worst_i],
+        'longest_below_high_years': round(longest / 365.25, 2),
+        'share_of_days_deeper': round(sum(1 for d in dd if d < now) / len(dd), 3),   # how unusual today's fall is
+        'window_from': dates[0],
+    }
+
     g = gap[-1]
-    status = 'Parabolic' if g >= PARABOLIC else 'Stretched' if g >= STRETCHED else 'Normal'
+    status ='Parabolic' if g >= PARABOLIC else 'Stretched' if g >= STRETCHED else 'Normal'
     last_year = [x for x in gap[-252:] if x is not None]
     weekly = [[dates[i], round(gap[i], 4)] for i in range(len(gap) - 1, max(SPAN, len(gap) - 504) - 1, -5)][::-1]
     return {'asof': dates[-1], 'close': round(px[-1], 4), 'ema150': round(ema[-1], 4), 'gap': round(g, 4),
             'status': status, 'max_gap_1y': round(max(last_year), 4), 'min_gap_1y': round(min(last_year), 4),
-            'history_from': dates[SPAN], 'episodes': episodes, 'gap_weekly_2y': weekly}
+            'history_from': dates[SPAN], 'episodes': episodes, 'gap_weekly_2y': weekly, 'drawdown': drawdown}
 
 
 def summarise(items):
