@@ -550,9 +550,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
    ===================================================================== */
 const TABS={
   snapshot:{t:'Snapshot',sub:'Every asset class on one 1–100 scale: where the cheap and rich readings are today.',scope:()=>true,
-    notes:['sector-investing-playbook','sector-rotation-research-evidence','board-backlog']},
+    notes:['market-legends-council-2026-11-23','sector-investing-playbook','sector-rotation-research-evidence','board-backlog']},
   india:{t:'Indian equities',sub:'Three cuts: by market cap (Nifty 50, large, mid and small caps, factors), by sector, and by individual stock.',scope:i=>i.id==='NIFTY50'||['sectors','factors','stocks'].includes(i.model),
-    notes:['watchlist-analysis-2026-11','sector-investing-playbook','india-sector-facts-2016-2026','sector-froth-signals','valuing-cyclical-sectors','sector-rotation-7-indian-bull-runs','flat-markets-are-not-dead-markets','identifying-winning-sectors']},
+    notes:['market-legends-council-2026-11-23','watchlist-analysis-2026-11','sector-investing-playbook','india-sector-facts-2016-2026','sector-froth-signals','valuing-cyclical-sectors','sector-rotation-7-indian-bull-runs','flat-markets-are-not-dead-markets','identifying-winning-sectors']},
   global:{t:'International',sub:'The US first, then 20 more markets, all scored for an INR investor over five years.',scope:i=>i.model==='global',
     notes:['sector-rotation-research-evidence','sector-rotation-economic-cycle-schwab']},
   commod:{t:'Commodities',sub:'Gold, silver, Brent crude and copper.',scope:i=>i.id==='GOLD'||i.model==='commodities',
