@@ -173,7 +173,13 @@ if os.path.exists(aq):
     except Exception as e:
         print('WARN amfi froth:',e)
 watchlist=[{'ticker':x['Symbol'],'name':x['Company Name'],'industry':x['Industry']} for x in csv.DictReader(open(_wl,encoding='utf-8-sig'))] if os.path.exists(_wl) else []
-out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi,'watchlist':watchlist}
+# market-cap rotation (scripts/size_rotation.py): Indian equities "Market cap" view, never changes a score
+size_rotation=None
+sq=os.path.join(ROOT,'data','size_rotation.json')
+if os.path.exists(sq):
+    try: size_rotation=json.load(open(sq))
+    except Exception as e: print('WARN size_rotation.json unreadable:',e)
+out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi,'watchlist':watchlist,'size_rotation':size_rotation}
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(out,open(os.path.join(ROOT,'data','signals.json'),'w'),separators=(',',':'),allow_nan=False)
 print('signals.json:',len(items),'items;',{k:v['asof'] for k,v in meta.items()})

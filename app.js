@@ -551,7 +551,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 const TABS={
   snapshot:{t:'Snapshot',sub:'Every asset class on one 1–100 scale: where the cheap and rich readings are today.',scope:()=>true,
     notes:['sector-investing-playbook','sector-rotation-research-evidence','board-backlog']},
-  india:{t:'Indian equities',sub:'Top-down from the Nifty 50 through factors to sectors, and bottom-up from individual stocks.',scope:i=>i.id==='NIFTY50'||['sectors','factors','stocks'].includes(i.model),
+  india:{t:'Indian equities',sub:'Three cuts: by market cap (Nifty 50, large, mid and small caps, factors), by sector, and by individual stock.',scope:i=>i.id==='NIFTY50'||['sectors','factors','stocks'].includes(i.model),
     notes:['sector-investing-playbook','india-sector-facts-2016-2026','sector-froth-signals','valuing-cyclical-sectors','sector-rotation-7-indian-bull-runs','flat-markets-are-not-dead-markets','identifying-winning-sectors']},
   global:{t:'International',sub:'The US first, then 20 more markets, all scored for an INR investor over five years.',scope:i=>i.model==='global',
     notes:['sector-rotation-research-evidence','sector-rotation-economic-cycle-schwab']},
@@ -647,8 +647,8 @@ function ovSnapshot(){
   <div class="grid g2"><section class="card"><h2>Cheapest across all asset classes</h2><p class="hint">Investable headline readings (Nifty 500 stocks beyond the Nifty 50 are in Indian equities).</p>${cheap.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section>
     <section class="card"><h2>Richest across all asset classes</h2><p class="hint">Matter only for what you hold.</p>${rich.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section></div>`;
 }
-let indState={heat:'score',sec:'all',stockView:'grid',uni:'n50',view:'top',valMax:50,cell:null,dvAll:false};
-try{const v=localStorage.getItem('eeb-india-view');if(v==='top'||v==='bottom')indState.view=v}catch(e){}
+let indState={heat:'score',sec:'all',stockView:'grid',uni:'n50',view:'cap',valMax:50,cell:null,dvAll:false};
+try{const v=localStorage.getItem('eeb-india-view');indState.view={top:'cap',bottom:'stock'}[v]||(['cap','sector','stock'].includes(v)?v:'cap')}catch(e){}
 const SIZE_IDS=['SEC_NIFTY500','SEC_NEXT50','SEC_MIDSELECT','SEC_MIDCAP150','SEC_SMALLCAP250'];
 /* value setups (scripts/fetch_parabolic.py price_setup): how a stock's price got where it is */
 const SETUPS=[['short','Short-term drawdown','Fell 15% or more from its 3-month high'],['long','Long-term drawdown','30% or more below its 5-year high, and that high is over a year old'],
@@ -674,36 +674,112 @@ function watchCard(i){const s=i.setup,g=i.growth||{};
   <div class="ats">PE ${i.meta.PE??'—'} vs sector ${i.meta['Sector PE']??'—'} · ROE 5-yr ${g.roe5??'—'}%</div></div>`}
 function ovIndia(){
   const v=indState.view;
-  const sw=`<div class="vsw" role="tablist" aria-label="Indian equities view">
-    <button role="tab" aria-selected="${v==='top'}" class="${v==='top'?'on':''}" data-v="top"><b>Top-down</b><span>Market → size and factors → sectors</span></button>
-    <button role="tab" aria-selected="${v==='bottom'}" class="${v==='bottom'?'on':''}" data-v="bottom"><b>Bottom-up</b><span>Stocks: value setups, 5-year deep value, screener</span></button></div>`;
-  return sw+(v==='top'?ovIndiaTop():ovIndiaBottom());
+  const views=[['cap','Market cap','Nifty 50 → large, mid, small caps · factors'],['sector','Sectors','Heat map, table, stock-by-stock check'],['stock','Stocks','Value setups, 5-year deep value, screener']];
+  const sw=`<div class="vsw v3" role="tablist" aria-label="Indian equities view">${views.map(([k,t,s])=>`<button role="tab" aria-selected="${v===k}" class="${v===k?'on':''}" data-v="${k}"><b>${t}</b><span>${s}</span></button>`).join('')}</div>`;
+  return sw+(v==='cap'?ovIndiaCap():v==='sector'?ovIndiaSector():ovIndiaBottom());
 }
-function ovIndiaTop(){
-  const n=byId.NIFTY50,AM=DATA.amfi;
-  const size=SIZE_IDS.map(k=>byId[k]).filter(Boolean),sectors=ALL_ITEMS.filter(i=>i.model==='sectors'&&!SIZE_IDS.includes(i.id));
+const relB=i=>(i.buckets||{})['Relative vs Nifty'];
+/* line chart: series [{name,col,pts:[[label,value],…]}], x = index along the longest series */
+function lineChart(id,series,o={}){const el=document.getElementById(id);if(!el||el.clientWidth<80)return;
+  const W=el.clientWidth,H=o.H||Math.min(300,Math.max(200,W*.42)),L=48,R=o.R??92,T=12,B=26,n=Math.max(...series.map(s=>s.pts.length));
+  const all=series.flatMap(s=>s.pts.map(p=>p[1])).filter(v=>v!=null);let y0=Math.min(...all),y1=Math.max(...all);
+  const f=o.log?Math.log:v=>v;if(!o.log){const d=(y1-y0)||1;y0-=d*.06;y1+=d*.06}
+  const X=k=>L+k/(n-1)*(W-L-R),Y=v=>T+(f(y1)-f(v))/(f(y1)-f(y0))*(H-T-B);
+  let s=`<svg width="${W}" height="${H}" role="img" aria-label="${esc(o.label||'')}">`;
+  const ticks=o.ticks||(()=>{const st=(y1-y0)/4;return [0,1,2,3,4].map(k=>y0+st*k)})();
+  ticks.filter(v=>v>=y0&&v<=y1).forEach(v=>s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${o.yf?o.yf(v):v.toFixed(0)}</text>`);
+  if(o.ref!=null&&o.ref>=y0&&o.ref<=y1)s+=`<line x1="${L}" x2="${W-R}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" stroke="var(--ink-3)" stroke-dasharray="4 3"/>`;
+  const lab=series[0].pts;let lastY='';lab.forEach((p,k)=>{const y=String(p[0]).slice(0,4);if(y!==lastY&&String(p[0]).slice(5,7)<='01'&&+y%(W<520?6:3)===0){s+=`<text x="${X(k)}" y="${H-8}" text-anchor="middle">${y}</text>`}lastY=y});
+  const ends=[];series.forEach(se=>{const d=se.pts.map((p,k)=>p[1]==null?null:`${X(k).toFixed(1)},${Y(p[1]).toFixed(1)}`).filter(Boolean);
+    s+=`<polyline points="${d.join(' ')}" fill="none" stroke="${se.col}" stroke-width="${se.w||2}" ${se.dash?'stroke-dasharray="5 4"':''}/>`;
+    const lp=se.pts[se.pts.length-1];if(lp&&lp[1]!=null)ends.push({y:Y(lp[1]),t:`${se.name} ${o.ef?o.ef(lp[1]):lp[1].toFixed(0)}`,col:se.col})});
+  ends.sort((a,b)=>a.y-b.y);ends.forEach((e,k)=>{if(k&&e.y-ends[k-1].y<13)e.y=ends[k-1].y+13;s+=`<text x="${W-R+6}" y="${e.y+4}" style="fill:${e.col};font-weight:600;font-size:11px">${esc(e.t)}</text>`});
+  el.innerHTML=s+'</svg>'}
+/* columns for signed values (calendar-year excess) */
+function signBars(id,rows,o={}){const el=document.getElementById(id);if(!el||el.clientWidth<80)return;
+  const W=el.clientWidth,H=o.H||170,L=36,R=8,T=10,B=22,m=Math.max(1,...rows.map(r=>Math.abs(r[1]||0)));
+  const z=T+(H-T-B)/2,sc=(H-T-B)/2/m,bw=(W-L-R)/rows.length;
+  let s=`<svg width="${W}" height="${H}" role="img" aria-label="${esc(o.label||'')}"><line x1="${L}" x2="${W-R}" y1="${z}" y2="${z}" stroke="var(--line-2)"/>`;
+  [m,-m].forEach(v=>s+=`<text x="${L-6}" y="${z-v*sc+4}" text-anchor="end">${v>0?'+':''}${v.toFixed(0)}</text>`);
+  rows.forEach((r,k)=>{const v=r[1]||0,h=Math.abs(v)*sc,x=L+k*bw+2;
+    s+=`<rect x="${x.toFixed(1)}" y="${(v>0?z-h:z).toFixed(1)}" width="${Math.max(1,bw-4).toFixed(1)}" height="${Math.max(.5,h).toFixed(1)}" rx="2" fill="${v>=0?'var(--b2)':'var(--b6)'}"><title>${r[0]}: ${v>0?'+':''}${v} pts</title></rect>`;
+    if(bw>22||k%2===0)s+=`<text x="${(x+(bw-4)/2).toFixed(1)}" y="${H-6}" text-anchor="middle">${String(r[0]).slice(2)}</text>`});
+  el.innerHTML=s+'</svg>'}
+const SZC={large:'var(--b1)',mid:'var(--s4)',small:'var(--s1)'};
+function splitBar(w,lbl){return `<div class="sbar" role="img" aria-label="${esc(lbl)}: large ${w[0]}%, mid ${w[1]}%, small ${w[2]}%">${['large','mid','small'].map((k,j)=>w[j]>0?`<i style="width:${w[j]}%;background:${SZC[k]}">${w[j]>=9?`${['Large','Mid','Small'][j]} ${Math.round(w[j])}%`:''}</i>`:'').join('')}</div>`}
+function ovIndiaCap(){
+  const n=byId.NIFTY50,AM=DATA.amfi,SR=DATA.size_rotation;
+  const size=SIZE_IDS.map(k=>byId[k]).filter(Boolean);
   const factors=ALL_ITEMS.filter(i=>i.model==='factors').sort((a,b)=>a.score-b.score);
-  const rel=i=>(i.buckets||{})['Relative vs Nifty'];
-  const hv={score:i=>i.score,rel:rel,dd:i=>{const d=ddNow(i);return d==null?null:Math.max(1,Math.min(100,100+d*200))}}[indState.heat];
-  const hsub={score:i=>chip(i.score).replace(/<span class="sw"[^>]*><\/span>/,''),rel:i=>'rel '+(rel(i)==null?'—':Math.round(rel(i))),dd:i=>ddTxt(i)}[indState.heat];
-  const secs=[...sectors].sort((a,b)=>(hv(a)??999)-(hv(b)??999));
-  OV_DRAW=[()=>dotChart('sizec',[n,...size].map(i=>({id:i.id,label:i.name.replace(' (benchmark)',''),v:i.score,v2:rel(i)}) ),{label:'Size indices, absolute and relative'}),
-           ()=>dotChart('facc',factors.map(i=>({id:i.id,label:i.name,v:i.score,v2:rel(i)})),{label:'Factor indices'})];
-  return `<h3 class="step"><span>1</span>The market</h3><div class="grid g2" style="margin-bottom:14px">
+  const draw=[()=>dotChart('sizec',[n,...size].map(i=>({id:i.id,label:i.name.replace(' (benchmark)',''),v:i.score,v2:relB(i)}) ),{label:'Size indices, absolute and relative'}),
+           ()=>dotChart('facc',factors.map(i=>({id:i.id,label:i.name,v:i.score,v2:relB(i)})),{label:'Factor indices'})];
+  let rot='';
+  if(SR){const B=SR.backtest,V=SR.valuation,sc=v=>v==null?'—':(v>0?'+':'')+v.toFixed(2);
+    const pos=v=>Math.max(0,Math.min(100,(v+2)/4*100));
+    const pill=v=>v<=-1?'Underweight':v<-0.25?'Lean underweight':v<0.25?'Neutral':v<1?'Lean overweight':'Overweight';
+    const PN={A:'Valuation gap vs Nifty',B:'Own-history valuation',C:'Relative momentum',D:'Earnings growth gap',E:'RBI rate cycle'};
+    draw.push(()=>lineChart('relc',[{name:'Mid',col:SZC.mid,pts:SR.ratio.map(r=>[r[0],r[1]])},{name:'Small',col:SZC.small,pts:SR.ratio.map(r=>[r[0],r[2]])}],{label:'Midcap 150 and Smallcap 250 total return relative to Nifty 50, rebased to 100 in April 2005',ref:100,R:72}),
+      ()=>lineChart('navc',[{name:'Model',col:'var(--b1)',w:2.4,pts:B.nav.map(r=>[r[0],r[1]])},{name:'Fixed',col:'var(--ink-3)',dash:1,pts:B.nav.map(r=>[r[0],r[2]])}],{label:'Growth of one rupee: rotation model versus fixed 55/28/17 split',log:1,ticks:[0.5,1,2,4,8],yf:v=>'₹'+v,ef:v=>'₹'+v.toFixed(1)}),
+      ()=>lineChart('wtc',[{name:'Large',col:SZC.large,pts:B.weights.map(r=>[r[0],r[1]])},{name:'Mid',col:SZC.mid,pts:B.weights.map(r=>[r[0],r[2]])},{name:'Small',col:SZC.small,pts:B.weights.map(r=>[r[0],r[3]])}],{label:'Model weights over time',H:180,ticks:[0,25,50,75,100],yf:v=>v+'%',ef:v=>v.toFixed(0)+'%'}),
+      ()=>signBars('yrc',B.years,{label:'Model minus fixed split, by calendar year'}));
+    rot=`<h3 class="step"><span>2</span>Large, mid or small: the rotation model</h3>
+    <div class="grid g2" style="margin-bottom:14px">
+      <section class="card"><h2>Where the model stands, ${esc(SR.asof)}</h2>
+        <p class="hint">Scores run from −2 (favour large caps) to +2 (favour the smaller segment). Valuation is P/B against the Nifty 50, using each segment's own 10-year history.</p>
+        ${['mid','small'].map(k=>`<div class="rotrow"><div class="rotl"><b>${k==='mid'?'Midcaps':'Smallcaps'}</b><span class="tag">${pill(SR.scores[k])}</span></div>
+          <div class="rots"><div class="rotbar"><i style="left:${pos(SR.scores[k])}%"></i></div><div class="tag rotax"><span>−2 large</span><span>0</span><span>+2 ${k}</span></div></div><b class="rotv">${sc(SR.scores[k])}</b></div>`).join('')}
+        <div class="kv" style="margin-top:10px">${Object.keys(PN).map(p=>`<div>${PN[p]}</div><div>mid ${sc(SR.pillars.mid[p])} · small ${sc(SR.pillars.small[p])}</div>`).join('')}</div>
+        <h3 style="margin:14px 0 6px;font-size:13px">Split within equity</h3>
+        <div class="tag" style="margin-bottom:4px">Model now (moves a third of the way each month)</div>${splitBar(SR.holding||SR.target,'Model now')}
+        <div class="tag" style="margin:8px 0 4px">Where it is heading (full target)</div>${splitBar(SR.target,'Target')}
+        <div class="tag" style="margin:8px 0 4px">Strategic base</div>${splitBar(SR.base,'Base')}</section>
+      <section class="card"><h2>Why: valuation against history</h2>
+        <p class="hint">P/B of the midcap and smallcap proxies compared with the Nifty 50. The model leans against a premium that is far above its norm.</p>
+        <div class="tscroll"><table class="st"><thead><tr><th scope="col">Segment</th><th scope="col">P/B</th><th scope="col">P/E</th><th scope="col">P/B vs Nifty now</th><th scope="col">10-yr median</th></tr></thead><tbody>
+          <tr><td>Nifty 50</td><td>${V.large.pb}</td><td>${V.large.pe}</td><td>—</td><td>—</td></tr>
+          <tr><td>Midcap 100</td><td>${V.mid.pb}</td><td>${V.mid.pe}</td><td><b>${V.mid.pb_premium>0?'+':''}${V.mid.pb_premium}%</b></td><td>${V.mid.pb_premium_med10>0?'+':''}${V.mid.pb_premium_med10}%</td></tr>
+          <tr><td>Smallcap 100</td><td>${V.small.pb}</td><td>${V.small.pe}</td><td><b>${V.small.pb_premium>0?'+':''}${V.small.pb_premium}%</b></td><td>${V.small.pb_premium_med10>0?'+':''}${V.small.pb_premium_med10}%</td></tr></tbody></table></div>
+        <h3 style="margin:14px 0 4px;font-size:13px">Who has led since 2005</h3>
+        <p class="hint">Midcap 150 and Smallcap 250 total return divided by the Nifty 50's, rebased to 100. Rising = the smaller segment is winning.</p><div id="relc"></div></section></div>
+    <section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Back-test, ${esc(B.period[0])} to ${esc(B.period[1])}</h2>
+      <p class="hint">Rebuilt month by month from NSE data using only what was known at each month-end, against a fixed 55/28/17 split rebalanced monthly. 0.1% cost per unit of turnover; no taxes. The first back-tested model on this board.</p></div>
+      <a class="btn" href="${esc(SR.research)}" target="_blank" rel="noopener">Full research and method</a></div>
+      <div class="tiles3" style="margin-bottom:12px">
+        <div class="at"><div class="atl">Return a year</div><div class="atv">${B.model.cagr}%</div><div class="ats">Fixed split ${B.fixed.cagr}% · Nifty 50 ${B.singles['Nifty 50'].cagr}% · Midcap 150 ${B.singles['Midcap 150'].cagr}%</div></div>
+        <div class="at"><div class="atl">Worst fall</div><div class="atv">${B.model.mdd}%</div><div class="ats">Fixed split ${B.fixed.mdd}%. It did not cushion 2008 or 2020.</div></div>
+        <div class="at"><div class="atl">Signal strength</div><div class="atv">+${B.corr12.mid}</div><div class="ats">Midcap score vs next-12-month midcap-minus-Nifty return (smallcaps +${B.corr12.small})</div></div></div>
+      <div class="grid g2"><div><h3 style="margin:0 0 4px;font-size:13px">Growth of ₹1 (log scale)</h3><div id="navc"></div></div>
+        <div><h3 style="margin:0 0 4px;font-size:13px">Model weights</h3><div id="wtc"></div>
+          <h3 style="margin:10px 0 4px;font-size:13px">Model minus fixed split, by year (points)</h3><div id="yrc"></div></div></div>
+      <div class="tscroll" style="margin-top:10px"><table class="st"><thead><tr><th scope="col">Period</th><th scope="col">Model</th><th scope="col">Fixed split</th><th scope="col">Difference</th><th scope="col">Worst fall, model / fixed</th></tr></thead><tbody>
+        ${Object.entries(B.halves).map(([k,h])=>`<tr><td>${k}</td><td>${h.model_cagr}%</td><td>${h.fixed_cagr}%</td><td>${h.excess>0?'+':''}${h.excess} pts</td><td>${h.model_mdd}% / ${h.fixed_mdd}%</td></tr>`).join('')}</tbody></table></div>
+      <div class="note" style="margin-top:10px">The valuation signal is real, but turning it into extra return is hard. The model cut small and midcaps before the 2018 top and bought them after the 2009 and 2013 lows, then lagged through the 2021–24 boom while they stayed expensive. Read it as a risk dial that leans against extremes, not a timing engine. ${SR.notes.map(esc).join(' ')}</div></section>`}
+  OV_DRAW=draw;
+  return `<h3 class="step"><span>1</span>The market and its size bands</h3><div class="grid g2" style="margin-bottom:14px">
     <section class="card hero" style="border-top-color:${bcol(n.score)}"><h2>Nifty 50</h2><div class="herorow"><div class="big">${n.score}</div><div>${chip(n.score)}<div class="tag">${esc(n.signal)}</div></div></div>${gauge(n.score,320,true)}
       <div class="bk">${Object.entries(n.buckets).filter(([k,v])=>v!=null).map(([k,v])=>`<div style="background:${tint(v,40)}"><span>${k==='Filter'?'Macro':k}</span><b>${Math.round(v)}</b></div>`).join('')}<div style="background:${tint(ddNow(n)==null?null:50)}"><span>From high</span><b>${ddTxt(n)}</b></div>${AM?`<div style="background:${tint(AM.froth,40)}"><span>Fund froth</span><b>${AM.froth}</b></div>`:''}</div>
       <button class="btn" data-id="NIFTY50" style="margin-top:10px">Open Nifty 50 details</button></section>
     <section class="card"><h2>Size: large → small caps</h2><p class="hint">Filled dot: the index's own score. Ring: score relative to the Nifty 50 (low = cheaper than the market).</p><div id="sizec"></div></section></div>
-  <h3 class="step"><span>2</span>Factors</h3>
-  <section class="card" style="margin-bottom:14px"><h2>Factor indices</h2><p class="hint">Value, quality, momentum, low volatility… Ring: relative to the Nifty 50.</p><div id="facc"></div></section>
-  <h3 class="step"><span>3</span>Sectors</h3>
+  ${rot}
+  <h3 class="step"><span>${SR?3:2}</span>Factors</h3>
+  <section class="card" style="margin-bottom:14px"><h2>Factor indices</h2><p class="hint">Value, quality, momentum, low volatility… Ring: relative to the Nifty 50.</p><div id="facc"></div></section>`;
+}
+function ovIndiaSector(){
+  const sectors=ALL_ITEMS.filter(i=>i.model==='sectors'&&!SIZE_IDS.includes(i.id));
+  const hv={score:i=>i.score,rel:relB,dd:i=>{const d=ddNow(i);return d==null?null:Math.max(1,Math.min(100,100+d*200))}}[indState.heat];
+  const hsub={score:i=>chip(i.score).replace(/<span class="sw"[^>]*><\/span>/,''),rel:i=>'rel '+(relB(i)==null?'—':Math.round(relB(i))),dd:i=>ddTxt(i)}[indState.heat];
+  const secs=[...sectors].sort((a,b)=>(hv(a)??999)-(hv(b)??999));
+  OV_DRAW=[];
+  return `<h3 class="step"><span>1</span>Sectors at a glance</h3>
   <section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Sectors: heat-map</h2><p class="hint">Cheapest to richest. Colour shows the band of what you colour by.</p></div>
     <span class="seg" id="heatseg" aria-label="Colour by"><button data-v="score">Score</button><button data-v="rel">Relative to Nifty</button><button data-v="dd">Distance from high</button></span></div>
     <div class="heat">${secs.map(i=>heatTile(i,hsub(i)+(i.flags&&/guard/.test(i.flags)?' ⚑':''),hv(i))).join('')}</div>
     ${indState.heat==='dd'?'<div class="tag" style="margin-top:6px">Distance from high: blue = far below its 10-year high, red = at or near it. Grey tiles have no daily price history.</div>':''}</section>
+  <h3 class="step"><span>2</span>The detail</h3>
   <section class="card" style="margin-bottom:14px"><h2>Sectors: table</h2><p class="hint">Click a column to sort; click a row for the full panel. ⚑ = peak-earnings guard on; ⓘ = model note.</p>
-    ${sortTable('sec',[C.name,C.score,{k:'rel',l:'Relative',num:1,get:rel,cell:i=>hc(rel(i))},C.b('Valuation'),C.b('Sector cycle','Cycle'),C.b('Timing'),C.b('Filter','Macro'),C.dd,C.flags],sectors,{k:'score',dir:1})}</section>
-  <section class="card"><h2>Does the sector call hold stock by stock?</h2><p class="hint">Big dot: the sector index. Small dots: its stocks. Diamond: their median. The hand-off to the Bottom-up view.</p><div id="sxsvg"></div></section>`;
+    ${sortTable('sec',[C.name,C.score,{k:'rel',l:'Relative',num:1,get:relB,cell:i=>hc(relB(i))},C.b('Valuation'),C.b('Sector cycle','Cycle'),C.b('Timing'),C.b('Filter','Macro'),C.dd,C.flags],sectors,{k:'score',dir:1})}</section>
+  <h3 class="step"><span>3</span>Hand-off to stocks</h3>
+  <section class="card"><h2>Does the sector call hold stock by stock?</h2><p class="hint">Big dot: the sector index. Small dots: its stocks. Diamond: their median. Open the Stocks view for the names.</p><div id="sxsvg"></div></section>`;
 }
 function ovIndiaBottom(){
   const all=ALL_ITEMS.filter(i=>i.model==='stocks'&&i.score!=null);
