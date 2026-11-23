@@ -338,7 +338,7 @@ function viewClasses(){
 }
 const AC_MODEL={SHORT_DEBT:['bonds','FI_SHORT_1Y'],US_TREASURY:[null],GSEC_LONG:['bonds','FI_GSEC_10Y'],SILVER:['commodities','CMD_SILVER'],CREDIT_AA:['bonds','FI_CREDIT_AA_3Y'],CORP_AAA:['bonds','FI_CORP_AAA_5Y'],RESI_RE:['property'],CASH:[null],MIDCAP:['sectors','SEC_MIDCAP150'],NIFTY50:['core','NIFTY50'],GOLD:['core','GOLD'],GLOBAL_EQ:['global','GLB_ACWI'],SMALLCAP:['sectors','SEC_SMALLCAP250'],US_EQ:['global','GLB_SP500'],REIT:['reits']};
 function drawClasses(){
-  const el=document.getElementById('acsvg');if(!el)return;
+  const el=document.getElementById('acsvg');if(!el||el.clientWidth<80)return;
   const rows=[...DATA.assetClasses.map(a=>{const m=AC_MODEL[a.id]||[null];const own=m[1]&&byId[m[1]]?byId[m[1]].score:null;return {...a,own2:own,model:m[0],target:m[1]}}),{id:'BTC',name:'Bitcoin (own model; not in asset-class model)',score:null,own2:byId.BTC.score,tilt:'Buy, staged; cap 5% of portfolio',model:'crypto',target:'BTC'}];
   const W=el.clientWidth,L=Math.min(330,W*.38),R=190,rh=30,top=24;const x=v=>L+(v-1)/99*(W-L-R);
   let s=`<svg width="${W}" height="${top+rh*rows.length+6}">`;
@@ -563,7 +563,7 @@ const TABS={
 };
 const TOOLS=[['','Overview'],['finder','Signal finder'],['map','Map'],['trends','Trends'],['alerts','Alerts'],['changes','Changes'],['know','Knowledge']];
 const tabOf=i=>Object.keys(TABS).find(k=>k!=='snapshot'&&TABS[k].scope(i))||'snapshot';
-const inTab=t=>ALL_ITEMS.filter(TABS[t].scope);
+const inTab=t=>ALL_ITEMS.filter(i=>!i.wide&&TABS[t].scope(i));   // headline readings only
 const toolOK=(t,k)=>k!=='trends'||SERIES_ALL.some(([id])=>TABS[t].scope(byId[id]));
 
 /* ---------- shared visual pieces ---------- */
@@ -594,7 +594,7 @@ const C={name:{k:'name',l:'Name',get:i=>i.name,fmt:i=>`<b>${esc(i.name)}</b>`},
   dd:{k:'dd',l:'From high',num:1,get:i=>ddNow(i),fmt:i=>ddTxt(i)},
   flags:{k:'flags',l:'Notes',get:i=>i.flags?1:0,fmt:i=>flagIcon(i)}};
 /* dot chart: one row per item, band-shaded 1–100 axis, optional second marker */
-function dotChart(id,rows,o={}){const el=document.getElementById(id);if(!el)return;
+function dotChart(id,rows,o={}){const el=document.getElementById(id);if(!el||el.clientWidth<80)return;
   const W=el.clientWidth,L=Math.min(o.L||190,W*.42),R=o.R??60,rh=30,T=20;const x=v=>L+(v-1)/99*(W-L-R);
   let s=`<svg width="${W}" height="${T+rh*rows.length+4}" role="group" aria-label="${esc(o.label||'Scores on the 1 to 100 scale')}">`;
   BANDS.forEach((b,k)=>s+=`<rect x="${x(Math.max(1,b[1]))}" y="${T-4}" width="${x(b[2])-x(Math.max(1,b[1]))}" height="${rh*rows.length}" fill="var(${b[3]})" opacity="${k===3?.14:k===0||k===5?.07:.1}"/>${x(b[2])-x(Math.max(1,b[1]))>b[0].length*6+6?`<text x="${(x(Math.max(1,b[1]))+x(b[2]))/2}" y="11" text-anchor="middle">${b[0]}</text>`:''}`);
@@ -604,7 +604,7 @@ function dotChart(id,rows,o={}){const el=document.getElementById(id);if(!el)retu
     s+=`<circle cx="${x(r.v)}" cy="${cy}" r="7" fill="${bcol(r.v)}" stroke="var(--ink)" stroke-width="1.3"/><text x="${W-R+8}" y="${cy+4}" style="fill:var(--ink);font-weight:600">${r.right??r.v.toFixed(1)}</text></g>`});
   el.innerHTML=s+'</svg>';bindDots(el)}
 /* scatter: x/y from item fields, colour = score band */
-function scatter(id,pts,o){const el=document.getElementById(id);if(!el)return;
+function scatter(id,pts,o){const el=document.getElementById(id);if(!el||el.clientWidth<80)return;
   const W=el.clientWidth,H=Math.min(360,Math.max(240,W*.5)),L=46,R=14,T=14,B=36;
   const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);const pad=(a,b)=>{const d=(b-a)||1;return [a-d*.08,b+d*.08]};
   const [x0,x1]=o.xr||pad(Math.min(...xs),Math.max(...xs)),[y0,y1]=o.yr||pad(Math.min(...ys),Math.max(...ys));
@@ -627,7 +627,7 @@ function hbars(rows,max,fmt){return `<div class="hb">${rows.map(r=>`<div class="
 let OV_DRAW=[];   // charts drawn after the HTML is in place (and again on resize)
 function ovSnapshot(){
   const reits=inTab('realestate').filter(i=>i.model==='reits').sort((a,b)=>a.score-b.score);const rm=reits[Math.floor(reits.length/2)];
-  const cheap=[...ALL_ITEMS].filter(i=>!notInvestable(i)).sort((a,b)=>a.score-b.score).slice(0,8),rich=[...ALL_ITEMS].sort((a,b)=>b.score-a.score).slice(0,8);
+  const head=ALL_ITEMS.filter(i=>!i.wide),cheap=head.filter(i=>!notInvestable(i)).sort((a,b)=>a.score-b.score).slice(0,8),rich=[...head].sort((a,b)=>b.score-a.score).slice(0,8);
   const AM=DATA.amfi,PS=DATA.parabolic&&DATA.parabolic.summary,bad=MODEL_ORDER.map(modelStatus).filter(s=>s.cls!=='ok').length;
   const areaRows=Object.keys(TABS).filter(t=>t!=='snapshot').map(t=>{const l=inTab(t).sort((a,b)=>a.score-b.score);return `<tr><td><a href="#${t}"><b>${TABS[t].t}</b></a></td><td style="width:42%">${bandMix(l,12)}</td><td class="tag">${l.length}</td><td>${l.length?`<span class="sw" style="background:${bcol(l[0].score)}"></span> ${esc(l[0].name)} <b>${l[0].score.toFixed(0)}</b>`:''}</td></tr>`}).join('');
   OV_DRAW=[drawClasses];
@@ -644,7 +644,7 @@ function ovSnapshot(){
       <div><div class="tag">Parabolic moves today</div><div class="wv">${PS?PS.parabolic_now.length:'—'}<span> of ${PS?PS.covered:'—'}</span></div><div class="tag">${PS&&PS.stretched_now.length?'Stretched: '+PS.stretched_now.map(k=>byId[k]?byId[k].name:k).join(', '):'None stretched'}</div></div>
       <div><div class="tag">Data freshness</div><div class="wv">${bad}<span> model${bad===1?'':'s'} due</span></div><div class="tag"><a href="#health">Data health</a></div></div></div></section>
   </div>
-  <div class="grid g2"><section class="card"><h2>Cheapest across all asset classes</h2><p class="hint">Investable readings only.</p>${cheap.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section>
+  <div class="grid g2"><section class="card"><h2>Cheapest across all asset classes</h2><p class="hint">Investable headline readings (Nifty 500 stocks beyond the Nifty 50 are in Indian equities).</p>${cheap.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section>
     <section class="card"><h2>Richest across all asset classes</h2><p class="hint">Matter only for what you hold.</p>${rich.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section></div>`;
 }
 let indState={heat:'score',sec:'all',stockView:'grid',uni:'n50'};
@@ -763,7 +763,8 @@ function route(){
     m.innerHTML=a==='knowledge'?viewKnowledge():a==='notes'?viewNotes():viewHealth();bindRows(m);if(a==='knowledge')drawKnowledge();return}
   const t=TABS[a]?a:'snapshot',tool=TOOLVIEW[b]&&toolOK(t,b)?b:'';CUR={tab:t,tool};
   items=ALL_ITEMS.filter(TABS[t].scope);
-  const bar=`<div class="tabhead"><div><h1 class="tabt">${TABS[t].t}</h1><p class="tabs">${TABS[t].sub}</p></div><div class="tabmix">${bandMix(items,8)}<span class="tag">${items.length} reading${items.length>1?'s':''}</span></div></div>
+  const hd=items.filter(i=>!i.wide),wd=items.length-hd.length;
+  const bar=`<div class="tabhead"><div><h1 class="tabt">${TABS[t].t}</h1><p class="tabs">${TABS[t].sub}</p></div><div class="tabmix">${bandMix(hd,8)}<span class="tag">${hd.length} headline reading${hd.length>1?'s':''}${wd?` · +${wd} more Nifty 500 stocks`:''}</span></div></div>
     <div class="tbar" role="tablist" aria-label="Tools for ${TABS[t].t}">${TOOLS.filter(([k])=>!k||toolOK(t,k)).map(([k,l])=>`<a role="tab" aria-selected="${k===tool}" class="${k===tool?'on':''}" href="#${t}${k?'/'+k:''}">${l}</a>`).join('')}</div>`;
   let body,after=null;
   if(!tool){body=OVERVIEW[t]();after=()=>{OV_DRAW.forEach(f=>f());if(t==='india')drawSX()}}
