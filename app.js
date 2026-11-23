@@ -674,7 +674,7 @@ function watchCard(i){const s=i.setup,g=i.growth||{};
   <div class="ats">PE ${i.meta.PE??'—'} vs sector ${i.meta['Sector PE']??'—'} · ROE 5-yr ${g.roe5??'—'}%</div></div>`}
 function ovIndia(){
   const v=indState.view;
-  const views=[['cap','Market cap','Nifty 50 → large, mid, small caps · factors'],['sector','Sectors','Heat map, table, stock-by-stock check'],['stock','Stocks',STOCK_FOCUS?'Your watchlist · top 10 short-term value':'Value setups, 5-year deep value, screener']];
+  const views=[['cap','Market cap','Nifty 50 → large, mid, small caps · factors'],['sector','Sectors','Heat map, table, stock-by-stock check'],['stock','Stocks',STOCK_FOCUS?'Your watchlist · best value pick per sector':'Value setups, 5-year deep value, screener']];
   const sw=`<div class="vsw v3" role="tablist" aria-label="Indian equities view">${views.map(([k,t,s])=>`<button role="tab" aria-selected="${v===k}" class="${v===k?'on':''}" data-v="${k}"><b>${t}</b><span>${s}</span></button>`).join('')}</div>`;
   return sw+(v==='cap'?ovIndiaCap():v==='sector'?ovIndiaSector():ovIndiaBottom());
 }
@@ -781,36 +781,41 @@ function ovIndiaSector(){
   <h3 class="step"><span>3</span>Hand-off to stocks</h3>
   <section class="card"><h2>Does the sector call hold stock by stock?</h2><p class="hint">Big dot: the sector index. Small dots: its stocks. Diamond: their median. Open the Stocks view for the names.</p><div id="sxsvg"></div></section>`;
 }
-/* Stocks view focus: show only the watchlist and a top-10 short-term value note.
+/* Stocks view focus: show only the watchlist and the per-sector value picks.
    Set to false to bring back the full view (setup heat map, 5-year deep value, screener). */
 const STOCK_FOCUS=true;
+/* Value picks: Nifty 500 only, score 50 or lower, at least one price setup, no falling-knife veto.
+   Best one per NSE sector; a second only when it scores PICK_SECOND or lower. Capped at PICK_MAX. */
+const PICK_MAX=20,PICK_SECOND=25;
+function valuePicks(all){
+  const IN=i=>i.meta.Industry||i.meta.Sector;
+  const ok=all.filter(i=>i.meta.Universe!=='Watchlist'&&i.score<=50&&i.setup&&(i.setup.types||[]).length&&!/^BUY VETOED/.test(i.signal||'')).sort((a,b)=>a.score-b.score);
+  const n={},out=[];
+  ok.forEach(i=>{const s=IN(i),k=n[s]||0;if(k===0||(k===1&&i.score<=PICK_SECOND)){out.push(i);n[s]=k+1}});
+  return out.slice(0,PICK_MAX);
+}
 function ovStockFocus(){
   const all=ALL_ITEMS.filter(i=>i.model==='stocks'&&i.score!=null);
   const watch=ALL_ITEMS.filter(i=>i.watch).sort((a,b)=>(a.score??999)-(b.score??999));
   const watchMissing=(DATA.watchlist||[]).filter(w=>!byId['STK_'+w.ticker]);
-  const shortAll=all.filter(i=>i.setup&&hasSetup(i,'short')).sort((a,b)=>a.score-b.score);
-  const vetoed=i=>/^BUY VETOED/.test(i.signal||'');
-  const short=shortAll.filter(i=>!vetoed(i)).slice(0,10),knives=shortAll.filter(vetoed).filter(i=>i.score<=(short.length?short[short.length-1].score:100));
-  const asof=short.length&&short[0].setup.asof?` (prices to ${esc(String(short[0].setup.asof).slice(0,10))})`:'';
   const IN=i=>i.meta.Industry||i.meta.Sector;
-  return `<h3 class="step"><span>★</span>Your watchlist (${watch.length+watchMissing.length})</h3>
-  <p class="hint" style="margin:-4px 0 10px">Cheapest score first. Click a card for the full panel. The rest of the stock universe is hidden for now; it is still scored in the background.</p>
-  <div class="tiles3" style="margin-bottom:14px">${watch.map(watchCard).join('')}${watchMissing.map(w=>`<div class="at" style="border-top-color:var(--line-2)"><div class="atl">★ ${esc(w.ticker)} · Watchlist</div><div class="atv">—</div><div class="ats"><b>${esc(w.name)}</b></div><div class="ats">Not scored yet: its fundamentals arrive with the next monthly stock fetch.</div></div>`).join('')}</div>
-  <section class="card" style="margin-bottom:14px"><h2>Your watchlist side by side</h2><p class="hint">Click a column to sort; click a row for the full panel.</p>
-    ${sortTable('wl',[{k:'name',l:'Name',get:i=>i.name,fmt:i=>`<b>${esc(i.name)}</b>`},{k:'ind',l:'Sector',get:IN},C.score,C.b('Valuation'),C.b('Quality'),C.b('Momentum'),
-      C.m('PE','PE',1),C.m('Sector PE','Sector PE',1),
-      {k:'eps',l:'EPS growth',num:1,get:i=>(i.growth||{}).eps_cagr,fmt:i=>{const g=i.growth||{};return g.eps_cagr==null?'—':(g.eps_cagr>0?'+':'')+g.eps_cagr+'%/yr'}},
-      {k:'roe',l:'ROE 5-yr',num:1,get:i=>(i.growth||{}).roe5,fmt:i=>(i.growth||{}).roe5??'—'},
-      {k:'d3',l:'From 3-mo high',num:1,get:i=>i.setup?i.setup.dd_3m:null,fmt:i=>i.setup?pc(i.setup.dd_3m):'—'},
-      {k:'d5',l:'From 5-yr high',num:1,get:i=>i.setup?i.setup.dd_5y:null,fmt:i=>i.setup?pc(i.setup.dd_5y):'—'},
-      {k:'st',l:'Setups now',get:i=>i.setup?i.setup.types.length:0,fmt:i=>i.setup?i.setup.types.map(t=>SETUP_NAME[t]).join(', ')||'none':'—'}],watch,{k:'score',dir:1})}</section>
-  <section class="card"><h2>Note: top 10 undervalued on short-term reasons${asof}</h2>
-    <p class="hint">From the whole Nifty 500 and your watchlist: stocks that fell 15% or more from their 3-month high, ranked by score (cheapest first). A short-term fall is a reason to look, not a reason to buy: check why it fell before acting. Stocks the model marks "Buy vetoed (falling knife)" are left out.</p>
-    ${short.length?sortTable('st10',[{k:'name',l:'Name',get:i=>i.name,fmt:i=>`${i.watch?'★ ':''}<b>${esc(i.name)}</b>`},{k:'ind',l:'Sector',get:IN},C.score,
-      {k:'d3',l:'From 3-mo high',num:1,get:i=>i.setup.dd_3m,fmt:i=>pc(i.setup.dd_3m)},C.m('PE','PE',1),C.m('Sector PE','Sector PE',1),
-      {k:'eps',l:'EPS growth',num:1,get:i=>(i.growth||{}).eps_cagr,fmt:i=>{const g=i.growth||{};return g.eps_cagr==null?'—':(g.eps_cagr>0?'+':'')+g.eps_cagr+'%/yr'}}],short,{k:'score',dir:1})
-      :'<div class="empty">The short-term drawdowns come from the daily price check and appear after its next run.</div>'}
-    ${knives.length?`<div class="tag" style="margin-top:8px;white-space:normal">Left out as falling knives (cheap, but the model says wait): ${knives.map(i=>esc(i.name.replace(/ Ltd\.?$/,''))).join(', ')}.</div>`:''}</section>`;
+  const picks=valuePicks(all);
+  const nm=i=>`${i.watch?'★ ':''}<b>${esc(i.name.replace(/ Ltd\.?$/,''))}</b>`;
+  const pe={k:'pe',l:'P/E vs sector',num:1,get:i=>i.meta.PE,fmt:i=>`${i.meta.PE??'—'} <span class="tag">/ ${i.meta['Sector PE']??'—'}</span>`};
+  const eps={k:'eps',l:'EPS growth',num:1,get:i=>(i.growth||{}).eps_cagr,fmt:i=>{const g=i.growth||{};return g.eps_cagr==null?'—':(g.eps_cagr>0?'+':'')+g.eps_cagr+'%/yr'}};
+  const why={k:'why',l:'Why it is cheap now',get:i=>i.setup?i.setup.types.length:0,fmt:i=>i.setup&&i.setup.types.length?i.setup.types.map(t=>`<span class="pill sp" title="${esc(setupNote(i,t))}">${SETUP_NAME[t]}</span>`).join(' '):'—'};
+  const asof=all.find(i=>i.setup&&i.setup.asof);
+  const short=all.filter(i=>hasSetup(i,'short')&&!/^BUY VETOED/.test(i.signal||'')).sort((a,b)=>a.score-b.score).slice(0,10);
+  return `<h3 class="step"><span>★</span>Your watchlist</h3>
+  <section class="card" style="margin-bottom:14px"><p class="hint">Cheapest first. Click a row for the full panel.${watchMissing.length?` Not scored yet: ${watchMissing.map(w=>esc(w.name)).join(', ')}.`:''}</p>
+    ${sortTable('wl',[{k:'name',l:'Name',get:i=>i.name,fmt:nm},{k:'ind',l:'Sector',get:IN},C.score,pe,eps,
+      {k:'roe',l:'ROE 5-yr',num:1,get:i=>(i.growth||{}).roe5,fmt:i=>(i.growth||{}).roe5!=null?(i.growth||{}).roe5+'%':'—'},
+      {k:'d3',l:'From 3-mo high',num:1,get:i=>i.setup?i.setup.dd_3m:null,fmt:i=>i.setup?pc(i.setup.dd_3m):'—'},why],watch,{k:'score',dir:1})}</section>
+  <h3 class="step"><span>1</span>Value opportunities: the best in each sector</h3>
+  <section class="card"><p class="hint">From the Nifty 500: stocks scoring 50 or lower that show a value setup now, best one per sector (a second only if it scores ${PICK_SECOND} or lower), cheapest first. Falling knives the model vetoes are left out. Hover a setup for the detail.${asof?` Prices to ${esc(String(asof.setup.asof).slice(0,10))}.`:''}</p>
+    ${picks.length?sortTable('vp',[{k:'name',l:'Name',get:i=>i.name,fmt:nm},{k:'ind',l:'Sector',get:IN},C.score,pe,eps,why],picks,{k:'score',dir:1})
+      :'<div class="empty">The value setups come from the daily price check and appear after its next run.</div>'}
+    ${short.length?`<details style="margin-top:10px"><summary class="tag" style="cursor:pointer">Note: top 10 on short-term reasons (fell 15%+ from the 3-month high)</summary><div class="tag" style="white-space:normal;margin-top:6px">${short.map((i,k)=>`${k+1}. ${esc(i.name.replace(/ Ltd\.?$/,''))} (${i.score.toFixed(0)}, ${pc(i.setup.dd_3m)})`).join(' · ')}</div></details>`:''}</section>`;
 }
 function ovIndiaBottom(){
   if(STOCK_FOCUS)return ovStockFocus();
