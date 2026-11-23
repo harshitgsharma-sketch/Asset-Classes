@@ -1,4 +1,4 @@
-import pandas as pd, json, math
+import pandas as pd, json, math, csv
 import os,re,datetime
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 M=os.path.join(ROOT,'models')+'/'
@@ -39,9 +39,27 @@ d=pd.read_csv(P+'nifty500-stocks-score-log.csv')
 import json as _j
 N50={x['ticker'] for x in _j.load(open(P+'nifty500-stocks-config.json'))['stocks']}
 d=d[d.month==d.month.max()]
+# growth and price-return inputs for the 5-year deep-value view (display only)
+_inp=pd.read_csv(P+'nifty500-stocks-inputs-monthly.csv',dtype={'month':str})
+_inp=_inp[_inp.month==_inp.month.max()].set_index('ticker')
+_wl=os.path.join(P,'stock-watchlist.csv')
+WATCH={x['Symbol'] for x in csv.DictReader(open(_wl,encoding='utf-8-sig'))} if os.path.exists(_wl) else set()
+_c500=os.path.join(P,'nifty500-constituents.csv')
+# NSE industry for every stock, so Nifty 50 names (hand-labelled sectors) group with the rest
+IND={x['Symbol']:x['Industry'] for x in csv.DictReader(open(_c500,encoding='utf-8-sig'))} if os.path.exists(_c500) else {}
+C500=set(IND)
+if os.path.exists(_wl): IND.update({x['Symbol']:x['Industry'] for x in csv.DictReader(open(_wl,encoding='utf-8-sig')) if x['Symbol'] not in IND})
+def growth(t):
+    if t not in _inp.index: return None
+    r=_inp.loc[t]
+    if isinstance(r,pd.DataFrame): r=r.iloc[-1]
+    eps=[float(x) for x in str(r.get('eps_hist','')).split() if x not in ('','nan')]
+    return {'pg5':num(r.get('pg5')),'pg_ttm':num(r.get('pg_ttm')),'roe':num(r.get('roe')),'roe5':num(r.get('roe5')),
+            'px1':num(r.get('px1')),'px3':num(r.get('px3')),'px5':num(r.get('px5')),'eps':eps,
+            'eps_cagr':round(((eps[-1]/eps[0])**(1/(len(eps)-1))-1)*100,1) if len(eps)>=2 and eps[0]>0 and eps[-1]>0 else None}
 for _,r in d.iterrows():
     c=cov(r.coverage)
-    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Universe':'Nifty 50' if r.ticker in N50 else 'Nifty 500','Sector':r.sector,'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r['flags'] if isinstance(r['flags'],str) else '')
+    add(id='STK_'+r.ticker,name=r['name'],model='stocks',score=num(r.score) if 'NOT RATED' not in r.signal else None,signal=r.signal,buckets={'Valuation':num(r.valuation),'Quality':num(r.quality),'Momentum':num(r.momentum)},history=[],coverage=c,tier=tier(1,c),action=None,meta={'Ticker':r.ticker,'Universe':'Nifty 50' if r.ticker in N50 else ('Watchlist' if r.ticker in WATCH and C500 and r.ticker not in C500 else 'Nifty 500'),'Sector':r.sector,'Industry':IND.get(r.ticker,r.sector),'PE':num(r.pe),'Sector PE':num(r.sector_pe)},sidx=r.sector_index,flags=r['flags'] if isinstance(r['flags'],str) else '',growth=growth(r.ticker),watch=r.ticker in WATCH)
 # global
 d=pd.read_csv(C+'global-indices-score-log.csv')
 for _,r in d.iterrows():
@@ -132,7 +150,8 @@ if os.path.exists(pq):
                     'from':p.get('history_from'),'episodes':len(eps),'last_episode':eps[-1] if eps else None,
                     'stale':bool(p.get('note'))}
                 if p.get('drawdown'): it['drawdown']=dict(p['drawdown'],asof=p['asof'],stale=bool(p.get('note')))
-        parabolic={'built_at':pj['built_at'],'rule':pj['rule'],'summary':pj['summary']}
+                if p.get('setup'): it['setup']=dict(p['setup'],asof=p['asof'],stale=bool(p.get('note')))
+        parabolic={'built_at':pj['built_at'],'rule':pj['rule'],'summary':pj['summary'],'setup_rule':pj.get('setup_rule')}
     except Exception as e:
         print('WARN parabolic.json unreadable:',e)
 # thematic-fund froth (sectors model S4): latest reading + history for the board
@@ -153,7 +172,8 @@ if os.path.exists(aq):
               'applies_to':['SEC_NEXT50','SEC_MIDSELECT','SEC_MIDCAP150','SEC_SMALLCAP250','SEC_NIFTY500','SEC_CPSE','SEC_DEFENCE','SEC_INFRA']}
     except Exception as e:
         print('WARN amfi froth:',e)
-out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi}
+watchlist=[{'ticker':x['Symbol'],'name':x['Company Name'],'industry':x['Industry']} for x in csv.DictReader(open(_wl,encoding='utf-8-sig'))] if os.path.exists(_wl) else []
+out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi,'watchlist':watchlist}
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(out,open(os.path.join(ROOT,'data','signals.json'),'w'),separators=(',',':'),allow_nan=False)
 print('signals.json:',len(items),'items;',{k:v['asof'] for k,v in meta.items()})

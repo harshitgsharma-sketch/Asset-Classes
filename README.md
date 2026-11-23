@@ -22,6 +22,8 @@ Daily prices do **not** change scores by themselves: the price-driven indicators
 - `data/prices.json`: latest prices from `scripts/fetch_prices.py`.
 - `models/amfi-thematic-monthly.csv`: AMFI sectoral/thematic fund flows since Apr 2019 from `scripts/fetch_amfi_thematic.py` (daily, only new months). Scored by the sectors model as S4, thematic-fund froth.
 - `data/parabolic.json`: daily parabolic-move check (gap above the 150-day EMA, plus a back-test) from `scripts/fetch_parabolic.py`. Shown as a flag; it never changes a score.
+- Indian equities tab: a **Top-down** view (Nifty 50 → size and factors → sectors) and a **Bottom-up** view (stocks). Bottom-up has a sector × setup heat map of value opportunities (short-term drawdown, long-term drawdown, consolidation, multi-year base), a 5-year deep-value table (price flat for 5+ years while EPS grew) and the screener. The setups come from `price_setup()` in `scripts/fetch_parabolic.py` (thresholds in `SETUP_RULE`), run daily on the same 10-year Yahoo history; display only, they never change a score.
+- `models/stock-watchlist.csv`: stocks the owner tracks. They are always shown on the Bottom-up view, and the ones outside the Nifty 500 are fetched and scored too (`scripts/fetch_stock_fundamentals.py`, `scripts/fetch_parabolic.py`).
 - `knowledge/`: notes from videos, articles and books, shown in the site's Knowledge tab (index in `knowledge/index.json`). A launchd job on the owner's Mac runs `scripts/weekly_knowledge_push.sh` every Sunday at 19:00 to commit knowledge changes and push local commits.
 - `models/`: the 12 engines, their inputs, configs, score logs and playbooks. Run all with `bash scripts/run_models.sh`.
 

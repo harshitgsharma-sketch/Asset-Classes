@@ -190,6 +190,26 @@ nav .navx{margin-left:auto;display:flex;gap:2px}nav .navx a{font-size:12px;color
 .heat.sm .hts b{font-size:15px}
 .tscroll{overflow-x:auto}td.hc{text-align:right;font-variant-numeric:tabular-nums}
 table.st th .btn{white-space:nowrap}
+/* ---- Indian equities: top-down / bottom-up ---- */
+.vsw{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 16px}
+.vsw button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 14px;cursor:pointer;font:inherit}
+.vsw button b{font-size:15px}.vsw button span{font-size:12px;color:var(--ink-3)}
+.vsw button.on{background:var(--ink);border-color:var(--ink);color:var(--surface)}.vsw button.on span{color:var(--surface);opacity:.75}
+.step{display:flex;align-items:center;gap:8px;margin:6px 0 8px;font-size:12px}
+.step span{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line-2);color:var(--ink-2);font-size:11px}
+table.hm{border-collapse:separate;border-spacing:2px;width:100%;min-width:560px;table-layout:fixed}table.hm thead th:first-child{width:28%}
+table.hm .btn{text-decoration:none}
+table.hm th,table.hm td{border:0;padding:0}
+table.hm thead .btn{width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;background:transparent;padding:4px 2px;font-size:12px}
+table.hm tbody th .btn{border:0;background:transparent;text-align:left;font-weight:500;padding:6px 6px 6px 0;white-space:nowrap;font-size:12px}
+.hmcell{width:100%;min-height:30px;border:1px solid var(--line);border-radius:4px;font:inherit;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer}
+.hmcell:disabled{cursor:default;color:var(--ink-3)!important;font-weight:400}
+.hmcell:not(:disabled):hover,.hmcell.on{outline:2px solid var(--ink);outline-offset:-1px}
+.hmleg{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:8px}.hmleg i{width:22px;height:10px;border-radius:2px;border:1px solid var(--line)}
+.hmleg .tag{white-space:normal}
+.heat.opp{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.pill.sp{font-size:10px;padding:0 5px}
+@media(max-width:640px){.vsw{grid-template-columns:1fr}}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:6px}.sgh{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:600;margin-bottom:4px}
 .warnrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:640px){.warnrow{grid-template-columns:1fr}}
 .wv{font-size:26px;font-weight:600}.wv span{font-size:12px;color:var(--ink-3);font-weight:400}

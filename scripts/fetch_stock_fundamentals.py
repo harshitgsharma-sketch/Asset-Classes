@@ -20,6 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 M = os.path.join(ROOT, "models")
 INPUTS = os.path.join(M, "nifty500-stocks-inputs-monthly.csv")
 CONST = os.path.join(M, "nifty500-constituents.csv")
+WATCH = os.path.join(M, "stock-watchlist.csv")   # extra stocks the owner tracks, scored even outside the Nifty 500
 LIST_URLS = ["https://www.niftyindices.com/IndexConstituent/ind_nifty500list.csv",
              "https://nsearchives.nseindia.com/content/indices/ind_nifty500list.csv",
              "https://archives.nseindia.com/content/indices/ind_nifty500list.csv"]
@@ -145,6 +146,11 @@ def main():
     rows = list(csv.DictReader(open(INPUTS)))
     have = {r["ticker"] for r in rows if r["month"] == month}
     cons = get_list()
+    if os.path.exists(WATCH):
+        known = {c["Symbol"] for c in cons}
+        extra = [w for w in csv.DictReader(open(WATCH, encoding="utf-8-sig")) if w["Symbol"] not in known]
+        cons = cons + extra
+        print(f"watchlist: {len(extra)} stocks outside the Nifty 500 added")
     todo = [c for c in cons if a.overwrite or c["Symbol"] not in have]
     if a.limit: todo = todo[:a.limit]
     print(f"{len(cons)} constituents, {len(have)} already have {month} rows, fetching {len(todo)}")

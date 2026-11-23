@@ -47,7 +47,7 @@ const bcol=s=>{const b=bandOf(s);return b?`var(${b[3]})`:'var(--line-2)'};
 const ALL_ITEMS=DATA.items.filter(i=>i.score!=null);
 let items=ALL_ITEMS;   // narrowed to the open tab's scope by the router
 /* Nifty 500 stocks outside the Nifty 50 are on the map, list, search and sector chart, but kept out of the headline counts and signal lanes so 450 stocks do not swamp the other models. */
-ALL_ITEMS.forEach(i=>{i.wide=i.model==='stocks'&&(i.meta||{}).Universe==='Nifty 500'});
+ALL_ITEMS.forEach(i=>{i.wide=i.model==='stocks'&&(i.meta||{}).Universe!=='Nifty 50'});
 const HL=()=>items.filter(i=>!i.wide);
 const byId=Object.fromEntries(DATA.items.map(i=>[i.id,i]));
 const pct=x=>Math.round(x*100)+'%';
@@ -551,7 +551,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 const TABS={
   snapshot:{t:'Snapshot',sub:'Every asset class on one 1–100 scale: where the cheap and rich readings are today.',scope:()=>true,
     notes:['sector-investing-playbook','sector-rotation-research-evidence','board-backlog']},
-  india:{t:'Indian equities',sub:'The Nifty 50, then size, sectors, factors and individual stocks.',scope:i=>i.id==='NIFTY50'||['sectors','factors','stocks'].includes(i.model),
+  india:{t:'Indian equities',sub:'Top-down from the Nifty 50 through factors to sectors, and bottom-up from individual stocks.',scope:i=>i.id==='NIFTY50'||['sectors','factors','stocks'].includes(i.model),
     notes:['sector-investing-playbook','india-sector-facts-2016-2026','sector-froth-signals','valuing-cyclical-sectors','sector-rotation-7-indian-bull-runs','flat-markets-are-not-dead-markets','identifying-winning-sectors']},
   global:{t:'International',sub:'The US first, then 20 more markets, all scored for an INR investor over five years.',scope:i=>i.model==='global',
     notes:['sector-rotation-research-evidence','sector-rotation-economic-cycle-schwab']},
@@ -647,35 +647,120 @@ function ovSnapshot(){
   <div class="grid g2"><section class="card"><h2>Cheapest across all asset classes</h2><p class="hint">Investable headline readings (Nifty 500 stocks beyond the Nifty 50 are in Indian equities).</p>${cheap.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section>
     <section class="card"><h2>Richest across all asset classes</h2><p class="hint">Matter only for what you hold.</p>${rich.map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</section></div>`;
 }
-let indState={heat:'score',sec:'all',stockView:'grid',uni:'n50'};
+let indState={heat:'score',sec:'all',stockView:'grid',uni:'n50',view:'top',valMax:50,cell:null,dvAll:false};
+try{const v=localStorage.getItem('eeb-india-view');if(v==='top'||v==='bottom')indState.view=v}catch(e){}
 const SIZE_IDS=['SEC_NIFTY500','SEC_NEXT50','SEC_MIDSELECT','SEC_MIDCAP150','SEC_SMALLCAP250'];
+/* value setups (scripts/fetch_parabolic.py price_setup): how a stock's price got where it is */
+const SETUPS=[['short','Short-term drawdown','Fell 15% or more from its 3-month high'],['long','Long-term drawdown','30% or more below its 5-year high, and that high is over a year old'],
+  ['consol','Consolidation','6 months or more inside a 25% high-to-low band'],['base','Multi-year base','Price has compounded 7% a year or less (about a fixed deposit) for 5 years or more']];
+const SETUP_NAME=Object.fromEntries(SETUPS.map(s=>[s[0],s[1]]));
+const pc=(x,d=0)=>x==null?'—':(x>0?'+':'')+(x*100).toFixed(d)+'%';
+const hasSetup=(i,k)=>!!(i.setup&&i.setup.types&&i.setup.types.includes(k));
+const growing=i=>{const g=i.growth;return !!g&&((g.eps_cagr!=null&&g.eps_cagr>0)||(g.pg5!=null&&g.pg5>0))};
+function setupNote(i,k){const s=i.setup;if(!s)return '';
+  return k==='short'?`${pc(s.dd_3m)} from 3-month high`:k==='long'?`${pc(s.dd_5y)} from 5-yr high (${s.years_below_5y_high} yrs ago)`:
+    k==='consol'?`${s.consol_months} months in a ${Math.round(s.consol_range*100)}% band`:`flat ${s.flat_years} yrs · 5-yr price ${pc(s.cagr&&s.cagr['5'],1)}/yr`}
+const seqBg=(n,max)=>n?`color-mix(in srgb, var(--focus) ${Math.round(12+68*n/Math.max(1,max))}%, var(--surface))`:'transparent';
+const seqInk=(n,max)=>n&&12+68*n/Math.max(1,max)>55?'#fff':'var(--ink)';
+function oppTile(i,k){const g=i.growth||{};return `<div class="ht" data-id="${i.id}" role="button" tabindex="0" style="background:${tint(i.score,46)};border-color:${bcol(i.score)}" aria-label="${esc(i.name)}, score ${i.score}">
+  <div class="htn">${i.watch?'★ ':''}${esc(i.meta.Ticker)} <span class="tag">${esc(i.name.replace(/ Ltd\.?$/,''))}</span></div>
+  <div class="hts"><b>${i.score.toFixed(0)}</b></div><div style="display:flex;flex-wrap:wrap;gap:3px;margin:2px 0">${(i.setup.types||[]).map(t=>`<span class="pill sp">${{short:'Short-term',long:'Long-term',consol:'Consolidation',base:'Multi-year base'}[t]}</span>`).join('')}</div>
+  <div class="tag" style="white-space:normal">${esc(k?setupNote(i,k):(i.setup.types||[]).map(t=>setupNote(i,t)).join(' · '))}${g.eps_cagr!=null?` · EPS ${g.eps_cagr>0?'+':''}${g.eps_cagr}%/yr`:''}</div></div>`}
+function watchCard(i){const s=i.setup,g=i.growth||{};
+  return `<div class="at" data-id="${i.id}" role="button" tabindex="0" style="border-top-color:${bcol(i.score)}"><div class="atl">★ ${esc(i.meta.Ticker)} · ${esc(i.meta.Universe)}</div>
+  <div class="atv">${i.score==null?'—':i.score.toFixed(0)}<span>${i.score==null?'':chip(i.score)}</span></div><div class="ats"><b>${esc(i.name)}</b></div>${gauge(i.score,200)}
+  <div class="ats">${s?(s.types.length?s.types.map(t=>'<b>'+SETUP_NAME[t]+'</b>: '+esc(setupNote(i,t))).join('<br>'):'No value setup right now'):'Price setup arrives with the next daily refresh'}</div>
+  <div class="ats">Price ${s&&s.cagr?`5-yr ${pc(s.cagr['5'],1)}/yr · 10-yr ${pc(s.cagr['10'],1)}/yr`:`5-yr ${g.px5!=null?g.px5+'%/yr':'—'}`} · EPS ${g.eps_cagr!=null?(g.eps_cagr>0?'+':'')+g.eps_cagr+'%/yr':'—'}${g.eps&&g.eps.length?` (${g.eps.length} yrs)`:''}</div>
+  <div class="ats">PE ${i.meta.PE??'—'} vs sector ${i.meta['Sector PE']??'—'} · ROE 5-yr ${g.roe5??'—'}%</div></div>`}
 function ovIndia(){
+  const v=indState.view;
+  const sw=`<div class="vsw" role="tablist" aria-label="Indian equities view">
+    <button role="tab" aria-selected="${v==='top'}" class="${v==='top'?'on':''}" data-v="top"><b>Top-down</b><span>Market → size and factors → sectors</span></button>
+    <button role="tab" aria-selected="${v==='bottom'}" class="${v==='bottom'?'on':''}" data-v="bottom"><b>Bottom-up</b><span>Stocks: value setups, 5-year deep value, screener</span></button></div>`;
+  return sw+(v==='top'?ovIndiaTop():ovIndiaBottom());
+}
+function ovIndiaTop(){
   const n=byId.NIFTY50,AM=DATA.amfi;
   const size=SIZE_IDS.map(k=>byId[k]).filter(Boolean),sectors=ALL_ITEMS.filter(i=>i.model==='sectors'&&!SIZE_IDS.includes(i.id));
-  const factors=ALL_ITEMS.filter(i=>i.model==='factors').sort((a,b)=>a.score-b.score),stocks=ALL_ITEMS.filter(i=>i.model==='stocks'&&(indState.uni==='all'||!i.wide));
+  const factors=ALL_ITEMS.filter(i=>i.model==='factors').sort((a,b)=>a.score-b.score);
   const rel=i=>(i.buckets||{})['Relative vs Nifty'];
   const hv={score:i=>i.score,rel:rel,dd:i=>{const d=ddNow(i);return d==null?null:Math.max(1,Math.min(100,100+d*200))}}[indState.heat];
   const hsub={score:i=>chip(i.score).replace(/<span class="sw"[^>]*><\/span>/,''),rel:i=>'rel '+(rel(i)==null?'—':Math.round(rel(i))),dd:i=>ddTxt(i)}[indState.heat];
   const secs=[...sectors].sort((a,b)=>(hv(a)??999)-(hv(b)??999));
-  const sgroups=[...new Set(stocks.map(i=>i.meta.Sector))].sort();
-  const sel=stocks.filter(i=>indState.sec==='all'||i.meta.Sector===indState.sec);
-  const byGrp=sgroups.filter(g=>sel.some(i=>i.meta.Sector===g)).map(g=>[g,sel.filter(i=>i.meta.Sector===g).sort((a,b)=>a.score-b.score)]).sort((a,b)=>a[1][0].score-b[1][0].score);
   OV_DRAW=[()=>dotChart('sizec',[n,...size].map(i=>({id:i.id,label:i.name.replace(' (benchmark)',''),v:i.score,v2:rel(i)}) ),{label:'Size indices, absolute and relative'}),
            ()=>dotChart('facc',factors.map(i=>({id:i.id,label:i.name,v:i.score,v2:rel(i)})),{label:'Factor indices'})];
-  return `<div class="grid g2" style="margin-bottom:14px">
-    <section class="card hero" style="border-top-color:${bcol(n.score)}"><h2>The market: Nifty 50</h2><div class="herorow"><div class="big">${n.score}</div><div>${chip(n.score)}<div class="tag">${esc(n.signal)}</div></div></div>${gauge(n.score,320,true)}
+  return `<h3 class="step"><span>1</span>The market</h3><div class="grid g2" style="margin-bottom:14px">
+    <section class="card hero" style="border-top-color:${bcol(n.score)}"><h2>Nifty 50</h2><div class="herorow"><div class="big">${n.score}</div><div>${chip(n.score)}<div class="tag">${esc(n.signal)}</div></div></div>${gauge(n.score,320,true)}
       <div class="bk">${Object.entries(n.buckets).filter(([k,v])=>v!=null).map(([k,v])=>`<div style="background:${tint(v,40)}"><span>${k==='Filter'?'Macro':k}</span><b>${Math.round(v)}</b></div>`).join('')}<div style="background:${tint(ddNow(n)==null?null:50)}"><span>From high</span><b>${ddTxt(n)}</b></div>${AM?`<div style="background:${tint(AM.froth,40)}"><span>Fund froth</span><b>${AM.froth}</b></div>`:''}</div>
       <button class="btn" data-id="NIFTY50" style="margin-top:10px">Open Nifty 50 details</button></section>
     <section class="card"><h2>Size: large → small caps</h2><p class="hint">Filled dot: the index's own score. Ring: score relative to the Nifty 50 (low = cheaper than the market).</p><div id="sizec"></div></section></div>
+  <h3 class="step"><span>2</span>Factors</h3>
+  <section class="card" style="margin-bottom:14px"><h2>Factor indices</h2><p class="hint">Value, quality, momentum, low volatility… Ring: relative to the Nifty 50.</p><div id="facc"></div></section>
+  <h3 class="step"><span>3</span>Sectors</h3>
   <section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Sectors: heat-map</h2><p class="hint">Cheapest to richest. Colour shows the band of what you colour by.</p></div>
     <span class="seg" id="heatseg" aria-label="Colour by"><button data-v="score">Score</button><button data-v="rel">Relative to Nifty</button><button data-v="dd">Distance from high</button></span></div>
     <div class="heat">${secs.map(i=>heatTile(i,hsub(i)+(i.flags&&/guard/.test(i.flags)?' ⚑':''),hv(i))).join('')}</div>
     ${indState.heat==='dd'?'<div class="tag" style="margin-top:6px">Distance from high: blue = far below its 10-year high, red = at or near it. Grey tiles have no daily price history.</div>':''}</section>
   <section class="card" style="margin-bottom:14px"><h2>Sectors: table</h2><p class="hint">Click a column to sort; click a row for the full panel. ⚑ = peak-earnings guard on; ⓘ = model note.</p>
     ${sortTable('sec',[C.name,C.score,{k:'rel',l:'Relative',num:1,get:rel,cell:i=>hc(rel(i))},C.b('Valuation'),C.b('Sector cycle','Cycle'),C.b('Timing'),C.b('Filter','Macro'),C.dd,C.flags],sectors,{k:'score',dir:1})}</section>
-  <div class="grid g2" style="margin-bottom:14px"><section class="card"><h2>Factors</h2><p class="hint">Value, quality, momentum, low volatility… Ring: relative to the Nifty 50.</p><div id="facc"></div></section>
-    <section class="card"><h2>Does the sector call hold stock by stock?</h2><p class="hint">Big dot: the sector index. Small dots: its stocks. Diamond: their median.</p><div id="sxsvg"></div></section></div>
-  <section class="card"><div class="cardhead"><div><h2>Stocks (${indState.uni==='all'?'Nifty 500':'Nifty 50'}: ${stocks.length})</h2><p class="hint">Grouped by sector, cheapest group first. Colour = band.</p></div>
+  <section class="card"><h2>Does the sector call hold stock by stock?</h2><p class="hint">Big dot: the sector index. Small dots: its stocks. Diamond: their median. The hand-off to the Bottom-up view.</p><div id="sxsvg"></div></section>`;
+}
+function ovIndiaBottom(){
+  const all=ALL_ITEMS.filter(i=>i.model==='stocks'&&i.score!=null);
+  const stocks=all.filter(i=>indState.uni==='all'||!i.wide);
+  const withSetup=all.filter(i=>i.setup);
+  const valOK=i=>indState.valMax>=100||i.score<=indState.valMax;
+  const opp=withSetup.filter(i=>valOK(i)&&i.setup.types.length);
+  const IN=i=>i.meta.Industry||i.meta.Sector;
+  const secNames=[...new Set(all.map(IN))].filter(Boolean);
+  const cnt=(sec,k)=>opp.filter(i=>(!sec||IN(i)===sec)&&hasSetup(i,k)).length;
+  const rows=secNames.map(sec=>[sec,SETUPS.map(s=>cnt(sec,s[0]))]).filter(r=>r[1].some(Boolean)).sort((a,b)=>b[1].reduce((x,y)=>x+y,0)-a[1].reduce((x,y)=>x+y,0));
+  const max=Math.max(1,...rows.flatMap(r=>r[1]));
+  const cell=indState.cell;   // [sector|null, setup|null]
+  const picked=opp.filter(i=>(!cell||!cell[0]||IN(i)===cell[0])&&(!cell||!cell[1]||hasSetup(i,cell[1]))).sort((a,b)=>a.score-b.score);
+  const cellTxt=!cell?'every sector and setup':`${cell[0]||'all sectors'} · ${cell[1]?SETUP_NAME[cell[1]].toLowerCase():'any setup'}`;
+  const watch=ALL_ITEMS.filter(i=>i.watch).sort((a,b)=>(a.score??999)-(b.score??999));
+  const watchMissing=(DATA.watchlist||[]).filter(w=>!byId['STK_'+w.ticker]);
+  const vlabel=indState.valMax===35?'Buy or better (score 35 or lower)':indState.valMax===50?'Accumulate or better (score 50 or lower)':'any score';
+  // 5-year deep value: price flat for 5+ years while earnings kept growing
+  const dv=withSetup.filter(i=>hasSetup(i,'base')&&growing(i)&&(indState.dvAll||i.score<=50));
+  const dvExtra=watch.filter(i=>!dv.includes(i));
+  const gap=i=>{const g=i.growth||{},c=i.setup&&i.setup.cagr&&i.setup.cagr['5'];return g.eps_cagr==null||c==null?null:+(g.eps_cagr-c*100).toFixed(1)};
+  const cg=k=>({k:'c'+k,l:k+'-yr price',num:1,get:i=>i.setup&&i.setup.cagr?i.setup.cagr[k]:null,fmt:i=>i.setup&&i.setup.cagr?pc(i.setup.cagr[k],1):'—'});
+  const noData=!withSetup.length;
+  return `${watch.length||watchMissing.length?`<h3 class="step"><span>★</span>Your watchlist</h3><div class="tiles3" style="margin-bottom:14px">${watch.map(watchCard).join('')}${watchMissing.map(w=>`<div class="at" style="border-top-color:var(--line-2)"><div class="atl">★ ${esc(w.ticker)} · Watchlist</div><div class="atv">—</div><div class="ats"><b>${esc(w.name)}</b></div><div class="ats">Outside the Nifty 500, so not scored yet. The stock fundamentals fetch (monthly, on the 4th, or run it by hand) adds its inputs; the daily price check adds its setups.</div></div>`).join('')}</div>`:''}
+  <h3 class="step"><span>1</span>Where the value is: heat map by setup</h3>
+  <section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Value opportunities by what created them</h2>
+    <p class="hint">Rows: NSE sector. Columns: how the price got cheap. Each cell counts stocks in the Nifty 500${watch.some(i=>i.meta.Universe==='Watchlist')?' and your watchlist':''} that score ${vlabel} and show that setup; darker = more. A stock can sit in more than one column. Click a cell, a row or a column to list the stocks.</p></div>
+    <span class="seg" id="valseg" aria-label="Value filter"><button data-v="35">Buy ≤35</button><button data-v="50">Accumulate ≤50</button><button data-v="100">Any score</button></span></div>
+    ${noData?`<div class="empty">The price setups (drawdowns, consolidation, multi-year base) are computed by the daily price check and appear after its next run.</div>`:`
+    <div class="tscroll"><table class="hm"><thead><tr><th scope="col"><button class="btn hmc" data-s="" data-k="">All</button></th>${SETUPS.map((s,k)=>`<th scope="col"><button class="btn hmc" data-s="" data-k="${s[0]}" title="${esc(s[2])}">${s[1]}<span class="tag">${cnt(null,s[0])} stocks</span></button></th>`).join('')}</tr></thead>
+    <tbody>${rows.map(([sec,c])=>`<tr><th scope="row"><button class="btn hmc" data-s="${esc(sec)}" data-k="">${esc(sec)}</button></th>${c.map((n,k)=>`<td><button class="hmcell${cell&&cell[0]===sec&&cell[1]===SETUPS[k][0]?' on':''}" data-s="${esc(sec)}" data-k="${SETUPS[k][0]}" style="background:${seqBg(n,max)};color:${seqInk(n,max)}" aria-label="${esc(sec)}, ${SETUPS[k][1]}: ${n} stocks" ${n?'':'disabled'}>${n||'·'}</button></td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="hmleg"><span class="tag">Fewer</span><i style="background:${seqBg(1,4)}"></i><i style="background:${seqBg(2,4)}"></i><i style="background:${seqBg(3,4)}"></i><i style="background:${seqBg(4,4)}"></i><span class="tag">More stocks</span>
+      <span class="tag" style="margin-left:12px">${SETUPS.map(s=>`<b>${s[1]}</b>: ${s[2].toLowerCase()}`).join(' · ')}</span></div>`}
+  </section>
+  ${noData?'':`<section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Stocks in ${esc(cellTxt)} (${picked.length})</h2><p class="hint">Cheapest first. Tile colour = band. ★ = on your watchlist.</p></div>${cell?'<button class="btn" id="hmclear">Show all</button>':''}</div>
+    <div class="heat opp">${picked.slice(0,30).map(i=>oppTile(i,cell&&cell[1])).join('')}</div>${picked.length>30?`<div class="tag" style="margin-top:6px">Showing the 30 cheapest of ${picked.length}. Click a cell to narrow.</div>`:''}</section>`}
+  <h3 class="step"><span>2</span>Five-year horizon: deep value to accumulate</h3>
+  <section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Price flat for 5 to 10 years, earnings still growing (${dv.length})</h2>
+    <p class="hint">Stocks whose price has compounded 7% a year or less for 5 years or more (about a fixed deposit, dividends not counted) while EPS kept growing, so the multiple has de-rated. <b>Earnings gap</b> = EPS growth minus 5-year price growth, in points a year: the bigger it is, the more the valuation has compressed. ${indState.dvAll?'All scores shown.':'Score 50 or lower only.'} Watchlist names are always listed.</p>
+    <p class="hint">Caveat: Yahoo Finance gives 4 to 6 years of annual EPS for most stocks, so "growing" is judged on that window, not on 10 years. Open a stock to check the longer record.</p></div>
+    <label class="toggle"><input type="checkbox" id="dvall" ${indState.dvAll?'checked':''}> Include scores above 50</label></div>
+    ${noData?`<div class="empty">Needs the price setups from the next daily price check.</div>`:sortTable('dv',[{k:'name',l:'Name',get:i=>i.name,fmt:i=>`${i.watch?'★ ':''}<b>${esc(i.name)}</b>`},{k:'ind',l:'Sector',get:IN},C.score,
+      {k:'flat',l:'Flat for',num:1,get:i=>i.setup?i.setup.flat_years:null,fmt:i=>i.setup&&i.setup.flat_years?i.setup.flat_years+' yrs':'—'},cg('5'),cg('10'),
+      {k:'eps',l:'EPS growth',num:1,get:i=>(i.growth||{}).eps_cagr,fmt:i=>{const g=i.growth||{};return g.eps_cagr==null?'—':(g.eps_cagr>0?'+':'')+g.eps_cagr+'%/yr'}},
+      {k:'gap',l:'Earnings gap',num:1,get:gap,cell:i=>{const v=gap(i);return `<td class="hc" style="background:${v==null?'transparent':seqBg(Math.max(0,Math.min(20,v)),20)};color:${v==null?'var(--ink)':seqInk(Math.max(0,Math.min(20,v)),20)}">${v==null?'—':(v>0?'+':'')+v}</td>`}},
+      C.m('PE','PE',1),C.m('Sector PE','Sector PE',1),{k:'roe',l:'ROE 5-yr',num:1,get:i=>(i.growth||{}).roe5,fmt:i=>(i.growth||{}).roe5??'—'},
+      {k:'d5',l:'From 5-yr high',num:1,get:i=>i.setup?i.setup.dd_5y:null,fmt:i=>i.setup?pc(i.setup.dd_5y):'—'},
+      {k:'st',l:'Setups now',get:i=>i.setup?i.setup.types.length:0,fmt:i=>i.setup?i.setup.types.map(t=>SETUP_NAME[t]).join(', ')||'none':'—'}],[...dv,...dvExtra],{k:'score',dir:1})}</section>
+  <h3 class="step"><span>3</span>Screener</h3>
+  ${stockScreener(stocks)}`;
+}
+function stockScreener(stocks){
+  const sgroups=[...new Set(stocks.map(i=>i.meta.Sector))].sort();
+  const sel=stocks.filter(i=>indState.sec==='all'||i.meta.Sector===indState.sec);
+  const byGrp=sgroups.filter(g=>sel.some(i=>i.meta.Sector===g)).map(g=>[g,sel.filter(i=>i.meta.Sector===g).sort((a,b)=>a.score-b.score)]).sort((a,b)=>a[1][0].score-b[1][0].score);
+  return `<section class="card"><div class="cardhead"><div><h2>Stocks (${indState.uni==='all'?'Nifty 500 + watchlist':'Nifty 50'}: ${stocks.length})</h2><p class="hint">Grouped by sector, cheapest group first. Colour = band.</p></div>
     <div class="filters" style="margin:0"><label class="sr" for="secsel">Sector</label><select id="secsel" class="btn"><option value="all">All sectors</option>${sgroups.map(g=>`<option ${indState.sec===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
     <span class="seg" id="uniseg"><button data-v="n50">Nifty 50</button><button data-v="all">Nifty 500</button></span> <span class="seg" id="stseg"><button data-v="grid">Heat grid</button><button data-v="table">Table</button></span></div></div>
     ${indState.stockView==='grid'?`<div class="sgrid">${byGrp.map(([g,l])=>`<div class="sg"><div class="sgh">${esc(g)}</div><div class="heat sm">${l.map(i=>heatTile(i,(i.meta.PE?'PE '+i.meta.PE:''))).join('')}</div></div>`).join('')}</div>`
@@ -779,6 +864,11 @@ function route(){
     m.querySelectorAll('#stseg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===indState.stockView);x.onclick=()=>{indState.stockView=x.dataset.v;rerender()}});
     m.querySelectorAll('#uniseg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===indState.uni);x.onclick=()=>{indState.uni=x.dataset.v;indState.sec='all';rerender()}});
     const ss=m.querySelector('#secsel');if(ss)ss.onchange=()=>{indState.sec=ss.value;rerender()};
+    m.querySelectorAll('.vsw button').forEach(x=>x.onclick=()=>{indState.view=x.dataset.v;try{localStorage.setItem('eeb-india-view',x.dataset.v)}catch(e){}rerender()});
+    m.querySelectorAll('#valseg button').forEach(x=>{x.classList.toggle('on',+x.dataset.v===indState.valMax);x.onclick=()=>{indState.valMax=+x.dataset.v;rerender()}});
+    m.querySelectorAll('.hmc,.hmcell').forEach(x=>x.onclick=()=>{const c=[x.dataset.s||null,x.dataset.k||null];indState.cell=c[0]||c[1]?c:null;rerender()});
+    const hc_=m.querySelector('#hmclear');if(hc_)hc_.onclick=()=>{indState.cell=null;rerender()};
+    const dva=m.querySelector('#dvall');if(dva)dva.onchange=()=>{indState.dvAll=dva.checked;rerender()};
   }
 }
 addEventListener('hashchange',()=>{route();window.scrollTo(0,0)});

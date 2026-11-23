@@ -49,13 +49,20 @@ SYMBOLS = {
 
 
 def stock_symbols():
-    """Nifty stocks on the board: STK_<NSE symbol> -> <symbol>.NS"""
-    p = os.path.join(ROOT, 'data', 'signals.json')
+    """Nifty stocks on the board plus the watchlist: STK_<NSE symbol> -> <symbol>.NS"""
+    out = {}
     try:
-        items = json.load(open(p))['items']
+        items = json.load(open(os.path.join(ROOT, 'data', 'signals.json')))['items']
+        out = {i['id']: i['id'][4:] + '.NS' for i in items if i['id'].startswith('STK_')}
     except Exception:
-        return {}
-    return {i['id']: i['id'][4:] + '.NS' for i in items if i['id'].startswith('STK_')}
+        pass
+    try:
+        import csv
+        for r in csv.DictReader(open(os.path.join(ROOT, 'models', 'stock-watchlist.csv'), encoding='utf-8-sig')):
+            out['STK_' + r['Symbol']] = r['Symbol'] + '.NS'
+    except Exception:
+        pass
+    return out
 
 
 def fetch(symbol):
@@ -133,12 +140,91 @@ def analyse(rows):
     }
 
     g = gap[-1]
+    setup = price_setup(dates, px)
     status ='Parabolic' if g >= PARABOLIC else 'Stretched' if g >= STRETCHED else 'Normal'
     last_year = [x for x in gap[-252:] if x is not None]
     weekly = [[dates[i], round(gap[i], 4)] for i in range(len(gap) - 1, max(SPAN, len(gap) - 504) - 1, -5)][::-1]
     return {'asof': dates[-1], 'close': round(px[-1], 4), 'ema150': round(ema[-1], 4), 'gap': round(g, 4),
             'status': status, 'max_gap_1y': round(max(last_year), 4), 'min_gap_1y': round(min(last_year), 4),
-            'history_from': dates[SPAN], 'episodes': episodes, 'gap_weekly_2y': weekly, 'drawdown': drawdown}
+            'history_from': dates[SPAN], 'episodes': episodes, 'gap_weekly_2y': weekly, 'drawdown': drawdown,
+            'setup': setup}
+
+
+# Value-opportunity setups (Indian equities, Bottom-up): how the price got where it is.
+# Display only; never changes a score. Thresholds live here so the board and the notes agree.
+SETUP_RULE = {
+    'short': {'label': 'Short-term drawdown', 'days': 63, 'max_dd': -0.15,
+              'text': 'fell 15% or more from its 3-month high'},
+    'long': {'label': 'Long-term drawdown', 'days': 1260, 'max_dd': -0.30, 'min_years_below': 1.0,
+             'text': '30% or more below its 5-year high, and that high is over a year old'},
+    'consol': {'label': 'Consolidation', 'band': 0.25, 'min_days': 126,
+               'text': 'has traded inside a 25% high-to-low band for 6 months or more'},
+    # 5-year horizon: the price has gone nowhere for years. Judged against a bank deposit:
+    # a price CAGR of 7% a year or less over the look-back (dividends not counted).
+    'base': {'label': 'Multi-year base', 'max_cagr': 0.07, 'min_years': 5,
+             'text': 'price has compounded 7% a year or less (about a fixed deposit) for 5 years or more'},
+}
+
+
+def price_setup(dates, px):
+    """Short-term drawdown, long-term drawdown and consolidation readings for one price series."""
+    R = SETUP_RULE
+    n = len(px)
+    def dd(days):
+        w = px[-days:]
+        return px[-1] / max(w) - 1
+    def ret(days):
+        return px[-1] / px[-days - 1] - 1 if n > days else None
+    d3m = dd(R['short']['days'])
+    w5 = px[-R['long']['days']:]
+    hi5_i = n - len(w5) + max(range(len(w5)), key=lambda i: w5[i])
+    d5y = px[-1] / px[hi5_i] - 1
+    yrs5 = (datetime.date.fromisoformat(dates[-1]) - datetime.date.fromisoformat(dates[hi5_i])).days / 365.25
+    # consolidation: longest window ending today whose high/low stays within the band
+    hi = lo = px[-1]
+    k = n - 1
+    while k > 0:
+        p = px[k - 1]
+        nh, nl = max(hi, p), min(lo, p)
+        if nh / nl - 1 > R['consol']['band']:
+            break
+        hi, lo, k = nh, nl, k - 1
+    cdays = n - k
+    # price CAGR over each look-back, and the longest look-back (in half years) that stayed at or under max_cagr
+    d_last = datetime.date.fromisoformat(dates[-1])
+    def cagr(years):
+        target = d_last - datetime.timedelta(days=round(years * 365.25))
+        if datetime.date.fromisoformat(dates[0]) > target + datetime.timedelta(days=10):
+            return None
+        j = next(i for i, d in enumerate(dates) if datetime.date.fromisoformat(d) >= target)
+        return (px[-1] / px[j]) ** (1 / years) - 1
+    cg = {str(y): cagr(y) for y in (3, 5, 7, 10)}
+    flat = 0.0
+    for h in range(2, 21):
+        c = cagr(h / 2)
+        if c is None:
+            break
+        if c <= R['base']['max_cagr']:
+            flat = h / 2
+    types = []
+    if d3m <= R['short']['max_dd']:
+        types.append('short')
+    if d5y <= R['long']['max_dd'] and yrs5 >= R['long']['min_years_below']:
+        types.append('long')
+    if cdays >= R['consol']['min_days']:
+        types.append('consol')
+    if flat >= R['base']['min_years']:
+        types.append('base')
+    return {'types': types,
+            'dd_3m': round(d3m, 4), 'dd_1y': round(dd(252), 4), 'dd_5y': round(d5y, 4),
+            'high_5y_date': dates[hi5_i], 'years_below_5y_high': round(yrs5, 2),
+            'ret_1m': None if ret(21) is None else round(ret(21), 4),
+            'ret_3m': None if ret(63) is None else round(ret(63), 4),
+            'consol_days': cdays, 'consol_months': round(cdays / 21, 1),
+            'consol_range': round(hi / lo - 1, 4), 'consol_from': dates[k],
+            'cagr': {k: None if v is None else round(v, 4) for k, v in cg.items()},
+            'flat_years': flat, 'history_years': round((d_last - datetime.date.fromisoformat(dates[0])).days / 365.25, 1),
+            'pos_in_range': round((px[-1] - lo) / (hi - lo), 3) if hi > lo else 0.5}
 
 
 def summarise(items):
@@ -177,6 +263,7 @@ def main():
     out = {'built_at': NOW,
            'rule': {'ema_days': SPAN, 'parabolic_gap': PARABOLIC, 'stretched_gap': STRETCHED,
                     'source': 'knowledge/sector-rotation-7-indian-bull-runs.md', 'affects_scores': False},
+           'setup_rule': SETUP_RULE,
            'summary': dict(summarise(good), covered=len(good), failed=sorted(k for k in items if k not in good),
                            parabolic_now=sorted(k for k, v in good.items() if v['status'] == 'Parabolic'),
                            stretched_now=sorted(k for k, v in good.items() if v['status'] == 'Stretched')),
