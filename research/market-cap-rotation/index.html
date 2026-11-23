@@ -1,0 +1,536 @@
+<title>Market Cap Rotation Model</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column (~860px) with a wide calculator band; segments colour-coded Large / Mid / Small throughout */
+:root{
+  --bg:#F5F6F8; --surface:#FFFFFF; --ink:#141A22; --muted:#5A6472; --line:#DDE1E7;
+  --accent:#1D5C86; --large:#2E6DB4; --mid:#B9770E; --small:#8B3FA3;
+  --good:#1E7F4F; --warn:#B26A00; --bad:#B3261E; --tint:#EEF2F6;
+  --f-display:"Sora",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1318; --surface:#171C23; --ink:#E7EBF0; --muted:#9AA4B2; --line:#2A313B;
+  --accent:#6FB0DE; --large:#6EA6E8; --mid:#E3A43F; --small:#C584DA;
+  --good:#4FC48A; --warn:#E6A23C; --bad:#F07167; --tint:#1C232C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1318; --surface:#171C23; --ink:#E7EBF0; --muted:#9AA4B2; --line:#2A313B;
+  --accent:#6FB0DE; --large:#6EA6E8; --mid:#E3A43F; --small:#C584DA;
+  --good:#4FC48A; --warn:#E6A23C; --bad:#F07167; --tint:#1C232C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(1.9rem,4.5vw,2.7rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:1.55rem;font-weight:600;letter-spacing:-.01em}
+h3{font-size:1.08rem;font-weight:600}
+p{margin:0;max-width:68ch}
+section{display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:1.12rem;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+.seg-l{color:var(--large)} .seg-m{color:var(--mid)} .seg-s{color:var(--small)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.bg-l{background:var(--large)} .bg-m{background:var(--mid)} .bg-s{background:var(--small)}
+
+header{display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--line);padding-bottom:28px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+
+/* snapshot */
+.snap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.snapcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.snapcard .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.snapcard .pe{font-family:var(--f-mono);font-size:1.9rem;font-weight:500;line-height:1}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.86rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--f-mono);text-align:right}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)} .pill.neu{color:var(--muted)}
+.verdict{background:var(--tint);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+
+/* chart */
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+.chartbox svg{display:block;width:100%;min-width:520px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.82rem;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--tint)}
+tr:last-child td{border-bottom:0}
+td.lead{white-space:nowrap;font-family:var(--f-mono);font-size:.84rem}
+
+/* lists */
+.drivers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.driver{border-top:2px solid var(--ink);padding-top:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.driver p{font-size:.93rem}
+ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+
+/* pillars */
+.pillars{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.pillar{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.pillar:last-child{border-bottom:0}
+.pillar .w{font-family:var(--f-mono);font-size:1.3rem;font-weight:500;color:var(--accent)}
+.pillar code{font-family:var(--f-mono);font-size:.82rem;background:var(--tint);padding:1px 5px;border-radius:4px}
+
+/* calculator */
+.calc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:22px}
+.calc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+legend{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;padding:0}
+.row3{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:6px;align-items:center;font-size:.85rem}
+.row2{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr));gap:6px;align-items:center;font-size:.85rem}
+.row1{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:6px;align-items:center;font-size:.85rem}
+.colhead{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;text-align:center}
+input,select{width:100%;min-width:0;font-family:var(--f-mono);font-size:.88rem;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button{font-family:var(--f-body);font-size:.88rem;font-weight:500;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--tint);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--accent)}
+.out{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.outcard{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.scorebar{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--bad),var(--line) 50%,var(--good))}
+.scorebar i{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+.scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.breakdown{width:100%;font-size:.82rem}
+.breakdown td{padding:4px 0;border:0}
+.breakdown td:last-child{text-align:right;font-family:var(--f-mono)}
+.alloc{display:flex;height:34px;border-radius:6px;overflow:hidden}
+.alloc div{display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--f-mono);font-size:.8rem;min-width:0;overflow:hidden;white-space:nowrap}
+.bignum{font-family:var(--f-mono);font-size:1.6rem;font-weight:500}
+.note{border-left:3px solid var(--warn);padding:10px 14px;background:var(--tint);border-radius:0 8px 8px 0;font-size:.9rem}
+.sources{font-size:.85rem;columns:2;column-gap:28px}
+.sources li{break-inside:avoid;margin-bottom:6px}
+
+@media (max-width:720px){
+  .snap,.drivers,.calc-grid,.out{grid-template-columns:minmax(0,1fr)}
+  .sources{columns:1}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">India equities · size rotation</span>
+  <h1>Large, mid or small: a rules-based way to decide</h1>
+  <p class="lede">What drives money between Nifty 50, Midcap 150 and Smallcap 250, what 20 years of cycles show, and a six-pillar scoring model that turns valuation, momentum, earnings, rates and flows into a target split. The calculator at the bottom is pre-filled with readings from the week of 20 November 2026.</p>
+  <div class="meta"><span>Data as of 20–23 Nov 2026</span><span>Trailing (TTM) P/E, consolidated</span><span>Framework, not personal advice</span></div>
+</header>
+
+<!-- SNAPSHOT -->
+<section>
+  <span class="eyebrow">Where things stand</span>
+  <h2>Snapshot, November 2026</h2>
+  <div class="snap">
+    <div class="snapcard">
+      <div class="head"><h3><span class="dot bg-l"></span>Nifty 50</h3><span class="pill good">Below median</span></div>
+      <div class="pe seg-l">21.0×</div>
+      <dl class="kv"><dt>5-yr median</dt><dd>21.9×</dd><dt>10-yr median</dt><dd>23.2×</dd><dt>Earnings yield</dt><dd>4.76%</dd></dl>
+    </div>
+    <div class="snapcard">
+      <div class="head"><h3><span class="dot bg-m"></span>Midcap 150</h3><span class="pill neu">Fair</span></div>
+      <div class="pe seg-m">28.2×</div>
+      <dl class="kv"><dt>5-yr median</dt><dd>29.3×</dd><dt>10-yr median</dt><dd>33.1×</dd><dt>Premium to Nifty</dt><dd>+34%</dd></dl>
+    </div>
+    <div class="snapcard">
+      <div class="head"><h3><span class="dot bg-s"></span>Smallcap 250</h3><span class="pill bad">Stretched</span></div>
+      <div class="pe seg-s">32.1×</div>
+      <dl class="kv"><dt>5-yr median</dt><dd>28.3×</dd><dt>10-yr median</dt><dd>31.9×</dd><dt>Premium to Nifty</dt><dd>+53%</dd></dl>
+    </div>
+  </div>
+
+  <div class="chartbox" role="img" aria-label="Current P/E versus 5-year and 10-year medians for each index">
+    <svg id="peChart" viewBox="0 0 640 190"></svg>
+    <div class="legend"><span><span class="dot" style="background:var(--ink)"></span>Current P/E</span><span><span class="dot" style="background:var(--muted);opacity:.5"></span>5-yr median</span><span><span class="dot" style="border:2px solid var(--muted);background:transparent"></span>10-yr median</span></div>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Context reading</th><th>Value</th><th>What it says</th></tr></thead>
+    <tbody>
+      <tr><td>RBI repo rate</td><td class="num">5.50%</td><td>Raised 25 bps on 7 Oct 2026, first hike since 2023; stance moved to "calibrated tightening". Tightening phases have historically hurt small caps most.</td></tr>
+      <tr><td>10-yr G-sec</td><td class="num">7.21%</td><td>Off a ~7.37–7.39% three-year high in late Oct. Nifty earnings yield sits ~2.45 pp below it.</td></tr>
+      <tr><td>FII / DII</td><td class="num">FII buying</td><td>FIIs net buyers through mid-Nov (≈₹10,300 cr on 20 Nov) after heavy October selling. FII money mostly lands in large caps.</td></tr>
+      <tr><td>SMID fund inflows</td><td class="num">₹80,255 cr</td><td>Apr–Sep 2026, ≈42.6% of equity fund inflows, against ₹4,575 cr into large-cap funds. Retail is crowded into the smaller end.</td></tr>
+      <tr><td>Q2 FY27 earnings</td><td class="num">L 31 · M 22 · S 32%</td><td>YoY PAT growth (Motilal Oswal universe). Strong across sizes; ICICI Direct's universe shows small caps far ahead (49%). No clear size edge.</td></tr>
+      <tr><td>Market cap / GDP</td><td class="num">≈114–132%</td><td>Down from ~138% in Dec 2025, still above the ~85% FY07+ average. The ratio has trended up structurally, so weight it lightly.</td></tr>
+      <tr><td>Recent momentum</td><td class="num">Large leading</td><td>Month to 18 Nov: Nifty 50 index funds +9.0%, Midcap 150 +3.1%, Smallcap 250 +0.2%. Calendar 2025: Nifty +10.1%, Mid +5.3%, Small −6.9%.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="verdict">
+    <h3>What the model reads from this</h3>
+    <p>Large caps are cheap against their own history and the market is rewarding them. Midcaps are fairly priced, roughly in line with their usual premium. Smallcaps carry a premium about 19 points above their norm while rates are rising and retail flows are crowded into them. Run through the calculator below, the model output is <strong>overweight large, close to neutral mid, underweight small</strong>, with total equity near its strategic level.</p>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section>
+  <span class="eyebrow">Two decades of cycles</span>
+  <h2>How rotation has played out in India</h2>
+  <p>Leadership has flipped roughly every 2 to 5 years. Smaller companies compound faster over full cycles but give back far more in drawdowns. Figures marked ≈ are approximate peak-to-trough moves and should be checked against NSE/BSE index history before you backtest.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Period</th><th>Leader</th><th>Backdrop</th><th>How it ended</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">2003 – Jan 2008</td><td class="seg-s">Small &amp; mid</td><td>Credit and capex boom, heavy FII inflows, IPO flood in 2007.</td><td>GFC. BSE Smallcap fell ≈70%+, roughly 1.2× the large-cap fall.</td></tr>
+      <tr><td class="lead">2009 – 2010</td><td class="seg-s">Small &amp; mid</td><td>High-beta rebound on stimulus and easy liquidity.</td><td>Inflation spike, RBI hiking cycle.</td></tr>
+      <tr><td class="lead">2011 – 2013</td><td class="seg-l">Large</td><td>Inflation near double digits, repo to 8.5%, policy paralysis, 2013 rupee crisis.</td><td>Mid/large price ratio bottomed around 2013, setting up the next cycle.</td></tr>
+      <tr><td class="lead">2014 – Jan 2018</td><td class="seg-s">Small &amp; mid</td><td>Falling inflation and rate cuts (2015–17), post-demonetisation shift to financial assets, SIP boom.</td><td>Midcap/Nifty ratio went from ≈1.2 to above 2. LTCG tax (Feb 2018), SEBI fund recategorisation, IL&amp;FS (Sep 2018).</td></tr>
+      <tr><td class="lead">Jan 2018 – Mar 2020</td><td class="seg-l">Large (narrow)</td><td>NBFC credit crunch, earnings misses, liquidity left the small end.</td><td>Smallcap 250 down ≈40% before Covid, more after. Small/large valuation gap became very wide.</td></tr>
+      <tr><td class="lead">Apr 2020 – Sep 2024</td><td class="seg-s">Small &amp; mid</td><td>Near-zero real rates, demat accounts multiplied, monthly SIPs from ≈₹8k cr to ≈₹24k cr, PSU/defence/capex themes.</td><td>Five-year CAGR ≈19% large vs ≈29% mid and ≈33% small. SEBI asked for SMID fund stress tests in Mar 2024.</td></tr>
+      <tr><td class="lead">Oct 2024 – 2025</td><td class="seg-l">Large</td><td>FII selling, earnings downgrades, SMID valuations at extremes.</td><td>Smallcap 250 ≈−25% peak to trough. 2025: Nifty +10.1%, Mid +5.3%, Small −6.9%.</td></tr>
+      <tr><td class="lead">2026 so far</td><td class="seg-l">Mixed, large leading lately</td><td>Nifty ≈−8% by June; RBI hiked in Oct; 10-yr yield hit a 3-yr high. Record SMID fund inflows anyway.</td><td>Still in progress. FII return in Nov has favoured large caps.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- DRIVERS -->
+<section>
+  <span class="eyebrow">Mechanics</span>
+  <h2>What actually moves money between segments</h2>
+  <div class="drivers">
+    <div class="driver"><h3>Relative valuation</h3><p>The best single predictor over 1–3 years. A study of 2007–2023 data found the Midcap 150 / Nifty 50 P/B ratio was the most robust predictor of midcap excess returns. When it was stretched, forward excess returns were about −17% and never positive in the sample. Use the premium against its own norm, not the raw P/E.</p></div>
+    <div class="driver"><h3>Relative momentum</h3><p>Leadership trends for 6–18 months before valuation catches up with it. A segment whose price ratio to the Nifty is below its 200-day average is usually still losing ground. Momentum tells you when to act; valuation tells you which way.</p></div>
+    <div class="driver"><h3>Rates and liquidity</h3><p>Smaller companies borrow more and are priced off domestic liquidity. Easing cycles (2014–17, 2020–21) lifted them. Tightening and credit squeezes (2011–13, 2018) crushed them. Rising 10-yr yields compress the higher multiples first.</p></div>
+    <div class="driver"><h3>Earnings growth gap</h3><p>SMID premiums hold only while SMID earnings grow clearly faster. When large-cap growth catches up, as in Q2 FY27, the premium has nothing left to justify it. Watch revision breadth as well as growth.</p></div>
+    <div class="driver"><h3>Who is buying</h3><p>FIIs buy mostly large caps, so FII inflows lift the Nifty first. Domestic SIPs and retail drive the SMID end. When SMID funds take an outsized share of inflows, it is a crowding signal, not a reason to add.</p></div>
+    <div class="driver"><h3>Supply and froth</h3><p>IPO and QIP floods, SME IPO oversubscription, rising margin funding and SEBI warnings have shown up near every SMID top (2007, 2017, 2024). Liquidity in small caps disappears exactly when you need to sell.</p></div>
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section>
+  <span class="eyebrow">The model</span>
+  <h2>Six pillars, one score per segment</h2>
+  <p>Midcaps and smallcaps are each scored <em>relative to large caps</em> on a −2 to +2 scale. Positive favours the smaller segment; negative favours large caps. Each pillar is clipped to ±2 and weighted. Large caps take whatever weight is left.</p>
+  <div class="pillars">
+    <div class="pillar"><div class="w">30%</div><div><h3>A · Relative valuation gap</h3><p class="small">Premium now = <code>PE_seg / PE_nifty − 1</code>. Normal premium = the same ratio using medians. Score = <code>−(premium now − normal premium) / 10pp</code>. Every 10 points of extra premium costs one point. Run the same calculation on P/B where you have it and average the two.</p></div></div>
+    <div class="pillar"><div class="w">15%</div><div><h3>B · Own-history valuation</h3><p class="small">Score = <code>−(PE_seg / median − 1) / 10%</code>. Use a blend of 5- and 10-yr medians: the 10-yr median is inflated by the 2020–21 earnings collapse, and the 5-yr median sits inside the recent boom.</p></div></div>
+    <div class="pillar"><div class="w">20%</div><div><h3>C · Relative momentum</h3><p class="small">Average of two parts: (i) 6-month return of the segment minus the Nifty 50, divided by 7.5pp, and (ii) +1 if the segment/Nifty price ratio is above its 200-day average, −1 if below.</p></div></div>
+    <div class="pillar"><div class="w">15%</div><div><h3>D · Earnings growth gap</h3><p class="small">Score = <code>(EPS growth_seg − EPS growth_large) / 10pp</code>, using latest-quarter YoY or forward FY consensus. Use the same source for every segment.</p></div></div>
+    <div class="pillar"><div class="w">10%</div><div><h3>E · Rates and liquidity</h3><p class="small">RBI cutting +1, on hold 0, hiking −1. 10-yr yield change over 6 months: <code>−change / 50bps</code>, capped at ±1. FII net buying −0.5 (lifts large caps first), selling +0.25. Midcaps feel 75% of this pillar; smallcaps feel all of it.</p></div></div>
+    <div class="pillar"><div class="w">10%</div><div><h3>F · Flows and sentiment (contrarian)</h3><p class="small">SMID funds' share of active equity inflows. Score = <code>−(share − 30%) / 7.5pp</code>. Add judgement for IPO/SME froth or SEBI warnings. Midcaps take 75% of this.</p></div></div>
+  </div>
+
+  <h3>From score to allocation</h3>
+  <ul class="plain">
+    <li><strong>Start with a strategic base</strong> that fits your risk tolerance and horizon: conservative 70/20/10, balanced 55/28/17, aggressive 40/35/25 (large/mid/small). Market weight across the Nifty 500 is roughly 70/20/10.</li>
+    <li><strong>Tilt each smaller segment:</strong> <code>target = base × (1 + 0.4 × score)</code>. A score of −2 cuts the weight by 80%; +2 raises it by 80%. Large caps take the remainder.</li>
+    <li><strong>How much in equity overall:</strong> a separate absolute score blends Nifty P/E against its median (50%), the earnings-yield gap to the 10-yr G-sec (30%) and market cap/GDP (20%). Each point moves the equity share 7.5pp from your base, so the range is ±15pp.</li>
+    <li><strong>Hysteresis:</strong> act only when a target is 5pp or more away from what you hold. Move a third of the gap per month through STPs. This stops the model churning on noise.</li>
+    <li><strong>Hard guardrails:</strong> smallcaps stay at or below 30% of equity in any state. Cut them to the floor if the Smallcap 250 premium to the Nifty is 25pp or more above normal <em>and</em> momentum is negative.</li>
+  </ul>
+</section>
+
+<!-- CALCULATOR -->
+<section id="calculator">
+  <span class="eyebrow">Run it</span>
+  <h2>Rotation calculator</h2>
+  <p>Pre-filled with Nov 2026 readings. Fields marked † are my estimates where I couldn't find a clean figure, so replace them with numbers from NSE or your broker. Your inputs are saved in this browser only.</p>
+  <div class="calc">
+    <div class="calc-grid">
+      <fieldset>
+        <legend>Valuation (P/E)</legend>
+        <div class="row3"><span></span><span class="colhead seg-l">Large</span><span class="colhead seg-m">Mid</span><span class="colhead seg-s">Small</span></div>
+        <div class="row3"><label for="pe_l">Current P/E</label><input id="pe_l" type="number" step="0.1" value="21.02"><input id="pe_m" type="number" step="0.1" value="28.2" aria-label="Midcap current P/E"><input id="pe_s" type="number" step="0.1" value="32.1" aria-label="Smallcap current P/E"></div>
+        <div class="row3"><label for="md_l">Median P/E (5/10-yr blend)</label><input id="md_l" type="number" step="0.1" value="22.5"><input id="md_m" type="number" step="0.1" value="31.2" aria-label="Midcap median P/E"><input id="md_s" type="number" step="0.1" value="30.1" aria-label="Smallcap median P/E"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Momentum vs Nifty 50</legend>
+        <div class="row2"><span></span><span class="colhead seg-m">Mid</span><span class="colhead seg-s">Small</span></div>
+        <div class="row2"><label for="rr_m">6-mo relative return, pp †</label><input id="rr_m" type="number" step="0.5" value="-4"><input id="rr_s" type="number" step="0.5" value="-8" aria-label="Smallcap 6-month relative return"></div>
+        <div class="row2"><label for="dma_m">Ratio vs 200-DMA †</label>
+          <select id="dma_m"><option value="1">Above</option><option value="-1" selected>Below</option></select>
+          <select id="dma_s" aria-label="Smallcap ratio vs 200-DMA"><option value="1">Above</option><option value="-1" selected>Below</option></select></div>
+      </fieldset>
+      <fieldset>
+        <legend>Earnings growth, YoY %</legend>
+        <div class="row3"><span></span><span class="colhead seg-l">Large</span><span class="colhead seg-m">Mid</span><span class="colhead seg-s">Small</span></div>
+        <div class="row3"><label for="eg_l">Latest quarter PAT</label><input id="eg_l" type="number" step="1" value="31"><input id="eg_m" type="number" step="1" value="22" aria-label="Midcap earnings growth"><input id="eg_s" type="number" step="1" value="32" aria-label="Smallcap earnings growth"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Rates, liquidity, flows</legend>
+        <div class="row1"><label for="rate">RBI stance</label><select id="rate"><option value="1">Cutting</option><option value="0">On hold</option><option value="-1" selected>Hiking</option></select></div>
+        <div class="row1"><label for="y10chg">10-yr yield, 6-mo change (bps) †</label><input id="y10chg" type="number" step="5" value="50"></div>
+        <div class="row1"><label for="fii">FII flows, last 1–2 months</label><select id="fii"><option value="-0.5" selected>Net buying</option><option value="0">Mixed</option><option value="0.25">Net selling</option></select></div>
+        <div class="row1"><label for="share">SMID share of equity inflows, %</label><input id="share" type="number" step="0.5" value="42.6"></div>
+      </fieldset>
+      <fieldset>
+        <legend>How much in equity</legend>
+        <div class="row1"><label for="y10">10-yr G-sec yield, %</label><input id="y10" type="number" step="0.01" value="7.21"></div>
+        <div class="row1"><label for="gapnorm">Normal earnings-yield gap, pp †</label><input id="gapnorm" type="number" step="0.1" value="-2.7"></div>
+        <div class="row1"><label for="mcg">Market cap / GDP, %</label><input id="mcg" type="number" step="1" value="125"></div>
+        <div class="row1"><label for="mcgavg">Long-run average, %</label><input id="mcgavg" type="number" step="1" value="85"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Your base</legend>
+        <div class="row1"><label for="profile">Strategic split</label><select id="profile"><option value="70,20,10">Conservative 70/20/10</option><option value="55,28,17" selected>Balanced 55/28/17</option><option value="40,35,25">Aggressive 40/35/25</option></select></div>
+        <div class="row1"><label for="eqbase">Base equity share of portfolio, %</label><input id="eqbase" type="number" step="5" value="60"></div>
+        <div class="row1"><label for="corpus">Investable amount, ₹ lakh</label><input id="corpus" type="number" step="1" value="50"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="reset">Restore Nov 2026 values</button></div>
+      </fieldset>
+    </div>
+
+    <div class="out">
+      <div class="outcard">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3 class="seg-m">Midcap score</h3><span class="bignum" id="sm">–</span></div>
+        <div class="scorebar"><i id="bm"></i></div><div class="scale"><span>−2 favour large</span><span>0</span><span>+2 favour mid</span></div>
+        <table class="breakdown" id="tm"></table>
+      </div>
+      <div class="outcard">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3 class="seg-s">Smallcap score</h3><span class="bignum" id="ss">–</span></div>
+        <div class="scorebar"><i id="bs"></i></div><div class="scale"><span>−2 favour large</span><span>0</span><span>+2 favour small</span></div>
+        <table class="breakdown" id="ts"></table>
+      </div>
+    </div>
+
+    <div class="outcard">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap"><h3>Model split within equity</h3><span class="muted small" id="baseLbl"></span></div>
+      <div class="alloc" id="alloc"></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Segment</th><th>Base</th><th>Model</th><th>Change</th><th>₹ lakh</th></tr></thead>
+        <tbody id="alloctbl"></tbody>
+      </table></div>
+      <p class="small" id="eqline"></p>
+      <p class="small muted" id="flag"></p>
+    </div>
+  </div>
+</section>
+
+<!-- BACKTEST -->
+<section id="backtest">
+  <span class="eyebrow">Does it work?</span>
+  <h2>Backtest, July 2008 to November 2026</h2>
+  <p>I rebuilt the scores month by month from NSE data, using only what was known at each month-end, and applied the weights to the next month's returns. The comparison is a fixed 55/28/17 split rebalanced monthly. Costs of 0.1% per unit of turnover are included; taxes are not.</p>
+  <div class="snap">
+    <div class="snapcard"><span class="eyebrow" style="color:var(--muted)">CAGR</span><div class="pe">14.3%</div><p class="small muted">Fixed split: 13.6%. A gain of 0.7 points a year.</p></div>
+    <div class="snapcard"><span class="eyebrow" style="color:var(--muted)">Worst drawdown</span><div class="pe">−43.8%</div><p class="small muted">Fixed split: −42.4%. No protection in 2008 or 2020.</p></div>
+    <div class="snapcard"><span class="eyebrow" style="color:var(--muted)">Signal strength</span><div class="pe">+0.43</div><p class="small muted">Correlation of midcap score with the next 12 months of midcap-vs-Nifty return. Smallcap: +0.24.</p></div>
+  </div>
+
+  <div class="chartbox" role="img" aria-label="Growth of one rupee, model versus fixed split, with model weights over time">
+    <svg id="navChart" viewBox="0 0 640 330"></svg>
+    <div class="legend"><span><span class="dot" style="background:var(--accent)"></span>Model</span><span><span class="dot" style="background:var(--muted)"></span>Fixed 55/28/17</span><span><span class="dot bg-l"></span>Large weight</span><span><span class="dot bg-m"></span>Mid weight</span><span><span class="dot bg-s"></span>Small weight</span></div>
+  </div>
+
+  <div class="chartbox" role="img" aria-label="Model minus fixed split return by calendar year">
+    <svg id="yrChart" viewBox="0 0 640 200"></svg>
+    <div class="legend"><span>Model return minus fixed-split return, by calendar year (percentage points)</span></div>
+  </div>
+
+  <div class="drivers">
+    <div class="driver"><h3>Where it earned its keep</h3><p>It bought midcaps after crashes (2009, 2013–14) and cut small and midcaps to 15% and 12% by December 2017, a month before the 2018 top. Those calls produced +7.9 points in 2014, +6.7 in 2018 and +3.6 in 2019.</p></div>
+    <div class="driver"><h3>Where it cost money</h3><p>From 2021, small and midcaps re-rated and stayed expensive on P/B for years. The model sat at 2–5% smallcaps through the 2023–24 boom and lost 3.6, 3.8 and 4.5 points in 2021, 2023 and 2024.</p></div>
+    <div class="driver"><h3>What carried the signal</h3><p>Valuation did nearly all the work: the relative valuation gap alone correlated +0.44 with next-year midcap excess return. Momentum (−0.09) and the RBI rate stance (+0.01) added nothing at that horizon.</p></div>
+    <div class="driver"><h3>P/E is unusable for smaller caps</h3><p>NSE's Smallcap 100 P/E runs into the hundreds or goes blank whenever constituents post losses (most of 2016–2020), and Midcap 100 P/E hit 419× in 2020. The backtest values on P/B instead, which stayed clean. On P/E the model lost to the fixed split (12.0% vs 13.6%).</p></div>
+  </div>
+
+  <h3>Tested on one period, checked on another</h3>
+  <p class="small muted">Variants were compared on 2008–2016 and then checked on 2017–2026 without retuning. "vs fixed" is CAGR difference in percentage points.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Variant</th><th>2008–16 vs fixed</th><th>2017–26 vs fixed</th><th>2017–26 worst drawdown</th><th>Turnover / yr</th></tr></thead>
+    <tbody>
+      <tr><td>As designed, tilt k = 0.4</td><td class="num">+0.55</td><td class="num">−0.08</td><td class="num">−30.6%</td><td class="num">37%</td></tr>
+      <tr><td>As designed, tilt k = 0.8</td><td class="num">+1.10</td><td class="num">−0.05</td><td class="num">−30.3%</td><td class="num">59%</td></tr>
+      <tr><td>Valuation + earnings only, k = 1.0, 5pp band</td><td class="num">+1.08</td><td class="num">−0.23</td><td class="num">−29.3%</td><td class="num">27%</td></tr>
+      <tr><td>Valuation gap only, k = 1.0</td><td class="num">+0.55</td><td class="num">−0.20</td><td class="num">−28.0%</td><td class="num">56%</td></tr>
+      <tr><td>Fixed 55/28/17 (reference)</td><td class="num">0</td><td class="num">0</td><td class="num">−31.8%</td><td class="num">0</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="verdict">
+    <h3>Verdict</h3>
+    <p>The valuation signal is real, but turning it into extra return is hard. The model added about a point a year in 2008–2016 and nothing after 2017, with slightly smaller drawdowns in the later period. Treat it as a risk dial that leans against extremes, not as a timing engine. Over the same period, the base split mattered far more than timing: Midcap 150 alone compounded at 16.6% a year against 11.8% for the Nifty 50, with deeper falls (−46.6% vs −36.7%).</p>
+    <p>On the backtest's P/B inputs, November 2026 reads midcap −0.83 and smallcap −1.14, which maps to about 82/14/5. That is more defensive than the calculator above, because the Midcap 100's P/B (3.9) now sits above the Nifty 50's (3.1), against a long history of trading below it.</p>
+  </div>
+
+  <ul class="plain small muted">
+    <li>Returns use total-return indices for Nifty 50, Midcap 150 and Smallcap 250 from niftyindices.com.</li>
+    <li>Valuation uses Nifty 50, Midcap 100 (from 2005) and Smallcap 100 (from 2011) P/B, because Midcap 150 and Smallcap 250 valuation history only starts in April 2016. Smallcap scores begin in February 2014; before that, smallcaps sit at base weight.</li>
+    <li>Rolling 10-year medians need 36 months of history, so the first signal is mid-2008 and the 2003–07 boom is not tested.</li>
+    <li>The RBI stance table is approximate and from memory. The flows pillar has no usable history and is excluded.</li>
+  </ul>
+</section>
+
+<!-- PROCESS -->
+<section>
+  <span class="eyebrow">Running it each month</span>
+  <h2>Process, data and testing</h2>
+  <div class="drivers">
+    <div class="driver"><h3>Monthly routine (about 20 minutes)</h3>
+      <ul class="plain small">
+        <li>P/E and P/B for all three indices: NSE index factsheets, or Screener / Trendlyne / indexpe.in.</li>
+        <li>6-month returns and 200-DMA of the Mid/Nifty and Small/Nifty price ratios: build the ratio in TradingView (NIFTY_MIDCAP_150/NIFTY).</li>
+        <li>Earnings: quarterly result reviews from Motilal Oswal, ICICI Direct or Kotak. Keep to one source.</li>
+        <li>AMFI monthly data for category inflows. RBI policy dates. FII/DII daily data from NSE.</li>
+        <li>Update the calculator, note the scores in a log, and act only when a target moves 5pp or more.</li>
+      </ul></div>
+    <div class="driver"><h3>What the backtest changes</h3>
+      <ul class="plain small">
+        <li>Use P/B rather than P/E for the valuation pillars on mid and smallcaps.</li>
+        <li>Give momentum and the rate stance little weight; they added nothing over 12 months.</li>
+        <li>Use the score for lump sums and rebalancing decisions, and let SIPs run at the base split.</li>
+        <li>Expect long stretches, like 2021–24, where the model looks wrong while valuations keep rising.</li>
+      </ul></div>
+    <div class="driver"><h3>Execution</h3>
+      <ul class="plain small">
+        <li>Use low-cost index funds or ETFs (Nifty 50, Midcap 150, Smallcap 250) for the tilts, so the signal is not mixed up with fund-manager skill.</li>
+        <li>Make tilts with new SIP money and STPs first. Sell only when the gap is large.</li>
+        <li>Tax: equity STCG is 20% and LTCG 12.5% above ₹1.25 lakh a year. Prefer rebalancing lots held over 12 months, and check exit loads.</li>
+      </ul></div>
+    <div class="driver"><h3>Known weaknesses</h3>
+      <ul class="plain small">
+        <li>Index P/E figures differ between providers, and index constituents change over time.</li>
+        <li>Mean reversion can take years. Smallcaps stayed expensive through most of 2021–24.</li>
+        <li>Market cap/GDP has a structural uptrend in India, which is why it carries a small weight.</li>
+        <li>The pillar weights come from reasoning and published studies. The backtest checked them but did not fit them.</li>
+      </ul></div>
+  </div>
+  <div class="note">This is an educational framework and a worked example, not personalised investment advice. I'm not a SEBI-registered adviser. Several 2026 figures come from aggregators that disagree with each other, so check key inputs against NSE, AMFI and RBI before acting, and consider a registered adviser for decisions about your own money.</div>
+</section>
+
+<section>
+  <span class="eyebrow">References</span>
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><a href="https://indexpe.in/nifty-50" target="_blank" rel="noopener">indexpe.in: Nifty 50 P/E</a></li>
+    <li><a href="https://indexpe.in/nifty-midcap-150" target="_blank" rel="noopener">indexpe.in: Midcap 150 P/E</a></li>
+    <li><a href="https://indexpe.in/nifty-smallcap-250" target="_blank" rel="noopener">indexpe.in: Smallcap 250 P/E</a></li>
+    <li><a href="https://www.screener.in/company/NMIDCAP150/" target="_blank" rel="noopener">Screener: Midcap 150</a></li>
+    <li><a href="https://www.screener.in/company/SMALLCA250/" target="_blank" rel="noopener">Screener: Smallcap 250</a></li>
+    <li><a href="https://indiamacroindicators.co.in/economic-indicators/nifty-midcap-150-pe-ratio" target="_blank" rel="noopener">India Macro Indicators: 10-yr medians</a></li>
+    <li><a href="https://manifestwealth.substack.com/p/are-midcaps-really-overvalued" target="_blank" rel="noopener">Manifest Wealth: Are midcaps really overvalued?</a></li>
+    <li><a href="https://www.dspim.com/blog/market-and-economy/shifting-gears-on-the-market-cycle" target="_blank" rel="noopener">DSP: Shifting gears on the market cycle</a></li>
+    <li><a href="https://www.wrightresearch.in/stocks/large-cap-vs-mid-cap-vs-small-cap/" target="_blank" rel="noopener">Wright Research: Large vs mid vs small</a></li>
+    <li><a href="https://91capital.substack.com/p/small-microcaps-make-multi-baggers" target="_blank" rel="noopener">91 Capital: Small/microcap cycles</a></li>
+    <li><a href="https://marcellus.in/newsletter/meritorq-advisory/meritorq-profiting-from-the-dislocation-in-indian-megacaps/" target="_blank" rel="noopener">Marcellus: Dislocation in megacaps</a></li>
+    <li><a href="https://www.bloombergquint.com/amp/charts/technical-indicators-suggest-mid-caps-may-have-bottomed-out" target="_blank" rel="noopener">BloombergQuint: Mid/Nifty ratio</a></li>
+    <li><a href="https://www.5paisa.com/blog/small-mid-cap-mutual-fund-inflows-h1-fy27" target="_blank" rel="noopener">5paisa: SMID inflows H1 FY27</a></li>
+    <li><a href="https://www.5paisa.com/blog/small-cap-fund-liquidity-stress-test-time-falls-assets-rise" target="_blank" rel="noopener">5paisa: Small-cap stress tests</a></li>
+    <li><a href="https://www.zeebiz.com/market-news/news-q2-earnings-beat-estimates-nifty-pat-growth-hits-17-quarter-high-119-companies-see-upgrades-says-motilal-oswal-405616" target="_blank" rel="noopener">Zee Business / Motilal Oswal: Q2 FY27 earnings</a></li>
+    <li><a href="https://www.icicidirect.com/research/equity/blog/q2fy27-corporate-earnings-growth-accelerates-small-mid-cap-continue-their-outperformance" target="_blank" rel="noopener">ICICI Direct: Q2 FY27 earnings</a></li>
+    <li><a href="https://rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63744" target="_blank" rel="noopener">RBI press release: policy rate</a></li>
+    <li><a href="https://tradingeconomics.com/india/government-bond-yield" target="_blank" rel="noopener">Trading Economics: India 10-yr yield</a></li>
+    <li><a href="https://tapetide.com/fii-dii-data" target="_blank" rel="noopener">Tapetide: FII/DII data</a></li>
+    <li><a href="https://www.businesstoday.in/markets/stocks/story/what-buffett-indicator-beer-ratio-em-peer-comparison-suggest-for-market-direction-523677-2026-04-02" target="_blank" rel="noopener">Business Today: Buffett indicator, Apr 2026</a></li>
+    <li><a href="https://www.bajajbroking.in/share-market-news/india-still-undervalued-buffett-indicator-has-an-answer" target="_blank" rel="noopener">Bajaj Broking / DSIJ: Mcap/GDP Aug 2026</a></li>
+    <li><a href="https://upstox.com/news/personal-finance/mutual-funds/mutual-fund-portfolio-feeling-stuck-despite-broader-market-recovery-here-s-why/article-203882/" target="_blank" rel="noopener">Upstox: Recent fund returns by index</a></li>
+    <li><a href="https://in.linkedin.com/in/harlalka" target="_blank" rel="noopener">Indian equity returns in 2025 (LinkedIn)</a></li>
+  </ul>
+</section>
+
+</div>
+
+<script>
+(function(){
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const $=id=>document.getElementById(id);
+  const ids=["pe_l","pe_m","pe_s","md_l","md_m","md_s","rr_m","rr_s","dma_m","dma_s","eg_l","eg_m","eg_s","rate","y10chg","fii","share","y10","gapnorm","mcg","mcgavg","profile","eqbase","corpus"];
+  const defaults={}; ids.forEach(i=>defaults[i]=$(i).value);
+  const KEY="mcr-inputs-v1";
+  try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s) ids.forEach(i=>{if(s[i]!=null) $(i).value=s[i];});}catch(e){}
+  const v=id=>parseFloat($(id).value);
+  const fmt=x=>(x>=0?"+":"")+x.toFixed(2);
+
+  function seg(k,beta){
+    const peL=v("pe_l"),mdL=v("md_l"),pe=v("pe_"+k),md=v("md_"+k);
+    const premNow=pe/peL-1, premNorm=md/mdL-1;
+    const A=clamp(-(premNow-premNorm)*100/10,-2,2);
+    const B=clamp(-(pe/md-1)*100/10,-2,2);
+    const C=(clamp(v("rr_"+k)/7.5,-2,2)+parseFloat($("dma_"+k).value))/2;
+    const D=clamp((v("eg_"+k)-v("eg_l"))/10,-2,2);
+    const macro=clamp(parseFloat($("rate").value)+clamp(-v("y10chg")/50,-1,1)+parseFloat($("fii").value),-2,2);
+    const E=macro*beta;
+    const F=clamp(-(v("share")-30)/7.5,-2,2)*beta;
+    const parts=[["A · Relative valuation gap",A,.30,`premium ${(premNow*100).toFixed(0)}% vs normal ${(premNorm*100).toFixed(0)}%`],["B · Own-history valuation",B,.15,""],["C · Relative momentum",C,.20,""],["D · Earnings growth gap",D,.15,""],["E · Rates and liquidity",E,.10,""],["F · Flows (contrarian)",F,.10,""]];
+    const total=parts.reduce((s,p)=>s+p[1]*p[2],0);
+    return {total,parts,premNow,premNorm};
+  }
+  function render(){
+    const m=seg("m",0.75), s=seg("s",1);
+    [["m",m],["s",s]].forEach(([k,r])=>{
+      $("s"+k).textContent=fmt(r.total);
+      $("b"+k).style.left=((clamp(r.total,-2,2)+2)/4*100)+"%";
+      $("t"+k).innerHTML=r.parts.map(p=>`<tr><td>${p[0]} <span class="muted">(${p[2]*100}%)</span>${p[3]?`<br><span class="muted">${p[3]}</span>`:""}</td><td>${fmt(p[1])}</td></tr>`).join("")+`<tr><td><strong>Weighted total</strong></td><td><strong>${fmt(r.total)}</strong></td></tr>`;
+    });
+    const [bL,bM,bS]=$("profile").value.split(",").map(Number);
+    let tM=clamp(bM*(1+0.4*m.total),0,100), tS=clamp(bS*(1+0.4*s.total),0,30);
+    // guardrail: small premium far above normal with negative momentum
+    let flag="";
+    const sMom=(clamp(v("rr_s")/7.5,-2,2)+parseFloat($("dma_s").value))/2;
+    if((s.premNow-s.premNorm)*100>=25 && sMom<0){tS=Math.min(tS,bS*0.2);flag="Guardrail active: smallcap premium is 25pp or more above normal and momentum is negative, so smallcaps are cut to the floor.";}
+    const tL=100-tM-tS;
+    const eqA=clamp(-(v("pe_l")/v("md_l")-1)*100/10,-2,2);
+    const gap=100/v("pe_l")-v("y10");
+    const eqB=clamp((gap-v("gapnorm"))/0.75,-2,2);
+    const eqC=clamp(-(v("mcg")/v("mcgavg")-1)/0.25,-2,2);
+    const eqScore=0.5*eqA+0.3*eqB+0.2*eqC;
+    const eqPct=clamp(v("eqbase")+7.5*eqScore,0,100);
+    const corpus=v("corpus")||0, eqAmt=corpus*eqPct/100;
+    $("baseLbl").textContent=`Base ${bL}/${bM}/${bS}`;
+    const rows=[["Large","l",bL,tL],["Mid","m",bM,tM],["Small","s",bS,tS]];
+    $("alloc").innerHTML=rows.map(r=>`<div class="bg-${r[1]}" style="width:${r[3]}%">${r[3]>=8?r[0]+" "+r[3].toFixed(0)+"%":""}</div>`).join("");
+    $("alloctbl").innerHTML=rows.map(r=>{const d=r[3]-r[2];return `<tr><td><span class="dot bg-${r[1]}"></span>${r[0]}</td><td class="num">${r[2]}%</td><td class="num"><strong>${r[3].toFixed(1)}%</strong></td><td class="num" style="color:var(${d>0.05?"--good":d<-0.05?"--bad":"--muted"})">${d>=0?"+":""}${d.toFixed(1)}pp</td><td class="num">${(eqAmt*r[3]/100).toFixed(1)}</td></tr>`}).join("");
+    $("eqline").innerHTML=`<strong>Equity share: ${eqPct.toFixed(1)}%</strong> of the portfolio (base ${v("eqbase")}%, absolute score ${fmt(eqScore)}). Nifty P/E vs median ${fmt(eqA)}, earnings-yield gap ${gap.toFixed(2)}pp → ${fmt(eqB)}, market cap/GDP ${fmt(eqC)}. That is ₹${eqAmt.toFixed(1)} lakh in equity out of ₹${corpus} lakh.`;
+    $("flag").textContent=flag;
+    try{const o={};ids.forEach(i=>o[i]=$(i).value);localStorage.setItem(KEY,JSON.stringify(o));}catch(e){}
+  }
+  ids.forEach(i=>$(i).addEventListener("input",render));
+  $("reset").addEventListener("click",()=>{ids.forEach(i=>$(i).value=defaults[i]);render();});
+  render();
+
+  // P/E chart
+  const data=[["Nifty 50","--large",21.02,21.89,23.2],["Midcap 150","--mid",28.2,29.34,33.1],["Smallcap 250","--small",32.1,28.31,31.9]];
+  const svg=$("peChart"), x0=130,x1=610, lo=15, hi=36, X=p=>x0+(p-lo)/(hi-lo)*(x1-x0);
+  let h="";
+  for(let t=15;t<=35;t+=5){h+=`<line x1="${X(t)}" x2="${X(t)}" y1="14" y2="160" stroke="var(--line)" stroke-width="1"/><text x="${X(t)}" y="180" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--muted)">${t}×</text>`;}
+  data.forEach((d,i)=>{const y=38+i*50;
+    const xs=[d[2],d[3],d[4]].map(X), mn=Math.min(...xs), mx=Math.max(...xs);
+    h+=`<text x="0" y="${y+4}" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="var(--ink)">${d[0]}</text>`;
+    h+=`<line x1="${mn}" x2="${mx}" y1="${y}" y2="${y}" stroke="var(${d[1]})" stroke-width="3" stroke-opacity=".35"/>`;
+    h+=`<circle cx="${X(d[3])}" cy="${y}" r="6" fill="var(--muted)" fill-opacity=".5"/>`;
+    h+=`<circle cx="${X(d[4])}" cy="${y}" r="6" fill="none" stroke="var(--muted)" stroke-width="2"/>`;
+    h+=`<circle cx="${X(d[2])}" cy="${y}" r="7.5" fill="var(${d[1]})" stroke="var(--surface)" stroke-width="2"/>`;
+    h+=`<text x="${X(d[2])}" y="${y-13}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="500" fill="var(--ink)">${d[2].toFixed(1)}</text>`;
+  });
+  svg.innerHTML=h;
+
+  // Backtest charts
+  var M=[1.063,1.083,0.928,0.654,0.609,0.675,0.637,0.608,0.658,0.765,1.056,1.036,1.129,1.183,1.282,1.200,1.288,1.349,1.313,1.300,1.383,1.434,1.373,1.443,1.479,1.505,1.643,1.664,1.589,1.639,1.462,1.399,1.524,1.529,1.485,1.500,1.485,1.349,1.328,1.399,1.262,1.176,1.341,1.422,1.407,1.394,1.307,1.388,1.374,1.374,1.507,1.493,1.581,1.615,1.608,1.488,1.467,1.519,1.531,1.463,1.407,1.351,1.425,1.556,1.576,1.644,1.569,1.619,1.761,1.811,2.093,2.302,2.280,2.332,2.387,2.470,2.561,2.552,2.684,2.714,2.643,2.559,2.641,2.610,2.739,2.564,2.572,2.625,2.641,2.665,2.482,2.239,2.497,2.574,2.640,2.750,2.879,2.957,2.939,3.023,2.814,2.763,2.936,3.100,3.245,3.365,3.396,3.411,3.592,3.556,3.534,3.775,3.792,3.933,4.037,3.857,3.710,3.946,3.918,3.897,4.133,4.261,3.972,3.785,3.960,3.965,3.937,3.922,4.237,4.241,4.317,4.259,3.970,3.936,4.092,4.256,4.326,4.352,4.400,4.130,3.082,3.529,3.446,3.787,4.025,4.264,4.286,4.367,4.929,5.278,5.213,5.671,5.749,5.781,6.181,6.323,6.424,6.838,7.095,7.121,6.904,7.087,7.069,6.790,7.075,6.967,6.725,6.394,6.995,7.294,7.056,7.375,7.641,7.412,7.232,7.092,7.096,7.414,7.690,8.037,8.357,8.340,8.534,8.284,8.838,9.512,9.644,9.730,9.819,10.050,10.075,10.779,11.223,11.368,11.620,10.918,10.893,10.698,10.582,9.938,10.575,10.941,11.183,11.569,11.248,11.083,11.179,11.694,11.882,11.844,11.460,11.445,10.161,11.031,10.921,11.107,11.350,11.303,10.624,10.675,11.677];
+  var F=[1.065,1.081,0.939,0.669,0.625,0.687,0.651,0.622,0.674,0.784,1.070,1.044,1.135,1.179,1.279,1.193,1.276,1.335,1.285,1.279,1.362,1.401,1.343,1.411,1.443,1.467,1.604,1.625,1.549,1.594,1.420,1.355,1.476,1.485,1.443,1.457,1.443,1.311,1.292,1.365,1.232,1.152,1.312,1.387,1.371,1.359,1.274,1.358,1.344,1.346,1.473,1.458,1.540,1.566,1.569,1.459,1.441,1.496,1.508,1.447,1.397,1.341,1.412,1.546,1.554,1.613,1.546,1.597,1.726,1.758,1.981,2.147,2.147,2.201,2.238,2.324,2.406,2.376,2.507,2.535,2.458,2.377,2.453,2.429,2.536,2.373,2.378,2.425,2.427,2.444,2.290,2.081,2.317,2.379,2.450,2.539,2.659,2.731,2.711,2.773,2.597,2.557,2.707,2.846,2.972,3.072,3.105,3.118,3.285,3.251,3.229,3.454,3.483,3.626,3.673,3.516,3.374,3.598,3.506,3.422,3.596,3.736,3.365,3.256,3.371,3.411,3.332,3.309,3.591,3.567,3.633,3.570,3.311,3.280,3.412,3.543,3.598,3.620,3.685,3.454,2.547,2.913,2.844,3.126,3.331,3.533,3.550,3.622,4.079,4.376,4.328,4.724,4.789,4.838,5.187,5.340,5.477,5.747,5.994,6.014,5.862,6.034,6.011,5.704,5.967,5.917,5.658,5.365,5.884,6.164,5.999,6.231,6.440,6.266,6.116,5.987,5.974,6.266,6.525,6.844,7.157,7.211,7.384,7.173,7.714,8.280,8.493,8.542,8.546,8.909,8.947,9.625,10.055,10.164,10.367,9.768,9.758,9.684,9.319,8.549,9.163,9.466,9.890,10.285,9.987,9.782,9.882,10.329,10.428,10.392,10.019,10.055,8.948,9.908,9.914,10.105,10.308,10.341,9.739,9.647,10.461];
+  var WM=[46,46,46,45,44,42,40,39,39,39,39,43,46,49,49,49,50,50,48,47,47,44,43,40,36,32,30,26,24,22,21,21,20,22,23,25,27,31,34,36,36,36,35,34,35,35,37,39,38,38,38,38,38,42,45,46,46,46,42,40,40,37,41,43,43,46,46,46,47,47,47,45,42,42,39,40,40,38,37,37,36,37,37,37,35,34,34,32,31,30,30,30,30,30,30,26,26,24,23,28,30,32,34,35,34,31,29,28,31,31,32,27,22,19,15,13,13,12,8,5,3,2,2,2,2,5,7,10,14,19,22,24,27,31,34,34,34,33,33,35,35,36,38,38,39,36,37,38,37,35,31,29,27,25,23,21,22,22,21,20,18,19,17,15,13,15,18,18,18,18,16,21,23,22,22,22,23,22,24,25,25,26,27,24,21,22,21,22,20,15,13,10,8,6,6,6,5,5,5,3,3,3,3,8,10,13,13,15,16,16,16,15,15,13,14,16,16,16,17,16,14];
+  var WS=[17,16,17,16,15,15,16,15,15,15,15,16,16,17,18,17,17,17,18,18,17,17,17,17,17,17,17,17,17,17,16,16,16,16,17,17,17,17,17,17,17,16,16,16,16,16,17,17,17,16,16,17,17,17,17,17,16,16,16,16,16,16,16,16,17,17,18,18,20,24,26,26,26,25,26,26,26,25,24,24,22,22,23,22,21,21,20,24,26,28,28,27,26,26,27,26,27,27,28,28,27,26,25,25,23,21,19,19,18,18,16,14,13,13,12,10,10,9,6,4,3,2,2,2,2,2,3,5,4,5,7,8,9,9,9,7,7,5,5,5,5,8,10,11,12,11,11,12,11,12,11,10,10,8,9,8,7,7,7,9,10,10,8,6,4,4,6,6,6,6,5,6,5,5,5,5,5,5,6,6,6,6,7,6,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,2,2,2,2,1,1,2,2,4,5,5,5,3,3,3,4,5,7,7,7,7,5];
+  var mono='font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--muted)"';
+  var nv=document.getElementById("navChart"), n=M.length, L=44, R=630, T=10, B1=200, T2=222, B2=300;
+  var xi=function(i){return L+i/(n-1)*(R-L)}, yv=function(v){return B1-(Math.log(v)-Math.log(0.5))/(Math.log(14)-Math.log(0.5))*(B1-T)};
+  var g="";
+  [0.5,1,2,4,8].forEach(function(v){g+='<line x1="'+L+'" x2="'+R+'" y1="'+yv(v)+'" y2="'+yv(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(yv(v)+4)+'" text-anchor="end" '+mono+'>₹'+v+'</text>';});
+  var pathOf=function(A){return A.map(function(v,i){return (i?"L":"M")+xi(i).toFixed(1)+","+yv(v).toFixed(1)}).join("")};
+  g+='<path d="'+pathOf(F)+'" fill="none" stroke="var(--muted)" stroke-width="1.5"/>';
+  g+='<path d="'+pathOf(M)+'" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+  g+='<text x="'+(R-2)+'" y="'+(yv(M[n-1])-6)+'" text-anchor="end" '+mono.replace('var(--muted)','var(--ink)')+'>₹'+M[n-1].toFixed(1)+' vs ₹'+F[n-1].toFixed(1)+'</text>';
+  var yw=function(p){return B2-p/100*(B2-T2)};
+  var top=[],mid=[],bot=[];
+  for(var i=0;i<n;i++){bot.push([xi(i),yw(WS[i])]);mid.push([xi(i),yw(WS[i]+WM[i])]);}
+  var area=function(up,lo,fill){return '<path d="M'+up.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1)}).join("L")+"L"+lo.slice().reverse().map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1)}).join("L")+'Z" fill="'+fill+'" fill-opacity=".85"/>'};
+  var base=[],full=[];for(i=0;i<n;i++){base.push([xi(i),B2]);full.push([xi(i),T2]);}
+  g+=area(full,mid,"var(--large)")+area(mid,bot,"var(--mid)")+area(bot,base,"var(--small)");
+  g+='<text x="'+(L-6)+'" y="'+(T2+8)+'" text-anchor="end" '+mono+'>100%</text><text x="'+(L-6)+'" y="'+B2+'" text-anchor="end" '+mono+'>0%</text>';
+  for(var y=2009;y<=2026;y+=3){var ix=(y-2008)*12-6; g+='<text x="'+xi(ix)+'" y="'+(B2+18)+'" text-anchor="middle" '+mono+'>'+y+'</text>';}
+  nv.innerHTML=g;
+
+  var YR=[[2008,-1.1],[2009,5.4],[2010,2.1],[2011,-0.5],[2012,1.4],[2013,-1.2],[2014,7.9],[2015,1.6],[2016,-0.9],[2017,0.6],[2018,6.7],[2019,3.6],[2020,0.4],[2021,-3.6],[2022,0.7],[2023,-3.8],[2024,-4.5],[2025,3.4],[2026,-2.1]];
+  var yc=document.getElementById("yrChart"), z=100, sc=10, bw=(R-L)/YR.length, s2="";
+  [-5,0,5].forEach(function(v){s2+='<line x1="'+L+'" x2="'+R+'" y1="'+(z-v*sc)+'" y2="'+(z-v*sc)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(z-v*sc+4)+'" text-anchor="end" '+mono+'>'+(v>0?"+":"")+v+'</text>';});
+  YR.forEach(function(d,j){var x=L+j*bw+3,h=d[1]*sc;s2+='<rect x="'+x.toFixed(1)+'" y="'+(h>0?z-h:z)+'" width="'+(bw-6).toFixed(1)+'" height="'+Math.abs(h)+'" fill="var('+(d[1]>=0?'--good':'--bad')+')" rx="2"/>';
+    s2+='<text x="'+(x+(bw-6)/2).toFixed(1)+'" y="190" text-anchor="middle" '+mono+'>'+String(d[0]).slice(2)+'</text>';});
+  yc.innerHTML=s2;
+})();
+</script>
