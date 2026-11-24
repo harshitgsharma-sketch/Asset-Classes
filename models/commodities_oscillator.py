@@ -189,7 +189,15 @@ def cmd_score(keys, verbose_drivers=True):
         else:
             print("History: current month only (no back-fill yet).")
         if verbose_drivers:
-            s = score_row(c, df[df.month == last_m].iloc[0].to_dict())
+            if h.empty:
+                print("Not scored yet: too few live inputs in any month.")
+                continue
+            # Score the commodity's own latest scored month: a series on monthly data published with a
+            # lag (zinc, World Bank) has no row for the current month yet, and score_row returns None.
+            c_m = h.month.iloc[-1]
+            if c_m != last_m:
+                print(f"No score for {last_m} yet (too few live inputs); drivers as of {c_m}.")
+            s = score_row(c, df[df.month == c_m].iloc[0].to_dict())
             print("Drivers (pull = points vs 50 on the oscillator, + = towards SELL):")
             for d in sorted(s["drivers"], key=lambda d: -abs(d["pull"])):
                 print(f"  {d['id']:<5} {d['name'][:58]:<58} {d['bucket'][:5]:<5} {d['type'][:20]:<20} "
@@ -249,8 +257,10 @@ def cmd_chart():
                            (50,65,"#eeeeee","Hold"),(65,80,"#ffcc80","Trim"),(80,100,"#ef6c00","Exit")]:
         ax.axhspan(lo, hi, color=col, alpha=.35, lw=0)
         ax.text(px[-1] + pd.Timedelta(days=40), (lo+hi)/2, l, va="center", fontsize=8, color="#444")
-    colors = {"SILVER": "#1f3b73", "BRENT": "#6d4c41", "COPPER": "#c26a1b"}
+    colors = {"SILVER": "#1f3b73", "BRENT": "#6d4c41", "COPPER": "#c26a1b", "ALUMINIUM": "#78909c",
+              "ZINC": "#5e35b1", "IRONORE": "#8d3b2f", "NATGAS": "#00838f"}
     for k, h in log.groupby("commodity"):
+        colors.setdefault(k, "#757575")   # any commodity added later without a colour
         if len(h) > 1:
             ax.plot(h.d, h.oscillator, color=colors[k], lw=2.2 if k == "SILVER" else 1.3, label=f"{k.title()} oscillator")
         else:
