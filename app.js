@@ -928,7 +928,7 @@ function ovGlobal(){
   <h3 class="step">United States: drill-down</h3>
   <div class="tiles3">${us.map(i=>`<div class="at" data-id="${i.id}" role="button" tabindex="0" style="border-top-color:${bcol(i.score)}"><div class="atl">${esc(i.meta.Economy)}</div><div class="atv">${i.score.toFixed(0)}<span>${chip(i.score)}</span></div><div class="ats"><b>${esc(i.name)}</b></div>${gauge(i.score,200)}<div class="ats">Expected ${er(i)}% a year in INR (${esc(i.meta.Range||'')}) · ${esc(i.action||'')}</div><div class="ats">From high ${ddTxt(i)}</div></div>`).join('')}</div>
   <section class="card"><h2>All markets</h2><p class="hint">Click a column to sort. Expected return is net, in INR, a year over five years.</p>
-    ${sortTable('glb',[C.name,C.m('Economy'),C.score,C.b('Valuation'),C.b('Macro'),C.b('Currency'),C.b('Timing'),{k:'er',l:'Exp. INR %/yr',num:1,get:er,fmt:i=>er(i)==null?'—':er(i).toFixed(1)},C.dd],g,{k:'score',dir:1,keep:['name','score','er']})}</section>`;
+    ${sortTable('glb',[C.m('Economy'),C.name,C.score,C.b('Valuation'),C.b('Macro'),C.b('Currency'),C.b('Timing'),{k:'er',l:'Exp. INR %/yr',num:1,get:er,fmt:i=>er(i)==null?'—':er(i).toFixed(1)},C.dd],g,{k:'score',dir:1,keep:['m_Economy','name','score','er']})}</section>`;
 }
 const PKEY={GOLD:'gold_usd',CMD_SILVER:'silver_usd',CMD_BRENT:'brent_usd',CMD_COPPER:'copper_usd_t',BTC:'btc_usd'};
 function priceLine(i){const k=PKEY[i.id];if(!k)return '';const run=(DATA.run_prices||{})[k],lp=latestPrice(k);if(!run||!lp)return '';const ch=lp.value/run-1;
