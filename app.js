@@ -943,8 +943,8 @@ function assetCard(i,wide){const P=i.parabolic;return `<section class="card hero
   ${priceLine(i)}${i.action?`<div class="note"><b>Model's action:</b> ${esc(i.action)}</div>`:''}
   <button class="btn" data-id="${i.id}" style="margin-top:8px">Open full details</button></section>`}
 function ovCommod(){const l=['GOLD','CMD_SILVER','CMD_BRENT','CMD_COPPER'].map(k=>byId[k]).filter(i=>i&&i.score!=null);
-  OV_DRAW=[()=>dotChart('cmc',l.map(i=>({id:i.id,label:i.name,v:i.score,right:i.score.toFixed(1)+'  '+ddTxt(i)})),{label:'Commodities compared',R:110})];
-  return `<section class="card" style="margin-bottom:14px"><h2>Side by side</h2><p class="hint">Score on the 1–100 scale; right column: distance from the 10-year high.</p><div id="cmc"></div></section><div class="grid g2">${l.map(i=>assetCard(i)).join('')}</div>`}
+  OV_DRAW=[];
+  return `<div class="grid g2">${l.map(i=>assetCard(i)).join('')}</div>`}
 function ovCrypto(){const b=byId.BTC;return `<div class="grid g2"><div>${assetCard(b,true)}</div><section class="card"><h2>Rules that come with it</h2>
   <ul class="rules"><li><b>Cap at 5% of the portfolio.</b> Bitcoin's falls have reached ${b.drawdown?pct(b.drawdown.worst):'−80%'} in the last decade.</li><li><b>Stage entries</b> when the macro filter is high (now ${b.buckets.Filter}).</li><li><b>Tax:</b> 31.2% on gains (VDA), no loss set-off.</li><li>Score history before Nov 2026 is reconstructed (±3 points).</li></ul>
   <div class="tag" style="margin-top:8px">Distance from high</div>${b.drawdown?`<div class="ddbar"><i style="width:${Math.min(100,-b.drawdown.now*100)}%"></i></div><div class="tag">${pct(b.drawdown.now)} from its ${b.drawdown.high_date} high · worst ${pct(b.drawdown.worst)} (${b.drawdown.worst_date})</div>`:''}</section></div>`}
