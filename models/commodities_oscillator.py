@@ -5,7 +5,8 @@ Same engine as gold_oscillator.py / sector_oscillator.py:
   weight W = Impact x Severity x Reliability x Stability; blank inputs skipped and weights
   re-normalised inside each bucket; a bucket resting on ONE live indicator moves only half-way
   from 50 (THIN_SHRINK). Oscillator = sum(bucket weight x bucket score) over buckets with data.
-Commodities: SILVER (full model), BRENT and COPPER (indicative, MCX-futures access only).
+Commodities: SILVER (full model); BRENT and COPPER (indicative, MCX-futures access only); ALUMINIUM, ZINC,
+IRONORE, NATGAS (indicative, price-history models from commodity-prices-monthly.csv, added 24-Nov-2026).
 
 Files (project, under claude/):
   commodities-config.json          commodities, indicators, anchors, weights (editable)
@@ -25,6 +26,7 @@ import numpy as np, pandas as pd
 
 CONFIG, INPUTS, SCEN, LOG = ("commodities-config.json", "commodities-inputs-monthly.csv",
                              "commodities-scenarios.json", "commodities-score-log.csv")
+HISTORY = "commodity-prices-monthly.csv"   # long month-end history (scripts/fetch_commodity_history.py)
 CHART = "commodities_oscillator_history_and_outlook.png"
 THIN_SHRINK = 0.5
 MIN_LIVE = 6          # a month is scored for a commodity only with >= this many live indicators
@@ -49,8 +51,26 @@ def rsi(series, n=14):
     dn = (-d.clip(upper=0)).ewm(alpha=1/n, adjust=False, min_periods=n).mean()
     return 100 - 100/(1 + up/dn)
 
+def own_history(c):
+    """Derived series for a commodity scored from the long history file: computed on the full
+    history, then joined to the input rows by month. Adds valuation vs its own 10-year record."""
+    h = pd.read_csv(HISTORY, dtype={"month": str})[["month", c["price_col"]]].dropna()
+    k, p = c["key"].lower(), h[c["price_col"]]
+    out = pd.DataFrame({"month": h["month"], c["price_col"]: p})
+    out[f"{k}_px_ma10"] = (p/p.rolling(10).mean()).round(3)
+    out[f"{k}_px_ma46"] = (p/p.rolling(46).mean()).round(3)
+    out[f"{k}_rsi14"] = rsi(p).round(1)
+    out[f"{k}_chg12"] = ((p/p.shift(12) - 1)*100).round(1)
+    out[f"{k}_px_vs_120m"] = ((p/p.rolling(120, min_periods=60).mean() - 1)*100).round(1)
+    out[f"{k}_pctl_120m"] = p.rolling(120, min_periods=60).apply(lambda w: (w <= w[-1]).mean()*100, raw=True).round(1)
+    return out
+
 def add_derived(df, cfg):
     for c in cfg["commodities"]:
+        if c.get("history"):
+            oh = own_history(c)
+            df = df.drop(columns=[x for x in oh.columns if x != "month" and x in df.columns]).merge(oh, on="month", how="left")
+            continue
         k, p = c["key"].lower(), df[c["price_col"]]
         df[f"{k}_px_ma10"] = (p/p.rolling(10).mean()).round(3)
         df[f"{k}_px_ma46"] = (p/p.rolling(46).mean()).round(3)
@@ -82,6 +102,7 @@ DERIVE = {
     "usdinr_12m": _col("usdinr_12m"), "pmi_global": _col("pmi_global"),
     "px_ma10": _own("px_ma10"), "px_ma46": _own("px_ma46"), "rsi14": _own("rsi14"),
     "chg12": _own("chg12"), "dist_ath": _own("dist_ath"),
+    "px_vs_120m": _own("px_vs_120m"), "pctl_120m": _own("pctl_120m"),
     "cftc_net_pct": _own("cftc_net_pct"), "etf_flow_moz": _own("etf_flow_moz"),
     "balance": lambda r, k: num(r.get({"SILVER": "silver_balance_moz", "COPPER": "copper_balance_kt"}.get(k, ""))),
     "balance_next": lambda r, k: num(r.get("copper_balance_next_kt")),

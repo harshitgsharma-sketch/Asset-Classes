@@ -101,3 +101,30 @@ At build, silver scored **34.5 → BUY** (V 28.2 / T 42.8 / F 26.8, 17/17 inputs
 3. CFTC: v1 uses the legacy COT **non-commercial** net (% OI) because it's on the public weekly pages. Switch to disaggregated managed money once a clean series is sourced, as gold does.
 4. Brent and copper are futures-only for INR investors. Roll yield (backwardation earns, contango costs), margin and slab-rate taxation aren't modelled. The tax-and-cost layer (roadmap item 3) should net these off.
 5. Add a Valuation-bucket export for silver so the asset-class model can import it, as it does for gold.
+
+## 9. Aluminium, zinc, iron ore and natural gas (added 24-Nov-2026, indicative)
+
+Added as signals for Indian metal and energy stocks (NALCO, Hindalco, Vedanta, Hindustan Zinc, NMDC, Tata Steel, JSW Steel, ONGC, GAIL, fertilisers). None has an Indian ETF; MCX futures only.
+
+- **Prices:** `models/commodity-prices-monthly.csv`, built by `scripts/fetch_commodity_history.py`. The base is World Bank Pink Sheet monthly averages (since 2000 here; the source goes back to 1960). The current month comes from Yahoo for aluminium (ALI=F), iron ore (TIO=F) and Henry Hub gas (NG=F). Zinc stays on the latest World Bank month, because Yahoo's COMEX zinc future barely trades: in two years its price changed on only 13 of 501 days.
+- **Engine:** `history: true` in the config. `own_history()` computes derived series on the full history, then joins them to the input rows by month.
+- **9 indicators each** (ids AL/ZN/FE/NG + V1–F2):
+
+| Indicator | Bucket | Metals | Natural gas |
+|---|---|---|---|
+| Price percentile in its own 10-year record (nominal) | Valuation | 5 → 95 | 5 → 95 |
+| Price vs its 10-year average | Valuation | −30% → +60% | −50% → +100% |
+| Price ÷ 10-month MA | Timing | 0.80 → 1.30 | 0.60 → 1.60 |
+| Monthly RSI(14) | Timing | 30 → 80 | 30 → 80 |
+| DXY | Timing | 90 → 110 | 90 → 110 |
+| USD/INR 12-month change | Timing | +8% → −3% | +8% → −3% |
+| Global manufacturing PMI | Timing | 54 → 47 | 54 → 47 (lower weight) |
+| Price ÷ 46-month MA | Filter | 0.85 → 1.60 | 0.60 → 2.00 |
+| 12-month change | Filter | −30% → +60% | −50% → +100% |
+
+- **Reading at build (Nov-2026; zinc Oct-2026):** iron ore 21.7 Buy, aluminium 42.9 Accumulate, natural gas 53.9 Hold, zinc 63.2 Hold.
+- **Weaknesses:**
+  - The valuation is nominal: no CPI deflator before 2021 in the project, so a long uptrend reads as "rich".
+  - There are no supply/demand balances (ICSG, ILZSG, IAI) and no positioning data yet.
+  - The World Bank figures are monthly averages, while the current month is a Yahoo close.
+  - Not back-tested.

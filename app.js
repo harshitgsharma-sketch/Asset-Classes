@@ -583,9 +583,9 @@ const TABS={
     notes:['market-legends-council-2026-11-23','watchlist-analysis-2026-11','sector-investing-playbook','india-sector-facts-2016-2026','sector-froth-signals','valuing-cyclical-sectors','sector-rotation-7-indian-bull-runs','flat-markets-are-not-dead-markets','identifying-winning-sectors']},
   global:{t:'International',sub:'The US first, then 20 more markets, all scored for an INR investor over five years.',scope:i=>i.model==='global',
     notes:['sector-rotation-research-evidence','sector-rotation-economic-cycle-schwab']},
-  commod:{t:'Commodities',sub:'Gold, silver, Brent crude and copper.',scope:i=>i.id==='GOLD'||i.model==='commodities',
+  commod:{t:'Commodities',sub:'Gold, silver, Brent crude, copper, aluminium, zinc, iron ore and natural gas.',scope:i=>i.id==='GOLD'||i.model==='commodities',
     notes:['valuing-cyclical-sectors','board-backlog']},
-  crypto:{t:'Crypto',sub:'Bitcoin, with its 5% portfolio cap and staging rule.',scope:i=>i.model==='crypto',notes:['board-backlog']},
+  crypto:{t:'Crypto',sub:'Bitcoin and the four largest coins after it, with the 5% portfolio cap and staging rule.',scope:i=>i.model==='crypto',notes:['board-backlog']},
   fixed:{t:'Fixed income',sub:'Bonds, deposits and cash-like carry, with yields next to scores.',scope:i=>['bonds','carry'].includes(i.model),notes:[]},
   realestate:{t:'Real estate',sub:'Listed REITs and InvITs, and housing by city.',scope:i=>['reits','property'].includes(i.model),notes:[]},
 };
@@ -807,8 +807,8 @@ function heatBlock(title,hint,list,modes,o={}){
   const m=modes.includes(indState.heat)?indState.heat:modes[0],[,hv,hsub]=HEAT_MODES[m];
   const l=[...list].sort((a,b)=>(hv(a)??999)-(hv(b)??999));
   return `<section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>${title}</h2><p class="hint">${hint}</p></div>
-    <span class="seg heatseg" aria-label="Colour by">${modes.map(k=>`<button data-v="${k}" class="${k===m?'on':''}">${HEAT_MODES[k][0]}</button>`).join('')}</span></div>
-    <div class="heat${o.cls?' '+o.cls:''}">${l.map(i=>heatTile(i,(o.star&&i.watch?'★ ':'')+hsub(i)+(i.flags&&/guard/.test(i.flags)?' ⚑':''),hv(i))).join('')}</div>
+    ${modes.length>1?`<span class="seg heatseg" aria-label="Colour by">${modes.map(k=>`<button data-v="${k}" class="${k===m?'on':''}">${HEAT_MODES[k][0]}</button>`).join('')}</span>`:''}</div>
+    <div class="heat${o.cls?' '+o.cls:''}">${l.map(i=>heatTile(i,(o.star&&i.watch?'★ ':'')+(o.sub?o.sub(i):hsub(i))+(i.flags&&/guard/.test(i.flags)?' ⚑':''),hv(i))).join('')}</div>
     ${m==='dd'?'<div class="tag" style="margin-top:6px">Distance from high: blue = far below its 10-year high, red = at or near it. Grey tiles have no daily price history.</div>':''}</section>`}
 function ovIndiaSector(){
   const sectors=ALL_ITEMS.filter(i=>i.model==='sectors'&&!SIZE_IDS.includes(i.id));
@@ -942,23 +942,25 @@ function assetCard(i,wide){const P=i.parabolic;return `<section class="card hero
   ${i.history&&i.history.length>2?`<div class="tag" style="margin-top:8px">Score, last ${Math.min(24,i.history.length)} months</div>${spark(i.history.slice(-24),wide?560:300,wide?110:60)}`:''}
   ${priceLine(i)}${i.action?`<div class="note"><b>Model's action:</b> ${esc(i.action)}</div>`:''}
   <button class="btn" data-id="${i.id}" style="margin-top:8px">Open full details</button></section>`}
-function ovCommod(){const l=['GOLD','CMD_SILVER','CMD_BRENT','CMD_COPPER'].map(k=>byId[k]).filter(i=>i&&i.score!=null);
+function ovCommod(){const l=['GOLD','CMD_SILVER','CMD_BRENT','CMD_COPPER','CMD_ALUMINIUM','CMD_ZINC','CMD_IRONORE','CMD_NATGAS'].map(k=>byId[k]).filter(i=>i&&i.score!=null);
   OV_DRAW=[];
   return `<div class="grid g2">${l.map(i=>assetCard(i)).join('')}</div>`}
-function ovCrypto(){const b=byId.BTC;return `<div class="grid g2"><div>${assetCard(b,true)}</div><section class="card"><h2>Rules that come with it</h2>
-  <ul class="rules"><li><b>Cap at 5% of the portfolio.</b> Bitcoin's falls have reached ${b.drawdown?pct(b.drawdown.worst):'−80%'} in the last decade.</li><li><b>Stage entries</b> when the macro filter is high (now ${b.buckets.Filter}).</li><li><b>Tax:</b> 31.2% on gains (VDA), no loss set-off.</li><li>Score history before Nov 2026 is reconstructed (±3 points).</li></ul>
-  <div class="tag" style="margin-top:8px">Distance from high</div>${b.drawdown?`<div class="ddbar"><i style="width:${Math.min(100,-b.drawdown.now*100)}%"></i></div><div class="tag">${pct(b.drawdown.now)} from its ${b.drawdown.high_date} high · worst ${pct(b.drawdown.worst)} (${b.drawdown.worst_date})</div>`:''}</section></div>`}
+function ovCrypto(){const b=byId.BTC,coins=ALL_ITEMS.filter(i=>i.model==='crypto');
+  return `${heatBlock('Top coins: heat-map','Bitcoin and the four largest coins after it (stablecoins excluded), cheapest first. Only Bitcoin has a full model; the others are price-and-cycle readings with Bitcoin\'s macro filter.',coins,['score','dd'])}
+  <div class="grid g2" style="margin-bottom:14px"><div>${assetCard(b,true)}</div><section class="card"><h2>Rules that come with it</h2>
+  <ul class="rules"><li><b>Cap all crypto together at 5% of the portfolio.</b> Bitcoin's falls have reached ${b.drawdown?pct(b.drawdown.worst):'−80%'} in the last decade; the other coins fall further.</li><li><b>Stage entries</b> when the macro filter is high (now ${b.buckets.Filter}).</li><li><b>Tax:</b> 31.2% on gains (VDA), no loss set-off.</li><li>Score history before Nov 2026 is reconstructed for Bitcoin (±3 points).</li></ul>
+  <div class="tag" style="margin-top:8px">Bitcoin's distance from high</div>${b.drawdown?`<div class="ddbar"><i style="width:${Math.min(100,-b.drawdown.now*100)}%"></i></div><div class="tag">${pct(b.drawdown.now)} from its ${b.drawdown.high_date} high · worst ${pct(b.drawdown.worst)} (${b.drawdown.worst_date})</div>`:''}</section></div>
+  <section class="card"><h2>All coins</h2><p class="hint">Click a column to sort; click a row for the full panel.</p>${sortTable('cry',[C.name,C.score,C.b('Valuation'),C.b('Timing'),C.b('Filter','Macro'),C.dd],coins,{k:'score',dir:1,keep:['name','score','dd']})}</section>`}
 function ovFixed(){const bonds=ALL_ITEMS.filter(i=>i.model==='bonds'),carry=ALL_ITEMS.filter(i=>i.model==='carry');
-  const y=i=>+((i.meta||{})['Yield %']||0),acIds=['SHORT_DEBT','GSEC_LONG','CORP_AAA','CREDIT_AA','US_TREASURY','CASH'];const acs=DATA.assetClasses.filter(a=>acIds.includes(a.id));
-  return `<div class="grid g2" style="margin-bottom:14px"><section class="card"><h2>Yield vs score</h2><p class="hint">Bar length = yield; colour = the model's band (blue = attractive now). Click a bar to open it.</p>${hbars(bonds.sort((a,b)=>y(b)-y(a)).map(i=>({id:i.id,label:i.name.replace(/ \(.*\)/,''),v:y(i),c:i.score})),Math.max(...bonds.map(y)),v=>v.toFixed(2)+'%')}</section>
-    <section class="card"><h2>Asset-class view</h2><p class="hint">Valuation-only score for each fixed-income class, with the suggested tilt.</p>${acs.map(a=>`<div class="row" style="cursor:default"><span class="score">${a.score}</span><span class="sw" style="background:${bcol(a.score)}"></span><span class="nm">${esc(a.name)}</span><span class="tag">${esc(a.tilt||'')}${a.yield_!=null?' · '+a.yield_+'%':''}</span></div>`).join('')}</section></div>
+  const y=i=>+((i.meta||{})['Yield %']||0);
+  return `${heatBlock('Bonds, deposits and carry: heat-map','Cheapest to richest. The small figure is the yield (post-tax for carry). Click a tile for the full panel.',[...bonds,...carry],['score'],{sub:i=>i.model==='carry'?`${(i.meta||{})['Post-tax yield %']??'—'}% post-tax`:`${y(i).toFixed(2)}% yield`})}
   <section class="card" style="margin-bottom:14px"><h2>Bonds and deposits</h2>${sortTable('fi',[C.name,C.score,{k:'y',l:'Yield %',num:1,get:y,fmt:i=>y(i).toFixed(2)},C.b('Valuation'),C.b('Timing'),C.b('Filter','Macro'),{k:'act',l:"Model's action",get:i=>i.action||''}],bonds,{k:'score',dir:1,keep:['name','score','y']})}</section>
   <section class="card"><h2>Cash-like carry</h2><div class="grid g2">${carry.map(i=>`<div class="at" data-id="${i.id}" role="button" tabindex="0" style="border-top-color:${bcol(i.score)}"><div class="atl">${esc(i.name)}</div><div class="atv">${i.score.toFixed(0)}<span>${chip(i.score)}</span></div>${gauge(i.score,200)}<div class="ats">Post-tax ${esc(i.meta['Post-tax yield %'])}% · edge vs liquid ${esc(i.meta['Edge vs liquid (pp)'])} pp</div><div class="ats">${esc(i.action||'')}</div></div>`).join('')}</div></section>`}
 function ovRE(){const r=ALL_ITEMS.filter(i=>i.model==='reits'),c=ALL_ITEMS.filter(i=>i.model==='property');const m=(i,k)=>{const v=(i.meta||{})[k];return v===''||v==null?null:+v};
-  OV_DRAW=[()=>scatter('rsc',r.filter(i=>m(i,'Post-tax yield %')!=null&&m(i,'Price/NAV')!=null).map(i=>({id:i.id,x:m(i,'Post-tax yield %'),y:m(i,'Price/NAV'),lab:i.name.replace(/ (Real Estate |Office |Business )?(Investment )?(Trust|REIT|Parks REIT|InvIT|Fund).*$/,'').replace(/\(.*\)/,'')})),{label:'Post-tax yield versus price to NAV',xl:'Post-tax distribution yield, %',yl:'Price / NAV',yRef:1,yRefL:'priced at NAV',xf:v=>v.toFixed(1)+'%',yf:v=>v.toFixed(2)})];
-  return `<div class="grid g2" style="margin-bottom:14px"><section class="card"><h2>Yield vs price to NAV</h2><p class="hint">Right and low is best: high post-tax yield, bought below NAV. Colour = band.</p><div id="rsc"></div></section>
-    <section class="card"><h2>Housing by city</h2><p class="hint">Valuation only; colour = band. Use the rent-vs-buy calculator on your own numbers.</p><div class="heat">${c.sort((a,b)=>a.score-b.score).map(i=>heatTile(i,`rent ${m(i,'Rent yield %')}%`)).join('')}</div></section></div>
-  <section class="card"><h2>Listed REITs and InvITs</h2>${sortTable('re',[C.name,C.m('Type'),C.score,{k:'y',l:'Yield %',num:1,get:i=>m(i,'Distribution yield %'),fmt:i=>m(i,'Distribution yield %')??'—'},{k:'pty',l:'Post-tax %',num:1,get:i=>m(i,'Post-tax yield %'),fmt:i=>m(i,'Post-tax yield %')??'—'},{k:'sp',l:'Spread vs G-sec',num:1,get:i=>m(i,'Spread vs G-sec (pp)'),fmt:i=>m(i,'Spread vs G-sec (pp)')??'—'},{k:'pn',l:'P/NAV',num:1,get:i=>m(i,'Price/NAV'),fmt:i=>m(i,'Price/NAV')??'—'},C.dd],r,{k:'score',dir:1,keep:['name','score','pty']})}</section>`}
+  OV_DRAW=[];
+  return `${heatBlock('Listed REITs and InvITs: heat-map','Cheapest to richest. The small figure is the post-tax distribution yield. Click a tile for the full panel.',r,['score','dd'],{sub:i=>m(i,'Post-tax yield %')!=null?`${m(i,'Post-tax yield %')}% post-tax`:'—'})}
+  <section class="card" style="margin-bottom:14px"><h2>Listed REITs and InvITs</h2>${sortTable('re',[C.name,C.m('Type'),C.score,{k:'y',l:'Yield %',num:1,get:i=>m(i,'Distribution yield %'),fmt:i=>m(i,'Distribution yield %')??'—'},{k:'pty',l:'Post-tax %',num:1,get:i=>m(i,'Post-tax yield %'),fmt:i=>m(i,'Post-tax yield %')??'—'},{k:'sp',l:'Spread vs G-sec',num:1,get:i=>m(i,'Spread vs G-sec (pp)'),fmt:i=>m(i,'Spread vs G-sec (pp)')??'—'},{k:'pn',l:'P/NAV',num:1,get:i=>m(i,'Price/NAV'),fmt:i=>m(i,'Price/NAV')??'—'},C.dd],r,{k:'score',dir:1,keep:['name','score','pty']})}</section>
+  <section class="card"><h2>Housing by city</h2><p class="hint">Valuation only; colour = band. Use the rent-vs-buy calculator on your own numbers.</p><div class="heat">${c.sort((a,b)=>a.score-b.score).map(i=>heatTile(i,`rent ${m(i,'Rent yield %')}%`)).join('')}</div></section>`}
 const OVERVIEW={snapshot:ovSnapshot,india:ovIndia,global:ovGlobal,commod:ovCommod,crypto:ovCrypto,fixed:ovFixed,realestate:ovRE};
 
 /* ---------- scoped tools ---------- */
@@ -1013,8 +1015,8 @@ function route(){
   m.querySelectorAll('.vlink').forEach(x=>x.onclick=e=>{e.preventDefault();openDrawer(x.dataset.id)});
   m.querySelectorAll('.at[href]').forEach(x=>x.onclick=null);
   if(after)after();
+  m.querySelectorAll('.heatseg button').forEach(x=>{x.onclick=()=>{indState.heat=x.dataset.v;rerender()}});
   if(t==='india'&&!tool){
-    m.querySelectorAll('.heatseg button').forEach(x=>{x.onclick=()=>{indState.heat=x.dataset.v;rerender()}});
     m.querySelectorAll('#stseg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===indState.stockView);x.onclick=()=>{indState.stockView=x.dataset.v;rerender()}});
     m.querySelectorAll('#uniseg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===indState.uni);x.onclick=()=>{indState.uni=x.dataset.v;indState.sec='all';rerender()}});
     const ss=m.querySelector('#secsel');if(ss)ss.onchange=()=>{indState.sec=ss.value;rerender()};

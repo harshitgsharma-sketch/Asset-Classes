@@ -67,12 +67,23 @@ for _,r in d.iterrows():
     add(id='GLB_'+r['index'],name=f"{nm}" ,model='global',score=num(r.five_yr),signal=r.signal,buckets={'Valuation':num(r.valuation),'Macro':num(r.macro),'Currency':num(r.currency),'Timing':num(r.timing),'Filter':num(r['filter'])},history=[],coverage=num(r.coverage),tier=tier(1,num(r.coverage)),action=r.entry_plan,meta={'Economy':r.economy,'Exp. INR return % p.a. (net)':num(r.exp_inr_net),'Range':r.exp_inr_range if isinstance(r.exp_inr_range,str) else None,'Access':r.access},flags=r['flags'] if isinstance(r['flags'],str) else '')
 # commodities
 d=pd.read_csv(P+'commodities-score-log.csv')
-for c,nm in [('SILVER','Silver'),('BRENT','Brent crude'),('COPPER','Copper')]:
-    s=d[d.commodity==c]; r=s.iloc[-1]; h=hist(s)
-    add(id='CMD_'+c,name=nm,model='commodities',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h if len(h)>1 else [],coverage=num(r.coverage),tier=tier(len(h),num(r.coverage)),action=None,meta={'Price (USD)':num(r.price_usd),'Indicators live':r.live},flags='Month in progress; history reconstructed' if len(h)>1 else 'Only one month of history')
+_ccfg={c['key']:c for c in json.load(open(P+'commodities-config.json'))['commodities']}
+for c,nm in [('SILVER','Silver'),('BRENT','Brent crude'),('COPPER','Copper'),('ALUMINIUM','Aluminium'),('ZINC','Zinc'),('IRONORE','Iron ore'),('NATGAS','Natural gas')]:
+    s=d[d.commodity==c]
+    if not len(s): continue
+    r=s.iloc[-1]; h=hist(s)
+    add(id='CMD_'+c,name=nm,model='commodities',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h if len(h)>1 else [],coverage=num(r.coverage),tier=tier(len(h),num(r.coverage)),action=None,meta={'Price (USD)':num(r.price_usd),'Unit':_ccfg.get(c,{}).get('unit'),'As of':r.month,'Linked to':_ccfg.get(c,{}).get('ties'),'Indicators live':r.live},flags=('Price history: World Bank monthly averages, current month from Yahoo where it trades daily' if _ccfg.get(c,{}).get('history') else ('Month in progress; history reconstructed' if len(h)>1 else 'Only one month of history')))
 # btc
 d=pd.read_csv(P+'btc-score-log.csv'); r=d.iloc[-1]
 add(id='BTC',name='Bitcoin',model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(d),coverage=num(r.coverage),tier='A',action='Stage entries; cap at 5% of portfolio; 31.2% VDA tax, no loss set-off',meta={'Price (₹ lakh)':num(r.btc_inr_lakh)},flags='History reconstructed; macro filter high (79)')
+# top coins after Bitcoin (altcoin_oscillator.py): indicative, price-and-cycle only
+if os.path.exists(P+'altcoin-score-log.csv'):
+    d=pd.read_csv(P+'altcoin-score-log.csv')
+    for c in ['ETH','XRP','BNB','SOL']:
+        s_=d[d.coin==c]
+        if not len(s_): continue
+        r=s_.iloc[-1]
+        add(id='CRY_'+c,name=r['name'],model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(s_),coverage=num(r.coverage),tier='C',action='Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off',meta={'Price (USD)':num(r.price_usd),'Indicators live':r.live},flags='Price-and-cycle model (no on-chain data); macro filter imported from the Bitcoin model')
 # fixed income
 d=pd.read_csv(P+'fixed-income-score-log.csv')
 for _,r in d.iterrows():

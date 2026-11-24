@@ -31,6 +31,8 @@ HORIZONS = {'3m': 63, '6m': 126, '12m': 252}
 # board item id -> Yahoo Finance symbol
 SYMBOLS = {
     'GOLD': 'GC=F', 'CMD_SILVER': 'SI=F', 'CMD_BRENT': 'BZ=F', 'CMD_COPPER': 'HG=F', 'BTC': 'BTC-USD',
+    'CMD_ALUMINIUM': 'ALI=F', 'CMD_IRONORE': 'TIO=F', 'CMD_NATGAS': 'NG=F',
+    'CRY_ETH': 'ETH-USD', 'CRY_XRP': 'XRP-USD', 'CRY_BNB': 'BNB-USD', 'CRY_SOL': 'SOL-USD',   # zinc: COMEX future barely trades, no daily series
     'NIFTY50': '^NSEI', 'GLB_NIFTY50': '^NSEI',
     'SEC_BANK': '^NSEBANK', 'SEC_IT': '^CNXIT', 'SEC_FMCG': '^CNXFMCG', 'SEC_REALTY': '^CNXREALTY',
     'SEC_ENERGY': '^CNXENERGY', 'SEC_AUTO': '^CNXAUTO', 'SEC_PSUBANK': '^CNXPSUBANK', 'SEC_METAL': '^CNXMETAL',

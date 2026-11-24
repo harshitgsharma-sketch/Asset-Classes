@@ -26,6 +26,10 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: pip install pandas numpy matplotlib
+      - name: Commodity price history (World Bank + Yahoo)
+        run: python3 -I scripts/fetch_commodity_history.py || echo "commodity history fetch failed; keeping previous file"
+      - name: Crypto price history (Yahoo)
+        run: python3 -I scripts/fetch_crypto_history.py || echo "crypto history fetch failed; keeping previous file"
       - name: Re-run all 12 oscillators
         run: bash scripts/run_models.sh
       - name: Fetch latest prices (best effort)
