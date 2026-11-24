@@ -589,7 +589,8 @@ const TABS={
   fixed:{t:'Fixed income',sub:'Bonds, deposits and cash-like carry, with yields next to scores.',scope:i=>['bonds','carry'].includes(i.model),notes:[]},
   realestate:{t:'Real estate',sub:'Listed REITs and InvITs, and housing by city.',scope:i=>['reits','property'].includes(i.model),notes:[]},
 };
-const TOOLS=[['','Overview'],['finder','Signal finder'],['map','Map'],['trends','Trends'],['alerts','Alerts'],['changes','Changes'],['know','Knowledge']];
+/* Tools shown on each tab. The other views (finder, map, alerts, changes, notes) still exist in TOOLVIEW; add them back here to show them. */
+const TOOLS=[['','Overview'],['trends','Trends']];
 const tabOf=i=>Object.keys(TABS).find(k=>k!=='snapshot'&&TABS[k].scope(i))||'snapshot';
 const inTab=t=>ALL_ITEMS.filter(i=>!i.wide&&TABS[t].scope(i));   // headline readings only
 const toolOK=(t,k)=>k!=='trends'||SERIES_ALL.some(([id])=>TABS[t].scope(byId[id]));
@@ -976,8 +977,9 @@ function viewHealth(){return `<div class="card"><h2>Data health</h2><p class="hi
 /* ---------- per-item tools in the side panel ---------- */
 const _openDrawer=openDrawer;
 openDrawer=function(id){_openDrawer(id);const i=byId[id];if(!i)return;const t=tabOf(i);
-  const tools=[[`#${t}/map`,'Show on map',()=>{mapState.q=i.name;mapState.model=i.model}],[`#${t}/finder`,'Signal finder',null],[`#${t}/alerts`,'Alerts',null],[`#${t}/know`,'Related notes',null]];
+  const tools=[];
   if(i.history&&i.history.length>1)tools.unshift([`#${t}/trends`,'Trend',()=>{SERIES_ALL.forEach(([k])=>trendState.on[k]=k===i.id?1:0)}]);
+  if(!tools.length)return;
   const bar=document.createElement('div');bar.className='dtools';bar.innerHTML=`<span class="tag">Open in ${TABS[t].t}:</span>`+tools.map((x,k)=>`<a class="btn" href="${x[0]}" data-k="${k}">${x[1]}</a>`).join('');
   bar.querySelectorAll('a').forEach(a=>a.onclick=()=>{const f=tools[+a.dataset.k][2];if(f)f();closeDrawer()});
   const h=dr.querySelector('.dtabs')||dr.querySelector('#drh');h.insertAdjacentElement('beforebegin',bar)};
@@ -995,11 +997,11 @@ function route(){
   OV_DRAW=[];
   if(a==='knowledge'||a==='notes'||a==='health'){items=ALL_ITEMS;CUR={tab:a,tool:''};
     m.innerHTML=a==='knowledge'?viewKnowledge():a==='notes'?viewNotes():viewHealth();bindRows(m);if(a==='knowledge')drawKnowledge();return}
-  const t=TABS[a]?a:'snapshot',tool=TOOLVIEW[b]&&toolOK(t,b)?b:'';CUR={tab:t,tool};
+  const t=TABS[a]?a:'snapshot',tool=TOOLVIEW[b]&&TOOLS.some(x=>x[0]===b)&&toolOK(t,b)?b:'';CUR={tab:t,tool};
   items=ALL_ITEMS.filter(TABS[t].scope);
   const hd=items.filter(i=>!i.wide),wd=items.length-hd.length;
   const bar=`<div class="tabhead"><div><h1 class="tabt">${TABS[t].t}</h1><p class="tabs">${TABS[t].sub}</p></div><div class="tabmix">${bandMix(hd,8)}<span class="tag">${hd.length} headline reading${hd.length>1?'s':''}${wd?` · +${wd} more watchlist stocks`:''}</span></div></div>
-    <div class="tbar" aria-label="Views for ${TABS[t].t}"><a class="${!tool?'on':''}" href="#${t}" aria-current="${!tool?'page':'false'}">Overview</a><details class="tmenu"><summary class="${tool?'on':''}">${tool?TOOLS.find(x=>x[0]===tool)[1]:'Tools'} <span aria-hidden="true">▾</span></summary><div class="tlist">${TOOLS.filter(([k])=>k&&toolOK(t,k)).map(([k,l])=>`<a class="${k===tool?'on':''}" href="#${t}/${k}">${l}</a>`).join('')}</div></details></div>
+    <div class="tbar" aria-label="Views for ${TABS[t].t}">${TOOLS.filter(([k])=>!k||toolOK(t,k)).map(([k,l])=>`<a class="${k===tool?'on':''}" href="#${t}${k?'/'+k:''}" aria-current="${k===tool?'page':'false'}">${l}</a>`).join('')}</div>
     ${!tool?verdictLine(t):''}`;
   let body,after=null;
   if(!tool){body=OVERVIEW[t]();after=()=>{OV_DRAW.forEach(f=>f());if(t==='india')drawSX()}}
