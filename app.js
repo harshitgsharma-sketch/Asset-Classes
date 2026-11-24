@@ -656,21 +656,22 @@ function hbars(rows,max,fmt){return `<div class="hb">${rows.map(r=>`<div class="
 
 /* ---------- tab overviews ---------- */
 let OV_DRAW=[];   // charts drawn after the HTML is in place (and again on resize)
+/* Snapshot opens with a heat map of the asset-class model: one tile per asset class, linking to its tab. */
+const AC_TAB={'Indian equity':'india','Foreign equity':'global','Indian bonds':'fixed','Foreign bonds':'fixed','Cash':'fixed','Precious metals':'commod','Real estate':'realestate','Crypto':'crypto'};
+function acTile(a){const t=AC_TAB[a.family]||'snapshot',tilt=String(a.tilt||'').replace(/\s*\(.*\)$/,'');
+  return `<a class="ht" href="#${t}" style="background:${tint(a.score,46)};border-color:${bcol(a.score)};text-decoration:none;color:var(--ink)" aria-label="${esc(a.name)}, score ${a.score}, ${bandOf(a.score)[0]}" title="${esc(a.name)}${a.drivers?' · '+esc(a.drivers):''}">
+    <div class="htn">${esc(String(a.name).replace(/\s*\(.*\)$/,''))}</div><div class="hts"><b>${Math.round(a.score)}</b><span>${bandOf(a.score)[0]}</span></div>
+    <div class="tag" style="white-space:normal">${esc(tilt)}${a.yield_?` · yield ${a.yield_}%`:''}${a.own!=null?` · full model ${Math.round(a.own)}`:''}</div></a>`}
 function ovSnapshot(){
   const reits=inTab('realestate').filter(i=>i.model==='reits').sort((a,b)=>a.score-b.score);const rm=reits[Math.floor(reits.length/2)];
-  const head=ALL_ITEMS.filter(i=>!i.wide),cheap=head.filter(i=>!notInvestable(i)).sort((a,b)=>a.score-b.score).slice(0,8),rich=[...head].sort((a,b)=>b.score-a.score).slice(0,8);
-  const AM=DATA.amfi,PS=DATA.parabolic&&DATA.parabolic.summary,bad=MODEL_ORDER.map(modelStatus).filter(s=>s.cls!=='ok').length;
-  OV_DRAW=[drawClasses];
-  return `<div class="tiles7">
+  const ac=[...(DATA.assetClasses||[])].sort((a,b)=>a.score-b.score);
+  OV_DRAW=[];
+  return `<section class="card" style="margin-bottom:14px"><h2>Asset classes: heat-map</h2><p class="hint">Cheapest to richest on the asset-class model (valuation, five-year view). Each tile shows the suggested tilt; "full model" is the dedicated model's score with timing and macro added. Click a tile to open its tab.</p>
+    <div class="heat ac">${ac.map(acTile).join('')}</div></section>
+  <div class="tiles7">
     ${areaTile('india',byId.NIFTY50,'Nifty 50')}${areaTile('global',byId.GLB_SP500,'S&P 500 (US)')}${areaTile('commod',byId.GOLD,'Gold')}${areaTile('crypto',byId.BTC,'Bitcoin')}
     ${areaTile('fixed',byId.FI_GSEC_10Y,'10-yr G-sec',byId.FI_GSEC_10Y?`yield ${byId.FI_GSEC_10Y.meta['Yield %']}%`:'')}${areaTile('realestate',rm,'REIT median: '+(rm?rm.name.split(' (')[0]:''))}
-  </div>
-  <section class="card" style="margin-bottom:14px"><h2>Asset classes on one scale</h2><p class="hint">Filled dot: the asset-class model's valuation-only score. Ring: the dedicated model's full score (valuation + timing + macro). The line between them is how much timing and macro change the picture. Click a row to open it.</p>
-    <div class="legend"><span><svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="var(--ink-2)"/></svg> Valuation</span><span><svg width="14" height="14"><circle cx="7" cy="7" r="4.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/></svg> Dedicated model</span></div><div id="acsvg"></div></section>
-  <section class="card"><div class="cardhead"><div><h2>Extremes</h2><p class="hint">The cheapest and richest headline readings across every tab, and the signals that cut across them. Rich readings matter only for what you hold.</p></div>
-    <div class="xstats"><span title="AMFI thematic-fund froth, 1–100">Fund froth <b>${AM?AM.froth:'—'}</b></span><span>Parabolic moves <b>${PS?PS.parabolic_now.length:'—'}</b></span><span>${bad?`<a href="#health">${bad} model${bad===1?'':'s'} due</a>`:'<a href="#health">All models fresh</a>'}</span></div></div>
-    <div class="grid g2"><div><div class="sgh">Cheapest</div>${cheap.slice(0,6).map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</div>
-    <div><div class="sgh">Richest</div>${rich.slice(0,6).map(i=>rowHTML(i,`<span class="tag">${TABS[tabOf(i)].t}</span>`)).join('')}</div></div></section>`;
+  </div>`;
 }
 /* one-line read at the top of each tab: lean in (≤35) / lean out (>65), from the scores */
 const shortName=n=>String(n).replace(/ \(.*\)$/,'').replace(/ Ltd\.?$/,'');
