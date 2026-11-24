@@ -251,6 +251,31 @@ td.sc{white-space:nowrap}
   .tlist{position:fixed;left:16px;right:16px;top:auto;min-width:0}
   .xnote{min-height:40px;display:flex;align-items:center}
 }
+
+/* ---- side panel: header + tabs, and push layout on wide screens ---- */
+.drawer{width:440px;padding:0;display:flex;flex-direction:column}
+.dhead{position:sticky;top:0;z-index:2;background:var(--surface);padding:16px 20px 0;border-bottom:1px solid var(--line)}
+.dhead .x{position:absolute;right:14px;top:14px}
+.dhead #drh{margin:4px 40px 8px 0;font-size:18px;line-height:1.25}
+.dscore{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.dscore .big{font-size:40px}.dscore .tag{display:block;white-space:normal}
+.dhold{margin-left:auto}
+.dhead .dtools{margin:8px 0 0}
+.dtabs{display:flex;gap:2px;margin-top:10px}
+.dtabs button{flex:1;border:0;background:none;padding:10px 4px;font-size:14px;font-weight:500;color:var(--ink-2);border-bottom:2px solid transparent;cursor:pointer}
+.dtabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+.dbody{padding:16px 20px 28px}
+.dsec{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.dsec h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:600}
+.dsec.plain{border:0;padding:0}.dsec.warnbox{border-left:3px solid #fab219}
+.dact{background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:14px}.dact span{display:block;font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:2px}
+.dsig{display:flex;align-items:center;gap:10px;margin-bottom:10px}.dsig b{font-size:26px}
+.mstats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mstat{background:var(--surface-2);border-radius:8px;padding:8px 10px;min-width:0}.mstat span{display:block;font-size:12px;color:var(--ink-3)}.mstat b{font-size:16px}.mstat em{display:block;font-style:normal;font-size:12px;color:var(--ink-2)}
+.dnote{margin-top:8px;white-space:normal}
+.dsec .kv{grid-template-columns:140px 1fr}
+body{transition:padding-right .2s ease}
+@media(min-width:1100px){body.dopen{padding-right:440px}.drawer{box-shadow:none}}
+@media(prefers-reduced-motion:reduce){body{transition:none}}
 </style>
 </head>
 <body>
