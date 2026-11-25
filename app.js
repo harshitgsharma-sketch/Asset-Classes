@@ -56,6 +56,8 @@ const byId=Object.fromEntries(DATA.items.map(i=>[i.id,i]));
 const pct=x=>Math.round(x*100)+'%';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const notInvestable=i=>/Not investable/i.test(i.action||'');
+const INVEST_MAX=50;   // top of Accumulate: below this a reading sits in a blue band
+const investable=i=>i.score!=null&&i.score<INVEST_MAX&&!notInvestable(i);
 /* ---------- SIGNAL MEASURES ---------- */
 const CW={A:1,B:.8,C:.55};
 const LANES={buy:['Buy now','Cheap, timing and macro not against it'],stage:['Buy in stages','Cheap, but timing or macro argues against a lump sum'],near:['On the cusp','Within 3 points of the Buy (35) or Trim (65) line'],rally:['Trim into rallies','Rich, timing not yet against it'],trimnow:['Trim now','Rich, and timing has turned']};
@@ -577,7 +579,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
    ASSET-CLASS TABS: seven self-contained tabs, each with its own tools
    ===================================================================== */
 const TABS={
-  snapshot:{t:'Snapshot',sub:'Every asset class on one 1–100 scale: where the cheap and rich readings are today.',scope:()=>true,
+  snapshot:{t:'Snapshot',sub:'The investable readings across every asset class: only the blue bands (Strong buy, Buy, Accumulate) on the 1–100 scale.',scope:()=>true,
     notes:['market-legends-council-2026-11-23','sector-investing-playbook','sector-rotation-research-evidence','board-backlog']},
   india:{t:'Indian equities',sub:'Three cuts: by market cap (Nifty 50, large, mid and small caps), by sector, and by individual stock (Nifty 50 and your watchlist).',scope:i=>i.id==='NIFTY50'||['sectors','factors','stocks'].includes(i.model),
     notes:['market-legends-council-2026-11-23','watchlist-analysis-2026-11','sector-investing-playbook','india-sector-facts-2016-2026','sector-froth-signals','valuing-cyclical-sectors','sector-rotation-7-indian-bull-runs','flat-markets-are-not-dead-markets','identifying-winning-sectors']},
@@ -607,7 +609,7 @@ function bandMix(list,h=10){const c=BANDS.map(b=>list.filter(i=>bandOf(i.score)=
 function hc(v,txt){return `<td class="hc" style="background:${tint(v,40)}">${txt??(v==null?'—':Math.round(v))}</td>`}
 function flagIcon(i){const f=[];if(i.flags&&/guard/.test(i.flags))f.push('⚑');else if(i.flags)f.push('<span title="model note" style="color:var(--ink-3)">ⓘ</span>');if(i.parabolic&&i.parabolic.status!=='Normal')f.push('<span class="pill">'+i.parabolic.status+'</span>');return f.join(' ')}
 function heatTile(i,sub,v){const val=v===undefined?i.score:v;return `<div class="ht" data-id="${i.id}" role="button" tabindex="0" style="background:${tint(val,46)};border-color:${bcol(val)}" aria-label="${esc(i.name)} ${i.score}"><div class="htn">${esc(i.name.replace(/^Nifty (India )?/,'').replace(/ Ltd\.?$/,''))}</div><div class="hts"><b>${i.score.toFixed(0)}</b><span>${sub||''}</span></div></div>`}
-function areaTile(t,i,label,extra){const list=inTab(t);return `<a class="at" href="#${t}" style="border-top-color:${bcol(i?i.score:null)}"><div class="atl">${TABS[t].t}</div><div class="atv">${i?i.score.toFixed(0):'—'}<span>${i?chip(i.score):''}</span></div><div class="ats">${esc(label)}</div>${gauge(i?i.score:null,180)}${bandMix(list,6)}<div class="ats">${list.length} reading${list.length>1?'s':''}${extra?' · '+extra:''}</div></a>`}
+function areaTile(t,i,label,extra,only){const list=only?inTab(t).filter(only):inTab(t);return `<a class="at" href="#${t}" style="border-top-color:${bcol(i?i.score:null)}"><div class="atl">${TABS[t].t}</div><div class="atv">${i?i.score.toFixed(0):'—'}<span>${i?chip(i.score):''}</span></div><div class="ats">${esc(label)}</div>${gauge(i?i.score:null,180)}${bandMix(list,6)}<div class="ats">${list.length} reading${list.length>1?'s':''}${extra?' · '+extra:''}</div></a>`}
 /* sortable table */
 const TSORT={};
 function sortTable(key,cols,rows,def){const st=TSORT[key]||(TSORT[key]=def||{k:cols[1].k,dir:1});const col=cols.find(c=>c.k===st.k)||cols[0];
@@ -663,15 +665,15 @@ function acTile(a){const t=AC_TAB[a.family]||'snapshot',tilt=String(a.tilt||'').
     <div class="htn">${esc(String(a.name).replace(/\s*\(.*\)$/,''))}</div><div class="hts"><b>${Math.round(a.score)}</b><span>${bandOf(a.score)[0]}</span></div>
     <div class="tag" style="white-space:normal">${esc(tilt)}${a.yield_?` · yield ${a.yield_}%`:''}${a.own!=null?` · full model ${Math.round(a.own)}`:''}</div></a>`}
 function ovSnapshot(){
-  const reits=inTab('realestate').filter(i=>i.model==='reits').sort((a,b)=>a.score-b.score);const rm=reits[Math.floor(reits.length/2)];
-  const ac=[...(DATA.assetClasses||[])].sort((a,b)=>a.score-b.score);
+  // Snapshot shows investable readings only: the blue bands (Strong buy, Buy, Accumulate). Hold (gray) and Trim/Exit (red) live in each tab.
+  const ac=(DATA.assetClasses||[]).filter(a=>a.score!=null&&a.score<INVEST_MAX).sort((a,b)=>a.score-b.score);
+  // each tile: the tab's cheapest investable headline (stocks only if nothing broader qualifies)
+  const tile=t=>{const l=inTab(t).filter(investable).sort((a,b)=>a.score-b.score),i=l.find(x=>x.model!=='stocks')||l[0];
+    return areaTile(t,i,i?i.name:'None investable today',i&&i.model==='bonds'&&i.meta&&i.meta['Yield %']?`yield ${i.meta['Yield %']}%`:'',investable)};
   OV_DRAW=[];
-  return `<section class="card" style="margin-bottom:14px"><h2>Asset classes: heat-map</h2><p class="hint">Cheapest to richest on the asset-class model (valuation, five-year view). Each tile shows the suggested tilt; "full model" is the dedicated model's score with timing and macro added. Click a tile to open its tab.</p>
-    <div class="heat ac">${ac.map(acTile).join('')}</div></section>
-  <div class="tiles7">
-    ${areaTile('india',byId.NIFTY50,'Nifty 50')}${areaTile('global',byId.GLB_SP500,'S&P 500 (US)')}${areaTile('commod',byId.GOLD,'Gold')}${areaTile('crypto',byId.BTC,'Bitcoin')}
-    ${areaTile('fixed',byId.FI_GSEC_10Y,'10-yr G-sec',byId.FI_GSEC_10Y?`yield ${byId.FI_GSEC_10Y.meta['Yield %']}%`:'')}${areaTile('realestate',rm,'REIT median: '+(rm?rm.name.split(' (')[0]:''))}
-  </div>`;
+  return `<section class="card" style="margin-bottom:14px"><h2>Investable asset classes: heat-map</h2><p class="hint">Only asset classes in the blue bands (score under ${INVEST_MAX}), cheapest first, on the asset-class model (valuation, five-year view). Each tile shows the suggested tilt; "full model" is the dedicated model's score with timing and macro added. Click a tile to open its tab.</p>
+    <div class="heat ac">${ac.length?ac.map(acTile).join(''):'<div class="empty">No asset class is in a blue band today.</div>'}</div></section>
+  <div class="tiles7">${['india','global','commod','crypto','fixed','realestate'].map(tile).join('')}</div>`;
 }
 /* one-line read at the top of each tab: lean in (≤35) / lean out (>65), from the scores */
 const shortName=n=>String(n).replace(/ \(.*\)$/,'').replace(/ Ltd\.?$/,'');
@@ -680,6 +682,9 @@ function verdictLine(t){let lin,lout,hold;
     lin=ac.filter(a=>/^Overweight/.test(a.tilt||'')).sort((a,b)=>a.score-b.score);lout=ac.filter(a=>/^Underweight/.test(a.tilt||'')).sort((a,b)=>b.score-a.score);hold=ac.length-lin.length-lout.length}
   else{let l=inTab(t).filter(i=>i.score!=null&&!notInvestable(i)&&i.model!=='stocks');
     lin=l.filter(i=>i.score<=35).sort((a,b)=>a.score-b.score);lout=l.filter(i=>i.score>65).sort((a,b)=>b.score-a.score);hold=l.length-lin.length-lout.length}
+  if(t==='snapshot'){   // Snapshot is investable-only: no Hold or Lean-out names
+    const inv=(DATA.assetClasses||[]).filter(a=>a.score!=null&&a.score<INVEST_MAX).sort((a,b)=>a.score-b.score);
+    return `<div class="verdict"><span><b>Investable:</b> ${inv.length?inv.map(a=>esc(shortName(a.name))).join(', '):'nothing in a blue band today'}</span><span class="tag">Asset classes scoring under ${INVEST_MAX} (Strong buy, Buy, Accumulate).</span></div>`}
   const nm=x=>x.slice(0,4).map(i=>byId[i.id]?`<a href="#" data-id="${esc(i.id)}" class="vlink">${esc(shortName(i.name))}</a>`:esc(shortName(i.name))).join(', ')+(x.length>4?` +${x.length-4}`:'');
   return `<div class="verdict"><span><b>Lean in:</b> ${lin.length?nm(lin):'nothing cheap enough'}</span><span><b>Hold:</b> ${hold}</span><span><b>Lean out:</b> ${lout.length?nm(lout):'nothing rich enough'}</span><span class="tag">${t==='snapshot'?'From the asset-class model\'s tilts.':'Lean in = score 35 or lower; lean out = above 65.'}</span></div>`}
 let indState={heat:'score',sec:'all',stockView:'grid',uni:'n50',view:'cap',valMax:50,cell:null,dvAll:false};
@@ -1002,7 +1007,7 @@ function route(){
     m.innerHTML=a==='knowledge'?viewKnowledge():a==='notes'?viewNotes():viewHealth();bindRows(m);if(a==='knowledge')drawKnowledge();return}
   const t=TABS[a]?a:'snapshot',tool=TOOLVIEW[b]&&TOOLS.some(x=>x[0]===b)&&toolOK(t,b)?b:'';CUR={tab:t,tool};
   items=ALL_ITEMS.filter(TABS[t].scope);
-  const hd=items.filter(i=>!i.wide),wd=items.length-hd.length;
+  const hd=items.filter(i=>!i.wide&&(t!=='snapshot'||tool||investable(i))),wd=t==='snapshot'&&!tool?0:items.length-items.filter(i=>!i.wide).length;   // Snapshot overview: investable only
   const bar=`<div class="tabhead"><div><h1 class="tabt">${TABS[t].t}</h1><p class="tabs">${TABS[t].sub}</p></div><div class="tabmix">${bandMix(hd,8)}<span class="tag">${hd.length} headline reading${hd.length>1?'s':''}${wd?` · +${wd} more watchlist stocks`:''}</span></div></div>
     <div class="tbar" aria-label="Views for ${TABS[t].t}">${TOOLS.filter(([k])=>!k||toolOK(t,k)).map(([k,l])=>`<a class="${k===tool?'on':''}" href="#${t}${k?'/'+k:''}" aria-current="${k===tool?'page':'false'}">${l}</a>`).join('')}</div>
     ${!tool?verdictLine(t):''}`;
