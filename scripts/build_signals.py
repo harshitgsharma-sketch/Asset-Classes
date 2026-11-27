@@ -19,13 +19,16 @@ def add(**k):
     k['band']=band(k['score']); items.append(k)
 def hist(df,col='oscillator'):
     return [[m,num(v)] for m,v in zip(df.month,df[col])]
+def pxh(df,col):
+    """Monthly price next to the score history (same months), for the price overlay and the back-test."""
+    return [[m,(None if pd.isna(v) else float(v))] for m,v in zip(df.month,pd.to_numeric(df[col],errors='coerce'))]
 def tier(h,c):
     if h>12: return 'A'
     return 'B' if (c is not None and c>=0.8) else 'C'
 # core: gold, nifty
-for key,f,nm in [('GOLD','gold-score-log.csv','Gold'),('NIFTY50','nifty-score-log.csv','Nifty 50')]:
+for key,f,nm,pc in [('GOLD','gold-score-log.csv','Gold','gold_usd'),('NIFTY50','nifty-score-log.csv','Nifty 50','nifty')]:
     d=pd.read_csv(C+f); r=d.iloc[-1]; h=hist(d)
-    add(id=key,name=nm,model='core',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r.filter)},history=h,coverage=num(r.coverage),tier='A',action=None,meta={'Source':r.source},flags='History before Nov-2026 reconstructed (±3 pts)')
+    add(px_hist=pxh(d,pc),id=key,name=nm,model='core',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h,coverage=num(r.coverage),tier='A',action=None,meta={'Source':r.source},flags='History before Nov-2026 reconstructed (±3 pts)')
 # sectors
 d=pd.read_csv(C+'nifty-sectors-score-log.csv')
 for _,r in d.iterrows():
@@ -72,10 +75,10 @@ for c,nm in [('SILVER','Silver'),('BRENT','Brent crude'),('COPPER','Copper'),('A
     s=d[d.commodity==c]
     if not len(s): continue
     r=s.iloc[-1]; h=hist(s)
-    add(id='CMD_'+c,name=nm,model='commodities',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h if len(h)>1 else [],coverage=num(r.coverage),tier=tier(len(h),num(r.coverage)),action=None,meta={'Price (USD)':num(r.price_usd),'Unit':_ccfg.get(c,{}).get('unit'),'As of':r.month,'Linked to':_ccfg.get(c,{}).get('ties'),'Indicators live':r.live},flags=('Price history: World Bank monthly averages, current month from Yahoo where it trades daily' if _ccfg.get(c,{}).get('history') else ('Month in progress; history reconstructed' if len(h)>1 else 'Only one month of history')))
+    add(px_hist=pxh(s,'price_usd') if len(h)>1 else [],id='CMD_'+c,name=nm,model='commodities',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h if len(h)>1 else [],coverage=num(r.coverage),tier=tier(len(h),num(r.coverage)),action=None,meta={'Price (USD)':num(r.price_usd),'Unit':_ccfg.get(c,{}).get('unit'),'As of':r.month,'Linked to':_ccfg.get(c,{}).get('ties'),'Indicators live':r.live},flags=('Price history: World Bank monthly averages, current month from Yahoo where it trades daily' if _ccfg.get(c,{}).get('history') else ('Month in progress; history reconstructed' if len(h)>1 else 'Only one month of history')))
 # btc
 d=pd.read_csv(P+'btc-score-log.csv'); r=d.iloc[-1]
-add(id='BTC',name='Bitcoin',model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(d),coverage=num(r.coverage),tier='A',action='Stage entries; cap at 5% of portfolio; 31.2% VDA tax, no loss set-off',meta={'Price (₹ lakh)':num(r.btc_inr_lakh)},flags='History reconstructed; macro filter high (79)')
+add(px_hist=pxh(d,'btc_usd'),id='BTC',name='Bitcoin',model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(d),coverage=num(r.coverage),tier='A',action='Stage entries; cap at 5% of portfolio; 31.2% VDA tax, no loss set-off',meta={'Price (₹ lakh)':num(r.btc_inr_lakh)},flags='History reconstructed; macro filter high (79)')
 # top coins after Bitcoin (altcoin_oscillator.py): indicative, price-and-cycle only
 if os.path.exists(P+'altcoin-score-log.csv'):
     d=pd.read_csv(P+'altcoin-score-log.csv')
@@ -83,7 +86,7 @@ if os.path.exists(P+'altcoin-score-log.csv'):
         s_=d[d.coin==c]
         if not len(s_): continue
         r=s_.iloc[-1]
-        add(id='CRY_'+c,name=r['name'],model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(s_),coverage=num(r.coverage),tier='C',action='Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off',meta={'Price (USD)':num(r.price_usd),'Indicators live':r.live},flags='Price-and-cycle model (no on-chain data); macro filter imported from the Bitcoin model')
+        add(px_hist=pxh(s_,'price_usd'),id='CRY_'+c,name=r['name'],model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(s_),coverage=num(r.coverage),tier='C',action='Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off',meta={'Price (USD)':num(r.price_usd),'Indicators live':r.live},flags='Price-and-cycle model (no on-chain data); macro filter imported from the Bitcoin model')
 # fixed income
 d=pd.read_csv(P+'fixed-income-score-log.csv')
 for _,r in d.iterrows():
@@ -190,7 +193,58 @@ sq=os.path.join(ROOT,'data','size_rotation.json')
 if os.path.exists(sq):
     try: size_rotation=json.load(open(sq))
     except Exception as e: print('WARN size_rotation.json unreadable:',e)
-out={'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi,'watchlist':watchlist,'size_rotation':size_rotation}
+# ---- band back-test (display only): forward price return after each month, grouped by that month's band.
+# Uses the 61-month score histories, most of them reconstructed, so it is a sanity check, not proof.
+BANDS=['Strong buy','Buy','Accumulate','Hold','Trim','Exit']
+def backtest(horizons=(12,24)):
+    obs={H:[] for H in horizons}
+    for it in items:
+        h=it.get('history') or []; px=dict(it.get('px_hist') or [])
+        if len(h)<13 or not px: continue
+        months=[m for m,_ in h]
+        for k,(m,sc) in enumerate(h):
+            if sc is None or not px.get(m): continue
+            for H in horizons:
+                if k+H<len(months) and px.get(months[k+H]):
+                    obs[H].append((band(sc),px[months[k+H]]/px[m]-1,it['id']))
+    def summ(rows):
+        out=[]
+        for b in BANDS:
+            r=sorted(x[1] for x in rows if x[0]==b); n=len(r)
+            if not n: out.append({'band':b,'n':0}); continue
+            med=r[n//2] if n%2 else (r[n//2-1]+r[n//2])/2
+            out.append({'band':b,'n':n,'assets':len({x[2] for x in rows if x[0]==b}),'median':round(med,4),
+                        'hit':round(sum(1 for x in r if x>0)/n,3),'p25':round(r[int(n*.25)],4),'p75':round(r[min(n-1,int(n*.75))],4)})
+        return out
+    ids=sorted({x[2] for H in horizons for x in obs[H]})
+    ms=[m for it in items if it['id'] in ids for m,_ in it['history']]
+    return {'horizons':list(horizons),'n':{str(H):len(obs[H]) for H in horizons},'assets':ids,
+            'from':min(ms) if ms else None,'to':max(ms) if ms else None,
+            'by_band':{str(H):summ(obs[H]) for H in horizons},
+            'per_asset':{i:{str(H):summ([x for x in obs[H] if x[2]==i]) for H in horizons} for i in ids}}
+bt=backtest()
+
+# ---- score snapshots per model run, so the board can show what changed since the previous run.
+# data/score-snapshots.json: {model: {asof: {id: score}}}; the current run overwrites its own key.
+snp=os.path.join(ROOT,'data','score-snapshots.json')
+try: snaps=json.load(open(snp))
+except Exception: snaps={}
+for k,m in meta.items():
+    if not m['asof']: continue
+    snaps.setdefault(k,{})[m['asof']]={it['id']:it['score'] for it in items if it['model']==k and it['score'] is not None}
+    snaps[k]={a:snaps[k][a] for a in sorted(snaps[k])[-24:]}
+for it in items:
+    k=it['model']; cur=meta.get(k,{}).get('asof'); prev=None
+    older=[a for a in sorted(snaps.get(k,{})) if cur and a<cur]
+    if older and it['id'] in snaps[k][older[-1]]:
+        prev={'score':snaps[k][older[-1]][it['id']],'asof':older[-1],'source':'previous run'}
+    elif it.get('history') and len(it['history'])>1 and it['history'][-2][1] is not None:
+        prev={'score':it['history'][-2][1],'asof':it['history'][-2][0],'source':'score history'}
+    if prev: prev['band']=band(prev['score']); it['prev']=prev
+os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
+json.dump(snaps,open(snp,'w'),separators=(',',':'))
+
+out={'backtest':bt,'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi,'watchlist':watchlist,'size_rotation':size_rotation}
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(out,open(os.path.join(ROOT,'data','signals.json'),'w'),separators=(',',':'),allow_nan=False)
 print('signals.json:',len(items),'items;',{k:v['asof'] for k,v in meta.items()})

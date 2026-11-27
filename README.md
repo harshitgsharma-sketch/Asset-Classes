@@ -3,14 +3,20 @@
 A one-page dashboard over 12 entry/exit oscillators for an INR investor with a holding period of 5 years or less.
 Every model scores 1 (cheap, buy) to 100 (rich, sell): ≤20 Strong buy · 21–35 Buy · 36–50 Accumulate · 51–65 Hold · 66–80 Trim · >80 Exit.
 
-Not investment advice. Cheap/rich anchors are judgment-based, and no model is back-tested yet.
+Not investment advice. Cheap/rich anchors are judgment-based. The only back-test is an in-sample band check on the 13 readings with a 5-year score history (Snapshot tab, "Does the scale work?"); those scores were reconstructed after the fact, so it is a sanity check, not proof.
 
 ## How it stays current
 
 | When | What happens | Where |
 |---|---|---|
 | Every page open or refresh | The page loads `data/signals.json` (no cache), recomputes every section in the browser, checks each model's input age against its refresh cadence, and pulls live Bitcoin and USD/INR prices to show drift since the last scoring run | `index.html`, `app.js` |
-| Daily, 07:00 IST | GitHub Action re-runs all 12 oscillators, fetches gold, silver, Brent, copper, Bitcoin, USD/INR and Nifty prices, rebuilds `data/signals.json`, commits if anything changed | `.github/workflows/refresh.yml` |
+| Daily, 07:00 IST | GitHub Action re-runs all 12 oscillators, fetches gold, silver, Brent, copper, Bitcoin, USD/INR and Nifty prices, rebuilds `data/signals.json`, runs a sanity check (`scripts/check_signals.py`: stops without publishing if readings vanish, a score leaves 1–100 or an inputs date goes backwards), sends band-change alerts (`scripts/band_alerts.py`), commits if anything changed | `.github/workflows/refresh.yml` |
+
+**Alerts.** When a headline reading changes band, or its parabolic flag turns on, the Action opens a GitHub issue labelled `band-alert` (GitHub emails the repo owner about new issues). For Telegram too, add two repository secrets, `TELEGRAM_BOT_TOKEN` (from @BotFather) and `TELEGRAM_CHAT_ID`; without them only the issue is opened.
+
+**What changed.** `scripts/build_signals.py` keeps one score snapshot per model run in `data/score-snapshots.json` (last 24 runs per model), and each item gets a `prev` score: from the previous stored run, or from the monthly score history where one exists. The Snapshot tab lists band changes and big moves.
+
+**My portfolio** (`#portfolio`): holdings and weights are kept in the viewer's browser only (`localStorage`), never sent anywhere. The site is installable (`manifest.webmanifest`, `sw.js`: network first, last good copy offline).
 | Monthly (3rd) | The Claude model run refreshes the inputs that need research (P/Es, CAPE, PMIs, RBI rates, REIT NAVs, housing) and commits them to `models/`; the push triggers the Action | `models/*-inputs-monthly.csv` |
 
 Daily prices do **not** change scores by themselves: the price-driven indicators inside each model's inputs are set on the monthly run. The page shows how far prices have moved since then and flags moves of 5% or more.

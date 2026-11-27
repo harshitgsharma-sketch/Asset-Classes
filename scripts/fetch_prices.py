@@ -22,8 +22,8 @@ def yahoo(symbol, scale=1.0):
     return round(meta['regularMarketPrice'] * scale, 2), 'Yahoo Finance ' + symbol
 
 def frankfurter_inr():
-    j = get('https://api.frankfurter.app/latest?from=USD&to=INR')
-    return round(j['rates']['INR'], 3), 'ECB reference rate (frankfurter.app)'
+    j = get('https://api.frankfurter.dev/v1/latest?base=USD&symbols=INR')
+    return round(j['rates']['INR'], 3), 'ECB reference rate (frankfurter.dev)'
 
 def coingecko_btc():
     j = get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')

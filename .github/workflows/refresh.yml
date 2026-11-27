@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: refresh
@@ -38,6 +39,14 @@ jobs:
         run: python3 -I scripts/size_rotation.py || echo "size rotation failed; keeping previous file"
       - name: Rebuild data/signals.json
         run: python3 -I scripts/build_signals.py
+      - name: Sanity check (stops here, without publishing, if the build looks broken)
+        run: python3 -I scripts/check_signals.py
+      - name: Band-change alerts (GitHub issue; Telegram if its secrets are set)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 -I scripts/band_alerts.py || echo "alerts failed; continuing"
       - name: Commit if anything changed
         run: |
           git config user.name "board-refresh-bot"

@@ -1,0 +1,15 @@
+{
+  "name": "Entry/Exit Board",
+  "short_name": "Entry/Exit",
+  "description": "Entry and exit scores, 1 cheap to 100 rich, across asset classes for an INR investor.",
+  "start_url": "./#snapshot",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f5f2",
+  "theme_color": "#0b0b0b",
+  "icons": [
+    {"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"},
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}

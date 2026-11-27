@@ -30,10 +30,10 @@ async function fetchLive(){
   const ctl=new AbortController();setTimeout(()=>ctl.abort(),6000);const fetch=(u)=>window.fetch(u,{signal:ctl.signal});
   const tasks=[
     fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd').then(r=>r.json()).then(j=>{LIVE.btc_usd={value:j.bitcoin.usd,source:'CoinGecko, live',at:new Date().toISOString()}}),
-    fetch('https://api.frankfurter.app/latest?from=USD&to=INR').then(r=>r.json()).then(j=>{LIVE.usdinr={value:j.rates.INR,source:'ECB reference, live',at:new Date().toISOString()}}),
+    fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=INR').then(r=>r.json()).then(j=>{LIVE.usdinr={value:j.rates.INR,source:'ECB reference, live',at:new Date().toISOString()}}),
   ];
   await Promise.allSettled(tasks);
-  freshLine();if(CUR.tab==='snapshot'||CUR.tab==='commod'||CUR.tab==='crypto')route()
+  freshLine();if(['snapshot','commod','crypto','portfolio'].includes(CUR.tab))route()
 }
 const BANDS=[['Strong buy',0,20,'--b1'],['Buy',20,35,'--b2'],['Accumulate',35,50,'--b3'],['Hold',50,65,'--b4'],['Trim',65,80,'--b5'],['Exit',80,100,'--b6']];
 const MODELS={core:'Gold & Nifty 50',sectors:'Nifty sectors & size',factors:'Nifty factors',stocks:'Stocks',global:'Global markets',commodities:'Commodities',crypto:'Bitcoin',bonds:'Bonds & deposits',carry:'Arbitrage & covered call',reits:'REITs & InvITs',property:'Housing by city'};
@@ -66,7 +66,7 @@ const investable=i=>i.score!=null&&inBlue(i.score)&&!notInvestable(i);
 /* ---------- SIGNAL MEASURES ---------- */
 const CW={A:1,B:.8,C:.55};
 const LANES={buy:['Buy now','Cheap, timing and macro not against it'],stage:['Buy in stages','Cheap, but timing or macro argues against a lump sum'],near:['On the cusp','Within 3 points of the Buy (35) or Trim (65) line'],rally:['Trim into rallies','Rich, timing not yet against it'],trimnow:['Trim now','Rich, and timing has turned']};
-items.forEach(i=>{
+FULL_ITEMS.forEach(i=>{
   const s=i.score,bk=Object.entries(i.buckets||{}).filter(([k,v])=>v!=null&&!/Relative/.test(k));
   i.T=i.buckets?.Timing??i.buckets?.Momentum??null; i.V=i.buckets?.Valuation??null; i.F=i.buckets?.Filter??null;
   i.ext=Math.min(1,Math.abs(s-50)/40);
@@ -246,7 +246,26 @@ async function drawKnowledge(){
 const dr=document.getElementById('drawer');
 let lastFocus=null;
 function nextBand(s){const b=bandOf(s),k=BANDS.indexOf(b);const dn=k>0?`${(s-b[1]).toFixed(1)} pts above ${BANDS[k-1][0]}`:'';const up=k<5?`${(b[2]-s+0.1).toFixed(1)} pts below ${BANDS[k+1][0]}`:'';return [dn,up].filter(Boolean).join(' · ')}
-let drTab='sum';
+let drTab='sum',drRange=60;
+/* score history (left axis, banded) with the price on its own right-hand axis */
+function histSVG(i,n,W=360){const h=(i.history||[]).slice(-n);if(h.length<2)return '';
+  const px=Object.fromEntries(i.px_hist||[]),pv=h.map(([m])=>px[m]).filter(v=>v!=null);
+  const H=170,L=26,R=pv.length?50:8,T=8,B=20,X=k=>L+k*(W-L-R)/(h.length-1),Y=v=>T+(100-v)/100*(H-T-B);
+  const p0=Math.min(...pv),p1=Math.max(...pv),PY=v=>T+(p1-v)/((p1-p0)||1)*(H-T-B);
+  const pf=v=>v>=1e4?(v/1e3).toFixed(0)+'k':v>=100?v.toFixed(0):v>=1?v.toFixed(1):v.toFixed(2);
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="max-width:100%;height:auto" role="img" aria-label="${esc(i.name)} score${pv.length?' and price':''}, ${h[0][0]} to ${h[h.length-1][0]}">`;
+  BANDS.forEach((b,k)=>s+=`<rect x="${L}" y="${Y(b[2])}" width="${W-L-R}" height="${Y(b[1])-Y(b[2])}" fill="var(${b[3]})" opacity="${k===3?.14:.1}"/>`);
+  [20,35,50,65,80].forEach(v=>s+=`<text x="${L-4}" y="${Y(v)+4}" text-anchor="end" style="font-size:10px">${v}</text>`);
+  if(pv.length)[p0,(p0+p1)/2,p1].forEach(v=>s+=`<text x="${W-R+4}" y="${PY(v)+4}" style="font-size:10px;fill:var(--ink-3)">${pf(v)}</text>`);
+  h.forEach(([m],k)=>{if(m.endsWith('-01'))s+=`<text x="${X(k)}" y="${H-5}" text-anchor="middle" style="font-size:10px">${m.slice(0,4)}</text>`});
+  if(pv.length){let d='',on=false;h.forEach(([m],k)=>{const v=px[m];if(v==null){on=false;return}d+=(on?'L':'M')+X(k).toFixed(1)+','+PY(v).toFixed(1);on=true});s+=`<path d="${d}" fill="none" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="3 2"/>`}
+  s+=`<path d="${h.map(([,v],k)=>(k?'L':'M')+X(k).toFixed(1)+','+Y(v).toFixed(1)).join('')}" fill="none" stroke="var(--ink)" stroke-width="1.8"/>`;
+  const lv=h[h.length-1][1];s+=`<circle cx="${X(h.length-1)}" cy="${Y(lv)}" r="3.5" fill="${bcol(lv)}" stroke="var(--ink)"/></svg>`;
+  return s+`<div class="legend"><span><b>—</b> Score (left, 1–100)</span>${pv.length?`<span style="color:var(--ink-3)"><b>- -</b> Price (right${i.model==='core'&&i.id==='NIFTY50'?', index':', USD'})</span>`:''}</div>`}
+function histBlock(i){const n=(i.history||[]).length;if(n<2)return '';
+  const opts=[[24,'2 yrs'],[60,'5 yrs'],[999,'All']].filter(([k],j)=>j===0||n>[24,66][j-1]);
+  return `<div class="seg drr" style="margin-bottom:6px">${opts.map(([k,l])=>`<button data-v="${k}" class="${k===drRange?'on':''}" aria-pressed="${k===drRange}">${l}</button>`).join('')}</div><div class="drh">${histSVG(i,drRange)}</div>
+    <div class="tag dnote">Shaded by band. Before Nov 2026 the score is reconstructed. ${n} months on file.</div>`}
 const DTABS=[['sum','Summary'],['drv','Drivers'],['px','Price'],['fct','Facts']];
 function dsec(title,body,extra){return body?`<section class="dsec${extra?' '+extra:''}">${title?`<h4>${title}</h4>`:''}${body}</section>`:''}
 function openDrawer(id){
@@ -277,7 +296,7 @@ function openDrawer(id){
   ].join('');
   // ---- Price
   const px=[
-    dsec('Score, last 24 months',i.history&&i.history.length>1?`${spark(i.history.slice(-24),W,90)}<div class="tag dnote">Shaded: Buy zone (≤35) and Trim zone (>65). Before Nov 2026 reconstructed.</div>`:'<div class="tag">One month so far; the trend starts after the next monthly run.</div>'),
+    dsec('Score and price history',i.history&&i.history.length>1?histBlock(i):'<div class="tag">One month so far; the trend starts after the next monthly run.</div>'),
     DD?dsec('Distance from high',kv([['Now vs 10-yr high',`<b>${DD.now>-0.0005?'At high':pct(DD.now)}</b>${DD.now<=-0.0005?` · ${DD.years_below_high<0.1?'set recently':DD.years_below_high.toFixed(1)+' yrs since the high'} (${DD.high_date})`:''}`],['How unusual',DD.now<=-0.0005?(DD.share_of_days_deeper<0.005?`<b>Deepest point since ${DD.window_from.slice(0,4)}</b>`:`${pct(DD.share_of_days_deeper)} of days since ${DD.window_from.slice(0,4)} were deeper: ${ddWord(DD)}`):'—'],['Worst fall',`${pct(DD.worst)} (${DD.worst_date})`],['Longest below a high',`${DD.longest_below_high_years.toFixed(1)} yrs`]])+`<div class="tag dnote">Daily closes since ${DD.window_from.slice(0,4)}, ${DD.asof}${DD.stale?' (latest fetch failed)':''}. Context only.</div>`):'',
     P?dsec('Parabolic check',kv([['Above 150-day EMA',`<b>${P.gap>0?'+':''}${pct(P.gap)}</b> · ${P.status==='Normal'?'Normal (flags at +70%)':`<span class="pill">${P.status}</span>`}`],['Highest in the last year',`${P.max_gap_1y>0?'+':''}${pct(P.max_gap_1y)}`],['Past episodes above +70%',P.episodes?`${P.episodes} since ${P.from.slice(0,4)}; last ${PE.start} (peak +${pct(PE.peak_gap)})${PE.ret_after['6m']!=null?`, then ${PE.ret_after['6m']>0?'+':''}${pct(PE.ret_after['6m'])} over 6 m`:''}`:`None since ${P.from.slice(0,4)}`]])+`<div class="tag dnote">Daily, ${P.asof}. Flag only: it does not change the score.</div>`):'',
     (typeof priceLine==='function'&&priceLine(i))?dsec('Live price',priceLine(i)):''
@@ -285,7 +304,9 @@ function openDrawer(id){
   // ---- Facts
   const fct=[
     meta.length?dsec('Key facts',kv(meta.map(([k,v])=>[esc(k),esc(v)]))):'',
-    dsec('Confidence',kv([['Level',`${tierTag(i.tier)} ${TIERS[i.tier]}`],i.coverage!=null?['Indicator coverage',`${Math.round(i.coverage*100)}%`]:null,['Back-tested','No']]))
+    dsec('Confidence',kv([['Level',`${tierTag(i.tier)} ${TIERS[i.tier]}`],i.coverage!=null?['Indicator coverage',`${Math.round(i.coverage*100)}%`]:null,['Back-tested',DATA.backtest&&DATA.backtest.per_asset&&DATA.backtest.per_asset[i.id]?'Band check below (in-sample)':'No']])),
+    (()=>{const pa=DATA.backtest&&DATA.backtest.per_asset&&DATA.backtest.per_asset[i.id];if(!pa)return '';const r=(pa['12']||[]).filter(x=>x.n);
+      return dsec('Price 12 months after each band',kv(r.map(x=>[`${x.band} <span class="tag">(${x.n} m)</span>`,`<b>${fmtPct(x.median)}</b> median · rose ${pct(x.hit)} of the time`]))+`<div class="tag dnote">This asset's own months since ${esc(DATA.backtest.from)}. Reconstructed scores and overlapping windows: a sanity check, not proof.</div>`)})()
   ].join('');
   const panes={sum,drv,px,fct};
   if(!panes[drTab])drTab='sum';
@@ -297,6 +318,7 @@ function openDrawer(id){
     ${gauge}
     <div class="dtabs" role="tablist" aria-label="Details">${DTABS.map(([k,l])=>`<button role="tab" data-t="${k}" aria-selected="${k===drTab}" class="${k===drTab?'on':''}">${l}</button>`).join('')}</div></div>
   <div class="dbody">${DTABS.map(([k])=>`<div class="dpane" data-t="${k}" role="tabpanel" ${k===drTab?'':'hidden'}>${panes[k]||'<div class="tag">Nothing more for this reading.</div>'}</div>`).join('')}</div>`;
+  dr.querySelectorAll('.drr button').forEach(b=>b.onclick=()=>{drRange=+b.dataset.v;dr.querySelector('.drh').innerHTML=histSVG(i,drRange);dr.querySelectorAll('.drr button').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)})});
   dr.querySelectorAll('.dtabs button').forEach(b=>b.onclick=()=>{drTab=b.dataset.t;dr.querySelectorAll('.dtabs button').forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on)});dr.querySelectorAll('.dpane').forEach(p=>p.hidden=p.dataset.t!==drTab);dr.scrollTop=0});
   const wasOpen=dr.classList.contains('open');
   dr.classList.add('open');document.body.classList.add('dopen');dr.querySelector('.x').focus();
@@ -390,8 +412,45 @@ function ovSnapshot(){
   OV_DRAW=[];
   return `<section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>${SHOW_ALL?'Asset classes':'Investable asset classes'}</h2><p class="hint">${SHOW_ALL?'All asset classes':`Only asset classes in the blue bands (score under ${INVEST_MAX})`}, cheapest first, on the asset-class model (valuation, five-year view). ${GT.ac==='table'?'The table puts them side by side: yield, the full model, worst past fall and how to buy.':'Each tile shows the suggested tilt; "full model" is the dedicated model\'s score with timing and macro added. Switch to Table to compare yield, worst past fall and how to buy.'} Click one to open its tab.</p></div>${gtSwitch('ac')}</div>
     ${!ac.length?'<div class="empty">No asset class is in a blue band today.</div>':GT.ac==='table'?acTable(ac):`<div class="heat ac">${ac.map(acTile).join('')}</div>`}</section>
-  <div class="tiles7">${['india','global','commod','crypto','fixed','realestate'].map(tile).join('')}</div>`;
+  <div class="tiles7">${['india','global','commod','crypto','fixed','realestate'].map(tile).join('')}</div>
+  <div style="margin-top:14px">${heldAlert()}${changesCard()}${disagreeCard()}${backtestCard()}</div>`;
 }
+/* ---------- Snapshot: what changed, where the models disagree, does the band scale work ---------- */
+const BIDX=b=>BANDS.findIndex(x=>x[0]===b);
+function changesCard(){
+  const l=FULL_ITEMS.filter(i=>!i.wide&&i.prev&&i.prev.score!=null);
+  const moved=l.filter(i=>i.prev.band!==i.band).sort((a,b)=>Math.abs(b.score-b.prev.score)-Math.abs(a.score-a.prev.score));
+  const big=l.filter(i=>i.prev.band===i.band&&Math.abs(i.score-i.prev.score)>=5).sort((a,b)=>Math.abs(b.score-b.prev.score)-Math.abs(a.score-a.prev.score)).slice(0,8);
+  const row=i=>{const d=i.score-i.prev.score,dir=BIDX(i.band)<BIDX(i.prev.band)?'cheaper':'richer';
+    return `<tr class="row" data-id="${i.id}" tabindex="0" style="display:table-row"><td><b>${esc(shortName(i.name))}</b> <span class="tag">${esc(TABS[tabOf(i)].t)}</span></td><td><span class="nw">${chip(i.prev.score)} <span class="tag">${i.prev.score}</span></span> → <span class="nw">${chip(i.score)} <span class="tag">${i.score}</span></span></td><td class="nw" style="text-align:right"><b>${d>0?'+':''}${d.toFixed(1)}</b></td><td class="tag mh">${i.prev.band!==i.band?(dir==='cheaper'?'moved toward buy':'moved toward sell'):''} · vs ${esc(i.prev.asof)}</td></tr>`};
+  const n=l.length;
+  return `<section class="card" style="margin-bottom:14px"><h2>What changed since the last run</h2>
+    <p class="hint">Readings that changed band, then the largest moves within a band (5 points or more). Shown whatever the Hold/Trim/Exit switch says, because a move out of a blue band matters too. ${n} readings have a previous score to compare with: gold, the Nifty 50, commodities and crypto against last month's score history (reconstructed before Nov 2026); the other models from their second stored run onward.</p>
+    ${moved.length?`<div class="tscroll"><table class="st"><thead><tr><th>Reading</th><th>Was → now</th><th style="text-align:right">Change</th><th class="mh"></th></tr></thead><tbody>${moved.map(row).join('')}</tbody></table></div>`:'<div class="empty">No reading changed band since the last run.</div>'}
+    ${big.length?`<h3>Big moves within a band</h3><div class="tscroll"><table class="st"><tbody>${big.map(row).join('')}</tbody></table></div>`:''}</section>`}
+const AC_REIT=()=>{const r=FULL_ITEMS.filter(i=>i.model==='reits').map(i=>i.score).sort((a,b)=>a-b);return r.length?r[Math.floor(r.length/2)]:null};
+function disagreeCard(){
+  const BK={Timing:'timing',Filter:'the macro filter',Macro:'macro',Currency:'the currency outlook'};
+  const rows=(DATA.assetClasses||[]).map(a=>{const it=byId[AC_ITEM[a.id]],full=a.own!=null?a.own:a.id==='REIT'?AC_REIT():it?it.score:null;
+    if(full==null||a.score==null)return null;const gap=full-a.score;
+    let why='';if(it&&it.buckets){const c=Object.entries(it.buckets).filter(([k,v])=>BK[k]&&v!=null&&Math.sign(v-a.score)===Math.sign(gap)&&Math.abs(v-a.score)>=10).sort((x,y)=>Math.abs(y[1]-a.score)-Math.abs(x[1]-a.score));
+      why=c.length?c.slice(0,2).map(([k,v])=>`${BK[k]} (${Math.round(v)})`).join(' and ')+` ${gap<0?'pull':'push'}${c.length>1?'':'es'.slice(gap<0?1:0)} it ${gap<0?'cheaper':'richer'}`:'the full model weighs valuation differently'}
+    else if(a.id==='REIT')why=gap<0?'price-to-NAV discounts make single trusts look cheaper than yield alone':'trust-level premiums to NAV';
+    return {a,it,full,gap,why}}).filter(r=>r&&Math.abs(r.gap)>=5).sort((x,y)=>Math.abs(y.gap)-Math.abs(x.gap));
+  if(!rows.length)return '';
+  return `<section class="card" style="margin-bottom:14px"><h2>Where the two models disagree</h2>
+    <p class="hint">The asset-class model looks only at valuation over five years. Each dedicated model adds timing and macro. A big gap means value says one thing and timing another: usually a reason to stage entries rather than skip them.</p>
+    <div class="tscroll"><table class="st"><thead><tr><th>Asset class</th><th style="text-align:right">Valuation only</th><th style="text-align:right">Full model</th><th style="text-align:right">Gap</th><th class="mh">Why</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr${r.it?` class="row" data-id="${r.it.id}" tabindex="0" style="display:table-row"`:''}><td><b>${esc(shortName(r.a.name))}</b></td>${hc(r.a.score,`<b>${r.a.score.toFixed(0)}</b>`)}${hc(r.full,`<b>${Math.round(r.full)}</b>`)}<td style="text-align:right" class="nw"><b>${r.gap>0?'+':''}${r.gap.toFixed(0)}</b></td><td class="tag mh" style="white-space:normal">${esc(r.why)}</td></tr>`).join('')}</tbody></table></div></section>`}
+function btTable(by,H){return `<table class="st"><thead><tr><th>Band that month</th><th style="text-align:right">Median return, next ${H} m</th><th style="text-align:right">Rose</th><th style="text-align:right" class="mh">Middle half</th><th style="text-align:right">Months</th></tr></thead><tbody>
+  ${by.map(r=>{const b=BANDS[BIDX(r.band)];return `<tr><td class="nw"><span class="chip"><span class="sw" style="background:var(${b[3]})"></span>${r.band}</span></td>${r.n?`<td style="text-align:right"><b style="color:${r.median>=0?'var(--b1)':'var(--b6)'}">${fmtPct(r.median)}</b></td><td style="text-align:right">${pct(r.hit)}</td><td style="text-align:right" class="mh tag">${fmtPct(r.p25)} to ${fmtPct(r.p75)}</td><td style="text-align:right">${r.n}${r.assets?` <span class="tag">· ${r.assets} asset${r.assets>1?'s':''}</span>`:''}</td>`:'<td colspan="4" class="tag">no months in this band</td>'}</tr>`}).join('')}</tbody></table>`}
+let btH='12';
+function backtestCard(){const B=DATA.backtest;if(!B||!B.by_band)return '';
+  return `<section class="card" style="margin-bottom:14px"><div class="cardhead"><div><h2>Does the scale work? Price after each band</h2>
+    <p class="hint">Every month from ${esc(B.from)} to ${esc(B.to)} for the ${B.assets.length} readings with a score history (gold, Nifty 50, commodities, crypto), grouped by the band it was in, then the price change over the next ${btH} months (in USD for commodities and crypto, index points for the Nifty).</p></div>
+    <span class="seg" id="btseg">${B.horizons.map(h=>`<button data-v="${h}" class="${String(h)===btH?'on':''}" aria-pressed="${String(h)===btH}">${h} months</button>`).join('')}</span></div>
+    <div class="tscroll">${btTable(B.by_band[btH],btH)}</div>
+    <div class="note warn" style="white-space:normal"><b>Read with care.</b> Scores before Nov 2026 were reconstructed after the fact, so this is an in-sample check, not a true out-of-sample back-test; the windows overlap, and 2021–26 is one cycle. It shows the scale points the right way; it does not prove the size of the edge. Prices only, before tax and costs.</div></section>`}
 /* one-line read at the top of each tab: lean in (≤35) / lean out (>65), from the scores */
 const shortName=n=>String(n).replace(/ \(.*\)$/,'').replace(/ Ltd\.?$/,'');
 function verdictLine(t){let lin,lout,hold;
@@ -527,7 +586,7 @@ function ovIndiaCap(){
       <div class="note" style="margin-top:10px">The valuation signal is real, but turning it into extra return is hard. The model cut small and midcaps before the 2018 top and bought them after the 2009 and 2013 lows, then lagged through the 2021–24 boom while they stayed expensive. Read it as a risk dial that leans against extremes, not a timing engine. ${SR.notes.map(esc).join(' ')}</div></section>`}
   OV_DRAW=draw;
   return `<h3 class="step"><span>1</span>The market and its size bands</h3><div style="margin-bottom:14px">
-    ${!nShow?`<section class="card"><h2>Nifty 50</h2><p class="hint">Hidden: the Nifty 50 is not in a blue band today. ${HIDDEN_NOTE}</p></section>`:`<section class="card hero" style="border-top-color:${bcol(n.score)}"><h2>Nifty 50</h2><div class="herorow"><div class="big">${n.score}</div><div>${chip(n.score)}<div class="tag">${esc(n.signal)}</div></div></div>${gauge(n.score,320,true)}
+    ${!nShow?(n?pinnedCard(n,'the benchmark the rest of this tab is measured against'):''):`<section class="card hero" style="border-top-color:${bcol(n.score)}"><h2>Nifty 50</h2><div class="herorow"><div class="big">${n.score}</div><div>${chip(n.score)}<div class="tag">${esc(n.signal)}</div></div></div>${gauge(n.score,320,true)}
       <div class="bk">${Object.entries(n.buckets).filter(([k,v])=>v!=null).map(([k,v])=>`<div style="background:${tint(v,40)}"><span>${k==='Filter'?'Macro':k}</span><b>${Math.round(v)}</b></div>`).join('')}<div style="background:${tint(ddNow(n)==null?null:50)}"><span>From high</span><b>${ddTxt(n)}</b></div>${AM?`<div style="background:${tint(AM.froth,40)}"><span>Fund froth</span><b>${AM.froth}</b></div>`:''}</div>
       <button class="btn" data-id="NIFTY50" style="margin-top:10px">Open Nifty 50 details</button></section>`}
 </div>
@@ -604,8 +663,16 @@ function ovGlobal(){
     <div class="tag" style="margin-top:6px;white-space:normal">NSE = an India-listed ETF or fund exists; LRS = only through the overseas remittance route (TCS and foreign-asset reporting apply). Hover a tile for the exact route.</div></section>`;
 }
 const PKEY={GOLD:'gold_usd',CMD_SILVER:'silver_usd',CMD_BRENT:'brent_usd',CMD_COPPER:'copper_usd_t',BTC:'btc_usd'};
+/* Rupee terms: the unit an Indian buyer pays in, and how much of a move came from the rupee itself */
+const OZ=31.1035;
+const INR_UNIT={gold_usd:[10/OZ,'₹/10 g'],silver_usd:[1000/OZ,'₹/kg'],brent_usd:[1,'₹/bbl'],copper_usd_t:[1,'₹/t'],btc_usd:[1e-5,'₹ lakh']};
+const inr=v=>v>=1e5?(+v).toLocaleString('en-IN',{maximumFractionDigits:0}):(+v).toLocaleString('en-IN',{maximumFractionDigits:v<100?2:0});
 function priceLine(i){const k=PKEY[i.id];if(!k)return '';const run=(DATA.run_prices||{})[k],lp=latestPrice(k);if(!run||!lp)return '';const ch=lp.value/run-1;
-  return `<div class="kv"><div>Price at scoring</div><div>${(+run).toLocaleString('en-IN')} ${PRICE_META[k][1]}</div><div>Latest</div><div>${(+lp.value).toLocaleString('en-IN',{maximumFractionDigits:2})} <b>${fmtPct(ch,1)}</b>${Math.abs(ch)>=.05?' <span class="stat due">big move</span>':''}</div></div>`}
+  const fx0=(DATA.run_prices||{}).usdinr,fxl=latestPrice('usdinr'),u=INR_UNIT[k];
+  const fx=fx0&&fxl&&u?{a:run*fx0*u[0],b:lp.value*fxl.value*u[0],f:fxl.value/fx0-1}:null;
+  const chI=fx?fx.b/fx.a-1:null;
+  return `<div class="kv"><div>Price at scoring</div><div>${(+run).toLocaleString('en-IN')} ${PRICE_META[k][1]}${fx?` <span class="tag">· ${inr(fx.a)} ${u[1]}</span>`:''}</div><div>Latest</div><div>${(+lp.value).toLocaleString('en-IN',{maximumFractionDigits:2})} <b>${fmtPct(ch,1)}</b>${Math.abs(ch)>=.05?' <span class="stat due">big move</span>':''}</div>
+  ${fx?`<div>In rupees</div><div>${inr(fx.b)} ${u[1]} <b>${fmtPct(chI,1)}</b> <span class="tag" style="white-space:normal">= price ${fmtPct(ch,1)}, rupee ${fx.f>=0?'weaker':'stronger'} ${fmtPct(Math.abs(fx.f),1).replace('+','')} (₹${(+fxl.value).toFixed(2)}/$)</span></div>`:''}</div>`}
 /* "Linked to" names the Indian sector index and stocks a commodity drives; show their scores so a cheap commodity points to an equity idea. */
 function linkFind(nm){const q=nm.trim().toLowerCase();if(!q)return null;
   const c=DATA.items.filter(x=>x.score!=null&&(x.model==='sectors'||x.model==='stocks')&&(x.name.toLowerCase()===q||x.name.toLowerCase().startsWith(q+' ')||x.name.toLowerCase().startsWith(q+'.')||(x.model==='stocks'&&x.name.toLowerCase().startsWith(q))));
@@ -621,11 +688,15 @@ function assetCard(i,wide){const P=i.parabolic;return `<section class="card hero
   ${i.history&&i.history.length>2?`<div class="tag" style="margin-top:8px">Score, last ${Math.min(24,i.history.length)} months</div>${spark(i.history.slice(-24),wide?560:300,wide?110:60)}`:''}
   ${priceLine(i)}${i.action?`<div class="note"><b>Model's action:</b> ${esc(i.action)}</div>`:''}${linkedBlock(i)}
   <button class="btn" data-id="${i.id}" style="margin-top:8px">Open full details</button></section>`}
+function pinnedCard(i,what){return `<section class="card pinned" style="border-top:4px solid ${bcol(i.score)}"><div class="cardhead"><h2>${esc(i.name)}</h2>${tierTag(i.tier)}</div>
+  <div class="herorow"><div class="big">${i.score}</div><div>${chip(i.score)}<div class="tag">${esc(i.signal)}</div></div></div>${gauge(i.score,280,true,100)}
+  <p class="tag" style="white-space:normal;margin:6px 0 0">Kept on the page because it is ${what||'this tab\'s headline asset'}; it sits in <b>${bandOf(i.score)[0]}</b>, outside the blue bands, so it is not a buy today.${i.prev&&i.prev.band!==i.band?` Moved from ${esc(i.prev.band)} (${i.prev.score}) since ${esc(i.prev.asof)}.`:''}</p>
+  ${priceLine(i)}<button class="btn" data-id="${i.id}" style="margin-top:8px">Open full details</button></section>`}
 function ovCommod(){const l=['GOLD','CMD_SILVER','CMD_BRENT','CMD_COPPER','CMD_ALUMINIUM','CMD_ZINC','CMD_IRONORE','CMD_NATGAS'].map(k=>byId[k]).filter(i=>i&&i.score!=null&&inBlue(i.score));
-  OV_DRAW=[];
-  return `${SHOW_ALL?'':`<p class="hint" style="margin-bottom:10px">${HIDDEN_NOTE}</p>`}<div class="grid g2">${l.map(i=>assetCard(i)).join('')}</div>`}
+  OV_DRAW=[];const g=byId.GOLD,pin=g&&g.score!=null&&!inBlue(g.score);
+  return `${SHOW_ALL?'':`<p class="hint" style="margin-bottom:10px">${HIDDEN_NOTE}</p>`}<div class="grid g2">${pin?pinnedCard(g,'the main commodity most Indian portfolios hold'):''}${l.map(i=>assetCard(i)).join('')}</div>`}
 function ovCrypto(){const b=byId.BTC,coins=ALL_ITEMS.filter(i=>i.model==='crypto');
-  return `<div class="grid g2" style="margin-bottom:14px"><div>${inBlue(b.score)?assetCard(b,true):`<section class="card"><h2>Bitcoin</h2><p class="hint">Hidden: Bitcoin is not in a blue band today. ${HIDDEN_NOTE}</p></section>`}</div><section class="card"><h2>Rules that come with it</h2>
+  return `<div class="grid g2" style="margin-bottom:14px"><div>${inBlue(b.score)?assetCard(b,true):pinnedCard(b)}</div><section class="card"><h2>Rules that come with it</h2>
   <ul class="rules"><li><b>Cap all crypto together at 5% of the portfolio.</b> Bitcoin's falls have reached ${b.drawdown?pct(b.drawdown.worst):'−80%'} in the last decade; the other coins fall further.</li><li><b>Stage entries</b> when the macro filter is high (now ${b.buckets.Filter}).</li><li><b>Tax:</b> 31.2% on gains (VDA), no loss set-off.</li><li>Score history before Nov 2026 is reconstructed for Bitcoin (±3 points).</li></ul>
   <div class="tag" style="margin-top:8px">Bitcoin's distance from high</div>${b.drawdown?`<div class="ddbar"><i style="width:${Math.min(100,-b.drawdown.now*100)}%"></i></div><div class="tag">${pct(b.drawdown.now)} from its ${b.drawdown.high_date} high · worst ${pct(b.drawdown.worst)} (${b.drawdown.worst_date})</div>`:''}</section></div>
   <section class="card"><h2>All coins</h2><p class="hint">Bitcoin and the four largest coins after it (stablecoins excluded). Only Bitcoin has a full model; the others are price-and-cycle readings with Bitcoin's macro filter. Click a column to sort; click a row for the full panel.</p>${sortTable('cry',[C.name,C.score,C.b('Valuation'),C.b('Timing'),C.b('Filter','Macro'),C.dd],coins,{k:'score',dir:1,keep:['name','score','dd']})}</section>`}
@@ -663,6 +734,41 @@ function ovRE(){const r=ALL_ITEMS.filter(i=>i.model==='reits'),c=ALL_ITEMS.filte
   <section class="card"><h2>Housing by city</h2><p class="hint">Valuation only; colour = band. Use the rent-vs-buy calculator on your own numbers.</p><div class="heat">${c.sort((a,b)=>a.score-b.score).map(i=>heatTile(i,`rent ${m(i,'Rent yield %')}%`)).join('')}</div></section>`}
 const OVERVIEW={snapshot:ovSnapshot,india:ovIndia,global:ovGlobal,commod:ovCommod,crypto:ovCrypto,fixed:ovFixed,realestate:ovRE};
 
+/* ---------- MY PORTFOLIO: held readings with weights, kept in this browser only ---------- */
+let WEIGHTS={};try{WEIGHTS=JSON.parse(localStorage.getItem('eeb-weights')||'{}')||{}}catch(e){}
+function saveWeights(){try{localStorage.setItem('eeb-weights',JSON.stringify(WEIGHTS))}catch(e){}}
+const heldItems=()=>[...HELD].map(id=>byId[id]).filter(i=>i&&i.score!=null);
+function heldAlert(){const r=heldItems().filter(i=>i.score>65).sort((a,b)=>b.score-a.score);if(!r.length)return '';
+  return `<div class="note warn" style="margin:0 0 14px;white-space:normal"><b>You hold ${r.length} reading${r.length>1?'s':''} in Trim or Exit:</b> ${r.map(i=>`<a href="#" class="vlink" data-id="${i.id}">${esc(shortName(i.name))} ${i.score.toFixed(0)}</a>`).join(', ')}. <a href="#portfolio">Open My portfolio</a></div>`}
+function viewPortfolio(){
+  const h=heldItems(),w=i=>Math.max(0,+WEIGHTS[i.id]||0),tot=h.reduce((s,i)=>s+w(i),0);
+  const opts=DATA.items.filter(i=>i.score!=null&&!HELD.has(i.id)).sort((a,b)=>a.name.localeCompare(b.name)).map(i=>`<option value="${esc(i.name)} · ${esc(MODELS[i.model])}"></option>`).join('');
+  const add=`<div class="filters"><input id="padd" list="pall" placeholder="Add a holding: type a name (gold, Nifty 50, a stock, a fund category…)" aria-label="Add a holding" style="flex:1 1 320px;padding:7px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink)"><datalist id="pall">${opts}</datalist></div>`;
+  if(!h.length)return `<div class="card"><h2>My portfolio</h2><p class="hint">Mark what you own and how much of your portfolio each holding is. The board then shows your blended score, how your mix compares with the asset-class tilts, and flags any holding that reaches Trim or Exit. Saved in this browser only; nothing is sent anywhere.</p>${add}<div class="empty">No holdings yet. Add one above, or open any reading and press <b>I hold this</b>.</div></div>`;
+  const wavg=tot?h.reduce((s,i)=>s+w(i)*i.score,0)/tot:null;
+  const tabs=Object.keys(TABS).filter(t=>t!=='snapshot');
+  const mix=tabs.map(t=>{const l=h.filter(i=>tabOf(i)===t),wt=l.reduce((s,i)=>s+w(i),0);return {t,l,wt,sc:wt?l.reduce((s,i)=>s+w(i)*i.score,0)/wt:null}}).filter(x=>x.l.length);
+  const tilts=t=>(DATA.assetClasses||[]).filter(a=>(AC_TAB[a.family]||'')===t).map(a=>`${esc(shortName(a.name))}: ${esc(String(a.tilt||'').replace(/\s*\(.*\)$/,''))}`).join(' · ');
+  const rich=h.filter(i=>i.score>65),cheap=h.filter(i=>i.score<=35);
+  const lane=i=>i.lane?LANES[i.lane][0]:i.score>50?'Hold':'Accumulate';
+  return `<div class="kpis"><div class="card kpi"><div class="l">Holdings</div><div class="v">${h.length}</div></div>
+    <div class="card kpi"><div class="l">Blended score${tot?'':' (add weights)'}</div><div class="v">${wavg==null?'—':wavg.toFixed(0)}</div>${wavg!=null?chip(wavg):''}</div>
+    <div class="card kpi"><div class="l">In Trim or Exit</div><div class="v" style="${rich.length?'color:var(--b6)':''}">${rich.length}</div><div class="tag">${tot?pct(rich.reduce((s,i)=>s+w(i),0)/tot)+' of weight':''}</div></div>
+    <div class="card kpi"><div class="l">In Buy or Strong buy</div><div class="v">${cheap.length}</div><div class="tag">${tot?pct(cheap.reduce((s,i)=>s+w(i),0)/tot)+' of weight':''}</div></div></div>
+  <section class="card" style="margin-bottom:14px"><h2>Holdings</h2><p class="hint">Weight = your share of the portfolio in %. ${tot?`Weights add up to <b>${+tot.toFixed(1)}%</b>${Math.abs(tot-100)>0.5?' (they do not need to reach 100; shares are taken of the total entered)':''}.`:'Enter weights to get a blended score and mix.'} Saved in this browser only.</p>${add}
+    <div class="tscroll"><table class="st"><thead><tr><th>Holding</th><th style="text-align:right">Score</th><th>Band</th><th class="mh">Since last run</th><th class="mh">Lane</th><th style="text-align:right">Weight %</th><th></th></tr></thead><tbody>
+    ${h.sort((a,b)=>b.score-a.score).map(i=>`<tr><td><a href="#" class="vlink" data-id="${i.id}"><b>${esc(shortName(i.name))}</b></a> <span class="tag">${esc(TABS[tabOf(i)].t)}</span></td>${hc(i.score,`<b>${i.score.toFixed(1)}</b>`)}<td class="nw">${chip(i.score)}</td>
+      <td class="mh tag nw">${i.prev?`${i.prev.score} → ${i.score}${i.prev.band!==i.band?' · <b>band changed</b>':''}`:'—'}</td><td class="mh">${esc(lane(i))}</td>
+      <td style="text-align:right"><input class="pw" data-id="${i.id}" type="number" min="0" max="100" step="0.5" inputmode="decimal" value="${WEIGHTS[i.id]??''}" aria-label="Weight of ${esc(i.name)} in %" style="width:72px;padding:4px 6px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink);text-align:right"></td>
+      <td><button class="btn prm" data-id="${i.id}" aria-label="Remove ${esc(i.name)}">Remove</button></td></tr>`).join('')}</tbody></table></div></section>
+  <section class="card"><h2>Your mix by asset class</h2><p class="hint">Share of the weight you entered, coloured by the weighted score of what you hold there. The line below each bar is what the asset-class model suggests for that area.</p>
+    ${mix.map(x=>`<div class="pmix"><div class="pmh"><b>${TABS[x.t].t}</b><span class="tag">${x.l.length} holding${x.l.length>1?'s':''}${x.sc!=null?` · score ${x.sc.toFixed(0)} ${bandOf(x.sc)[0]}`:''}</span><b>${tot?pct(x.wt/tot):'—'}</b></div>
+      <div class="ddbar" style="height:10px"><i style="width:${tot?100*x.wt/tot:0}%;background:${bcol(x.sc)}"></i></div>${tilts(x.t)?`<div class="tag" style="white-space:normal;margin-top:3px">${tilts(x.t)}</div>`:''}</div>`).join('')}</section>`}
+function bindPortfolio(m){
+  m.querySelectorAll('.pw').forEach(x=>x.onchange=()=>{const v=parseFloat(x.value);if(isNaN(v)||v<=0)delete WEIGHTS[x.dataset.id];else WEIGHTS[x.dataset.id]=Math.min(100,v);saveWeights();route()});
+  m.querySelectorAll('.prm').forEach(x=>x.onclick=()=>{HELD.delete(x.dataset.id);delete WEIGHTS[x.dataset.id];saveHeld();saveWeights();route()});
+  const a=m.querySelector('#padd');if(a)a.onchange=()=>{const v=a.value.trim().toLowerCase();const i=DATA.items.find(x=>x.score!=null&&`${x.name} · ${MODELS[x.model]}`.toLowerCase()===v)||DATA.items.find(x=>x.score!=null&&x.name.toLowerCase()===v.split(' · ')[0]);if(i){HELD.add(i.id);saveHeld();route();setTimeout(()=>{const f=document.querySelector(`.pw[data-id="${i.id}"]`);if(f)f.focus()},0)}};
+}
 function viewHealth(){return `<div class="card"><h2>Data health</h2><p class="hint">Live prices against the prices each model was scored at, and how fresh each model's inputs are.</p></div>${healthHTML()}`}
 
 /* ---------- per-item tools in the side panel ---------- */
@@ -684,8 +790,11 @@ function route(){
   let h=(location.hash||'#snapshot').slice(1);
   if(LEGACY[h.split('/')[0]]&&!TABS[h.split('/')[0]]){history.replaceState(null,'','#'+LEGACY[h.split('/')[0]]);h=LEGACY[h.split('/')[0]]}
   const [a,b]=h.split('/');const m=document.getElementById('view');hideTT();
-  document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.getAttribute('href')==='#'+(TABS[a]?a:'')));
+  document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.getAttribute('href')==='#'+(TABS[a]||a==='portfolio'?a:'')));
   OV_DRAW=[];
+  if(a==='portfolio'){items=ALL_ITEMS;CUR={tab:a,tool:''};
+    m.innerHTML=`<div class="tabhead"><div><h1 class="tabt">My portfolio</h1><p class="tabs">What you hold, scored on the same 1–100 scale. Every reading counts here, whatever the Hold/Trim/Exit switch says.</p></div></div>`+viewPortfolio();
+    m.querySelectorAll('.vlink').forEach(x=>x.onclick=e=>{e.preventDefault();openDrawer(x.dataset.id)});bindPortfolio(m);return}
   if(a==='knowledge'||a==='notes'||a==='health'){items=ALL_ITEMS;CUR={tab:a,tool:''};
     m.innerHTML=a==='knowledge'?viewKnowledge():a==='notes'?viewNotes():viewHealth();bindRows(m);if(a==='knowledge')drawKnowledge();return}
   const t=TABS[a]?a:'snapshot',tool=TOOLVIEW[b]&&TOOLS.some(x=>x[0]===b)&&toolOK(t,b)?b:'';CUR={tab:t,tool};
@@ -702,6 +811,7 @@ function route(){
   m.querySelectorAll('.at[href]').forEach(x=>x.onclick=null);
   if(after)after();
   m.querySelectorAll('.heatseg button').forEach(x=>{x.onclick=()=>{indState.heat=x.dataset.v;rerender()}});
+  m.querySelectorAll('#btseg button').forEach(x=>{x.onclick=()=>{btH=x.dataset.v;rerender()}});
   m.querySelectorAll('.gtsw button').forEach(x=>{x.onclick=()=>{GT[x.parentElement.dataset.key]=x.dataset.v;rerender()}});
   if(t==='india'&&!tool)m.querySelectorAll('.vsw button').forEach(x=>x.onclick=()=>{indState.view=x.dataset.v;try{localStorage.setItem('eeb-india-view',x.dataset.v)}catch(e){}rerender()});
 }

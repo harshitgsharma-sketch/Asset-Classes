@@ -3,7 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Entry/Exit Board: dashboard concept</title>
+<title>Entry/Exit Board</title>
+<meta name="description" content="Entry and exit scores (1 cheap to 100 rich) for Indian and global equities, commodities, crypto, bonds and real estate, for an INR investor with a holding period of up to five years. Not investment advice.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Entry/Exit Board">
+<meta property="og:description" content="Which asset classes are cheap or rich today, on one 1–100 scale, for an INR investor. Refreshed daily.">
+<meta property="og:url" content="https://harshitgsharma-sketch.github.io/Asset-Classes/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -277,6 +289,12 @@ body{transition:padding-right .2s ease}
 @media(min-width:1100px){body.dopen{padding-right:440px}.drawer{box-shadow:none}}
 @media(prefers-reduced-motion:reduce){body{transition:none}}
 .heat.ac{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}.heat.ac .ht{display:flex;flex-direction:column;gap:2px}
+
+/* ---- pinned headline asset, portfolio, history range ---- */
+.card.pinned{background:var(--surface-2)}.card.pinned .big{color:var(--ink-2)}
+.pmix{margin:10px 0 12px}.pmh{display:flex;gap:10px;align-items:baseline;margin-bottom:4px}.pmh .tag{flex:1}
+.drr button{padding:4px 10px}
+@media(max-width:640px){.kpis .kpi .v{font-size:22px}}
 </style>
 </head>
 <body>
@@ -298,6 +316,7 @@ body{transition:padding-right .2s ease}
   <a href="#crypto">Crypto</a>
   <a href="#fixed">Fixed income</a>
   <a href="#realestate">Real estate</a>
+  <a href="#portfolio">My portfolio</a>
   <span class="navx"><a href="#knowledge">Knowledge</a><a href="#notes">Design notes</a></span>
 </nav>
 <main id="view" tabindex="-1"></main>
@@ -310,6 +329,8 @@ body{transition:padding-right .2s ease}
   fetch('data/signals.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()})
   .then(d=>{window.__DATA__=d;const s=document.createElement('script');s.src='app.js?t='+Date.now();document.body.appendChild(s)})
   .catch(e=>{v.innerHTML='<div class="loading">Could not load data/signals.json ('+e.message+'). If you opened the file directly, serve the folder instead (for example: python3 -m http.server).</div>'});
+  /* installable and readable offline: the service worker keeps the last copy of the page and data */
+  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
 </body>
