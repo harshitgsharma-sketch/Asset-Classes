@@ -1,27 +1,27 @@
 {
- "prices_at": "2026-11-27T11:50:45+00:00",
+ "prices_at": "2026-11-27T13:13:40+00:00",
  "items": {
   "GOLD": {
    "month": "2026-11",
    "official_recomputed": 51.8,
-   "score": 50.2,
+   "score": 50.1,
    "buckets": {
-    "Valuation": 54.6,
+    "Valuation": 54.5,
     "Timing": 54.0,
-    "Filter": 34.0
+    "Filter": 33.9
    },
    "prices": {
     "gold_usd": [
      3875.0,
-     3702.0
+     3693.6
     ],
     "silver_usd": [
      47.1,
-     44.39
+     44.25
     ],
     "brent_usd": [
      93.1,
-     91.94
+     91.64
     ],
     "usdinr": [
      93.55,
@@ -36,7 +36,7 @@
    "score": 52.4,
    "buckets": {
     "Valuation": 48.3,
-    "Timing": 63.7,
+    "Timing": 63.6,
     "Filter": 37.9
    },
    "prices": {
@@ -46,7 +46,7 @@
     ],
     "gold_usd": [
      3875.0,
-     3702.0
+     3693.6
     ],
     "usdinr": [
      93.55,
@@ -54,7 +54,7 @@
     ],
     "brent_usd": [
      93.1,
-     91.94
+     91.64
     ]
    },
    "indicators_moved": 9
@@ -64,14 +64,14 @@
    "official_recomputed": 27.1,
    "score": 29.1,
    "buckets": {
-    "Valuation": 13.7,
+    "Valuation": 13.6,
     "Timing": 20.3,
     "Filter": 79.1
    },
    "prices": {
     "btc_usd": [
      58027.0,
-     61507.0
+     61482.0
     ],
     "usdinr": [
      93.55,
@@ -83,20 +83,20 @@
   "CMD_SILVER": {
    "month": "2026-11",
    "official_recomputed": 34.5,
-   "score": 39.0,
+   "score": 38.9,
    "buckets": {
-    "Valuation": 38.9,
+    "Valuation": 38.7,
     "Timing": 43.1,
-    "Filter": 29.9
+    "Filter": 29.7
    },
    "prices": {
     "silver_usd": [
      42.0,
-     44.39
+     44.25
     ],
     "gold_usd": [
      3875.0,
-     3702.0
+     3693.6
     ],
     "usdinr": [
      93.55,
@@ -108,20 +108,20 @@
   "CMD_BRENT": {
    "month": "2026-11",
    "official_recomputed": 57.2,
-   "score": 56.1,
+   "score": 55.8,
    "buckets": {
-    "Valuation": 55.7,
-    "Timing": 55.7,
-    "Filter": 57.7
+    "Valuation": 55.3,
+    "Timing": 55.5,
+    "Filter": 57.2
    },
    "prices": {
     "gold_usd": [
      3875.0,
-     3702.0
+     3693.6
     ],
     "brent_usd": [
      93.1,
-     91.94
+     91.64
     ],
     "usdinr": [
      93.55,
@@ -133,20 +133,20 @@
   "CMD_COPPER": {
    "month": "2026-11",
    "official_recomputed": 61.0,
-   "score": 57.9,
+   "score": 57.7,
    "buckets": {
-    "Valuation": 61.6,
-    "Timing": 55.7,
+    "Valuation": 60.9,
+    "Timing": 55.6,
     "Filter": 56.7
    },
    "prices": {
     "gold_usd": [
      3875.0,
-     3702.0
+     3693.6
     ],
     "copper_usd_t": [
      13210.0,
-     12493.58
+     12430.75
     ],
     "usdinr": [
      93.55,

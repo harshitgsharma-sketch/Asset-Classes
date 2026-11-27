@@ -17,11 +17,11 @@ This month: market mood **34/100 (fearful)**; **11** readings changed band; **14
 | Reading | Area | Was | Now |
 |---|---|---|---|
 | Brent crude | Commodities | Trim (78.3) | **Hold** (57.2) |
-| Natural gas | Commodities | Accumulate (35.8) | **Hold** (52.4) |
+| Natural gas | Commodities | Accumulate (35.8) | **Hold** (51.5) |
 | Silver | Commodities | Accumulate (48.5) | **Buy** (34.5) |
 | Bitcoin | Crypto | Accumulate (39.9) | **Buy** (27.1) |
-| BNB | Crypto | Hold (57.7) | **Accumulate** (47.0) |
 | Ethereum | Crypto | Accumulate (42.5) | **Buy** (31.8) |
+| BNB | Crypto | Hold (57.7) | **Accumulate** (47.1) |
 | Zinc | Commodities | Trim (73.3) | **Hold** (63.2) |
 | Solana | Crypto | Accumulate (41.7) | **Buy** (33.2) |
 | Nifty 50 | Indian equities | Accumulate (45.0) | **Hold** (51.3) |
