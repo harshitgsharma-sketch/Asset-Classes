@@ -1,40 +1,40 @@
 {
- "fetched_at": "2026-11-27T02:36:08+00:00",
+ "fetched_at": "2026-11-27T11:50:45+00:00",
  "values": {
   "gold_usd": {
-   "value": 3642.4,
+   "value": 3702.0,
    "source": "Yahoo Finance GC%3DF",
-   "at": "2026-11-27T02:36:08+00:00"
+   "at": "2026-11-27T11:50:45+00:00"
   },
   "silver_usd": {
-   "value": 43.27,
+   "value": 44.39,
    "source": "Yahoo Finance SI%3DF",
-   "at": "2026-11-27T02:36:08+00:00"
+   "at": "2026-11-27T11:50:45+00:00"
   },
   "brent_usd": {
-   "value": 92.26,
+   "value": 91.94,
    "source": "Yahoo Finance BZ%3DF",
-   "at": "2026-11-27T02:36:08+00:00"
+   "at": "2026-11-27T11:50:45+00:00"
   },
   "copper_usd_t": {
-   "value": 12384.45,
+   "value": 12493.58,
    "source": "Yahoo Finance HG%3DF",
-   "at": "2026-11-27T02:36:08+00:00"
+   "at": "2026-11-27T11:50:45+00:00"
   },
   "btc_usd": {
-   "value": 61670.0,
+   "value": 61507.0,
    "source": "CoinGecko",
-   "at": "2026-11-27T02:36:08+00:00"
+   "at": "2026-11-27T11:50:45+00:00"
   },
   "usdinr": {
    "value": 92.45,
-   "source": "ECB reference rate (frankfurter.app)",
-   "at": "2026-11-27T02:36:08+00:00"
+   "source": "ECB reference rate (frankfurter.dev)",
+   "at": "2026-11-27T11:50:45+00:00"
   },
   "nifty": {
-   "value": 25884.5,
+   "value": 25607.2,
    "source": "Yahoo Finance %5ENSEI",
-   "at": "2026-11-27T02:36:08+00:00"
+   "at": "2026-11-27T11:50:45+00:00"
   }
  }
 }
