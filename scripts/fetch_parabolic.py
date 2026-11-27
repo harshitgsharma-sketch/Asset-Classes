@@ -250,10 +250,15 @@ def main():
             old = {}
     symbols = dict(SYMBOLS, **stock_symbols())
 
+    hist = {}   # daily closes kept for the price-proxy back-test (sectors, global markets)
+
     def one(kv):
         iid, sym = kv
         try:
-            return iid, dict(analyse(fetch(sym)), symbol=sym)
+            rows = fetch(sym)
+            if iid.startswith(('SEC_', 'GLB_')) or iid == 'NIFTY50':
+                hist[iid] = rows
+            return iid, dict(analyse(rows), symbol=sym)
         except Exception as e:
             if iid in old:
                 return iid, dict(old[iid], note=f'fetch failed ({type(e).__name__}); kept previous reading')
@@ -275,6 +280,12 @@ def main():
     s = out['summary']
     print(f"parabolic check: {s['covered']} assets, {s['episodes']} past episodes; "
           f"parabolic now {s['parabolic_now']}, stretched now {s['stretched_now']}, failed {s['failed']}")
+    try:   # price-proxy back-test for the sectors and global models (display only)
+        import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import proxy_backtest
+        proxy_backtest.run(hist)
+    except Exception as e:
+        print(f'WARN proxy back-test: {type(e).__name__}: {e}')
 
 
 if __name__ == '__main__':

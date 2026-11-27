@@ -35,6 +35,10 @@ jobs:
         run: bash scripts/run_models.sh
       - name: Fetch latest prices (best effort)
         run: python3 -I scripts/fetch_prices.py || echo "price fetch failed; keeping previous prices"
+      - name: Provisional scores at today's prices (display only)
+        run: python3 -I scripts/provisional_scores.py || echo "provisional scores failed; keeping previous file"
+      - name: Mutual fund lookup (AMFI)
+        run: python3 -I scripts/fetch_funds.py || echo "fund lookup failed; keeping previous file"
       - name: Market-cap rotation (NSE history in models/nse-history)
         run: python3 -I scripts/size_rotation.py || echo "size rotation failed; keeping previous file"
       - name: Rebuild data/signals.json
@@ -47,11 +51,17 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python3 -I scripts/band_alerts.py || echo "alerts failed; continuing"
+      - name: Monthly summary note (emailed as an issue when a new month's note is written)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 -I scripts/monthly_summary.py || echo "monthly summary failed; continuing"
       - name: Commit if anything changed
         run: |
           git config user.name "board-refresh-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A models data
+          git add -A models data knowledge
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git commit -m "Refresh board data $(date -u +%Y-%m-%dT%H:%MZ)"
           git push

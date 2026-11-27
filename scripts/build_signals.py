@@ -19,6 +19,10 @@ def add(**k):
     k['band']=band(k['score']); items.append(k)
 def hist(df,col='oscillator'):
     return [[m,num(v)] for m,v in zip(df.month,df[col])]
+def livem(df):
+    """Months scored live (not reconstructed after the fact): the honest track record."""
+    if 'source' not in df: return []
+    return [m for m,src in zip(df.month,df['source']) if isinstance(src,str) and src.strip() and 'reconstructed' not in src.lower()]
 def pxh(df,col):
     """Monthly price next to the score history (same months), for the price overlay and the back-test."""
     return [[m,(None if pd.isna(v) else float(v))] for m,v in zip(df.month,pd.to_numeric(df[col],errors='coerce'))]
@@ -28,7 +32,7 @@ def tier(h,c):
 # core: gold, nifty
 for key,f,nm,pc in [('GOLD','gold-score-log.csv','Gold','gold_usd'),('NIFTY50','nifty-score-log.csv','Nifty 50','nifty')]:
     d=pd.read_csv(C+f); r=d.iloc[-1]; h=hist(d)
-    add(px_hist=pxh(d,pc),id=key,name=nm,model='core',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h,coverage=num(r.coverage),tier='A',action=None,meta={'Source':r.source},flags='History before Nov-2026 reconstructed (±3 pts)')
+    add(px_hist=pxh(d,pc),live_months=livem(d),id=key,name=nm,model='core',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h,coverage=num(r.coverage),tier='A',action=None,meta={'Source':r.source},flags='History before Nov-2026 reconstructed (±3 pts)')
 # sectors
 d=pd.read_csv(C+'nifty-sectors-score-log.csv')
 for _,r in d.iterrows():
@@ -75,10 +79,10 @@ for c,nm in [('SILVER','Silver'),('BRENT','Brent crude'),('COPPER','Copper'),('A
     s=d[d.commodity==c]
     if not len(s): continue
     r=s.iloc[-1]; h=hist(s)
-    add(px_hist=pxh(s,'price_usd') if len(h)>1 else [],id='CMD_'+c,name=nm,model='commodities',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h if len(h)>1 else [],coverage=num(r.coverage),tier=tier(len(h),num(r.coverage)),action=None,meta={'Price (USD)':num(r.price_usd),'Unit':_ccfg.get(c,{}).get('unit'),'As of':r.month,'Linked to':_ccfg.get(c,{}).get('ties'),'Indicators live':r.live},flags=('Price history: World Bank monthly averages, current month from Yahoo where it trades daily' if _ccfg.get(c,{}).get('history') else ('Month in progress; history reconstructed' if len(h)>1 else 'Only one month of history')))
+    add(px_hist=pxh(s,'price_usd') if len(h)>1 else [],live_months=livem(s),id='CMD_'+c,name=nm,model='commodities',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=h if len(h)>1 else [],coverage=num(r.coverage),tier=tier(len(h),num(r.coverage)),action=None,meta={'Price (USD)':num(r.price_usd),'Unit':_ccfg.get(c,{}).get('unit'),'As of':r.month,'Linked to':_ccfg.get(c,{}).get('ties'),'Indicators live':r.live},flags=('Price history: World Bank monthly averages, current month from Yahoo where it trades daily' if _ccfg.get(c,{}).get('history') else ('Month in progress; history reconstructed' if len(h)>1 else 'Only one month of history')))
 # btc
 d=pd.read_csv(P+'btc-score-log.csv'); r=d.iloc[-1]
-add(px_hist=pxh(d,'btc_usd'),id='BTC',name='Bitcoin',model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(d),coverage=num(r.coverage),tier='A',action='Stage entries; cap at 5% of portfolio; 31.2% VDA tax, no loss set-off',meta={'Price (₹ lakh)':num(r.btc_inr_lakh)},flags='History reconstructed; macro filter high (79)')
+add(px_hist=pxh(d,'btc_usd'),live_months=livem(d),id='BTC',name='Bitcoin',model='crypto',score=num(r.oscillator),signal=r.signal,buckets={'Valuation':num(r.valuation),'Timing':num(r.timing),'Filter':num(r['filter'])},history=hist(d),coverage=num(r.coverage),tier='A',action='Stage entries; cap at 5% of portfolio; 31.2% VDA tax, no loss set-off',meta={'Price (₹ lakh)':num(r.btc_inr_lakh)},flags='History reconstructed; macro filter high (79)')
 # top coins after Bitcoin (altcoin_oscillator.py): indicative, price-and-cycle only
 if os.path.exists(P+'altcoin-score-log.csv'):
     d=pd.read_csv(P+'altcoin-score-log.csv')
@@ -244,7 +248,63 @@ for it in items:
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(snaps,open(snp,'w'),separators=(',',':'))
 
-out={'backtest':bt,'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi,'watchlist':watchlist,'size_rotation':size_rotation}
+# ---- provisional scores at today's prices (scripts/provisional_scores.py): display only
+provisional=None
+try:
+    provisional=json.load(open(os.path.join(ROOT,'data','provisional.json')))
+    for it in items:
+        p=provisional['items'].get(it['id'])
+        if p: it['provisional']=dict(p,band=band(p['score']),at=provisional.get('prices_at'))
+except Exception as e: print('WARN provisional.json:',e)
+
+# ---- live track record: months scored at the time (not reconstructed), and the price change since
+LIVEKEY={'GOLD':'gold_usd','NIFTY50':'nifty','BTC':'btc_usd','CMD_SILVER':'silver_usd','CMD_BRENT':'brent_usd','CMD_COPPER':'copper_usd_t'}
+pv=(prices or {}).get('values',{})
+track_rows=[]
+for it in items:
+    px=dict(it.get('px_hist') or []); hs=dict(it.get('history') or [])
+    for m in it.get('live_months') or []:
+        p0=px.get(m); sc=hs.get(m)
+        if not p0 or sc is None: continue
+        k=LIVEKEY.get(it['id']); p1=pv.get(k,{}).get('value') if k else None
+        later=[(mm,v) for mm,v in it['px_hist'] if mm>m and v]
+        if p1 is None and later: p1=later[-1][1]
+        if not p1: continue
+        track_rows.append({'id':it['id'],'name':it['name'],'month':m,'score':sc,'band':band(sc),'px0':p0,'px1':p1,'ret':round(p1/p0-1,4)})
+track={'rows':sorted(track_rows,key=lambda r:(r['month'],r['score'])),'first':min([r['month'] for r in track_rows],default=None)}
+track['by_band']=[{'band':b,'n':len(r),'median':(round(sorted(r)[len(r)//2] if len(r)%2 else (sorted(r)[len(r)//2-1]+sorted(r)[len(r)//2])/2,4) if r else None)}
+                  for b in BANDS for r in [[x['ret'] for x in track_rows if x['band']==b]]]
+
+# ---- price-proxy back-test for sectors and global (scripts/proxy_backtest.py via fetch_parabolic.py)
+proxy=None
+try: proxy=json.load(open(os.path.join(ROOT,'data','proxy_backtest.json')))
+except Exception as e: print('WARN proxy_backtest.json:',e)
+
+# ---- market mood: 0 fearful .. 100 greedy, monthly since the score histories start
+def mood():
+    nv=pd.read_csv(C+'nifty-score-log.csv'); nval=dict(zip(nv.month,nv.valuation))
+    frh=sorted((amfi or {}).get('history') or [])
+    def fr_at(m):   # AMFI data lags a month: carry the latest reading forward up to 2 months
+        c=[(mm,v) for mm,v in frh if mm<=m and v is not None]
+        if not c: return None
+        y,mo=map(int,m.split('-')); y2,mo2=map(int,c[-1][0].split('-'))
+        return c[-1][1] if (y*12+mo)-(y2*12+mo2)<=2 else None
+    hist_items=[it for it in items if len(it.get('history') or [])>12]
+    months=sorted({m for it in hist_items for m,_ in it['history']})
+    out=[]
+    for m in months:
+        sc=[v for it in hist_items for mm,v in it['history'] if mm==m and v is not None]
+        breadth=50+50*(sum(v>65 for v in sc)-sum(v<=35 for v in sc))/len(sc) if sc else None
+        parts={'Nifty 50 valuation':num(nval.get(m)),'Thematic-fund froth':num(fr_at(m)),'Rich minus cheap readings':None if breadth is None else round(breadth,1)}
+        have=[v for v in parts.values() if v is not None]
+        if len(have)>=2: out.append({'month':m,'score':round(sum(have)/len(have),1),'parts':parts})
+    if not out: return None
+    cur=dict(out[-1]); para=[it['name'] for it in items if it['model']!='stocks' and (it.get('parabolic') or {}).get('status') in ('Parabolic','Stretched')]
+    cur['stretched']=para
+    return {'now':cur,'history':[[x['month'],x['score']] for x in out]}
+mood_=mood()
+
+out={'mood':mood_,'proxy_backtest':proxy,'track':track,'backtest':bt,'built_at':datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),'models':meta,'run_prices':run_prices,'prices':prices,'items':items,'assetClasses':ac,'parabolic':parabolic,'amfi':amfi,'watchlist':watchlist,'size_rotation':size_rotation}
 os.makedirs(os.path.join(ROOT,'data'),exist_ok=True)
 json.dump(out,open(os.path.join(ROOT,'data','signals.json'),'w'),separators=(',',':'),allow_nan=False)
 print('signals.json:',len(items),'items;',{k:v['asof'] for k,v in meta.items()})

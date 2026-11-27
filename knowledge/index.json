@@ -164,6 +164,19 @@
         "valuation",
         "cycles"
       ]
+    },
+    {
+      "slug": "monthly-summary-2026-11",
+      "title": "Monthly summary: November 2026",
+      "file": "monthly-summary-2026-11.md",
+      "source": "Board, generated",
+      "source_url": "",
+      "added": "2026-11-19",
+      "tags": [
+        "monthly",
+        "summary"
+      ],
+      "pinned": false
     }
   ]
 }

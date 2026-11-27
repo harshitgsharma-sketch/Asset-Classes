@@ -255,7 +255,7 @@ td.sc{white-space:nowrap}
   .legendbar{grid-template-columns:repeat(6,1fr);gap:2px;width:100%;min-width:0}.legendbar .lbl,.legendbar .rng{display:none}.legendbar span{height:8px;margin:0}
   #scale::after{content:'1 cheap  →  100 rich';grid-column:1/-1;font-size:12px;color:var(--ink-3);margin-top:3px}
   .sub{display:none}.tabmix{display:none}.tabs{font-size:14px}
-  nav a{padding:12px 12px}.navx{display:none}
+  nav a{padding:12px 12px}nav .navx{margin-left:0}nav .navx a{font-size:14px}
   .tbar a,.tmenu summary,.seg button,.btn,.toggle,.move,.vsw.seg button{min-height:40px;display:inline-flex;align-items:center}
   th .btn{min-height:40px}td{padding:10px 8px}.row{padding:10px 6px}
   table.st .mh{display:none}
@@ -295,6 +295,23 @@ body{transition:padding-right .2s ease}
 .pmix{margin:10px 0 12px}.pmh{display:flex;gap:10px;align-items:baseline;margin-bottom:4px}.pmh .tag{flex:1}
 .drr button{padding:4px 10px}
 @media(max-width:640px){.kpis .kpi .v{font-size:22px}}
+
+/* ---- round 2: provisional, mood, plans ---- */
+.prov{font-size:13px;margin:8px 0 2px;padding:6px 8px;border-radius:6px;background:var(--surface-2);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.prov>span:first-child{color:var(--ink-2)}.prov.moved{box-shadow:inset 3px 0 0 #fab219}
+.mood{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:760px){.mood{grid-template-columns:minmax(0,1fr)}}.mood>div{min-width:0}.mood .tag{white-space:normal}.prov .tag{white-space:normal}
+.plan{border-top:1px solid var(--line);padding:10px 0}.plan:first-of-type{border-top:0}
+.tranches{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tr{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer}
+.tr.done{opacity:.55;text-decoration:line-through}.tr.due{border-color:#fab219}
+.pform{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:8px 0}
+.pform label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--ink-2)}
+.pform input{padding:5px 7px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink);width:120px}
+.planf summary{list-style:none;display:inline-block}.planf summary::-webkit-details-marker{display:none}
+.pio{display:inline-flex;gap:6px}
+.plan .pmh{flex-wrap:wrap}.plan .pmh .tag{white-space:normal;flex:1 1 220px}.pmh>b{min-width:0}
+#padd{min-width:0}
 </style>
 </head>
 <body>
