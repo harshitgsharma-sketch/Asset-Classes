@@ -4,7 +4,7 @@ Written by the board from the 2026-11-19 model run. Not investment advice: the a
 
 ## In one line
 
-This month: market mood **34/100 (fearful)**; **11** readings changed band; **14** in Buy or Strong buy, **11** in Trim or Exit (indices, commodities, crypto, bonds and real estate).
+This month: market mood **32/100 (fearful)**; **12** readings changed band; **15** in Buy or Strong buy, **11** in Trim or Exit (indices, commodities, crypto, bonds and real estate).
 
 ## Asset classes
 
@@ -17,15 +17,16 @@ This month: market mood **34/100 (fearful)**; **11** readings changed band; **14
 | Reading | Area | Was | Now |
 |---|---|---|---|
 | Brent crude | Commodities | Trim (78.3) | **Hold** (57.2) |
-| Natural gas | Commodities | Accumulate (35.8) | **Hold** (51.5) |
+| Natural gas | Commodities | Accumulate (35.8) | **Hold** (51.4) |
 | Silver | Commodities | Accumulate (48.5) | **Buy** (34.5) |
 | Bitcoin | Crypto | Accumulate (39.9) | **Buy** (27.1) |
-| Ethereum | Crypto | Accumulate (42.5) | **Buy** (31.8) |
-| BNB | Crypto | Hold (57.7) | **Accumulate** (47.1) |
+| Ethereum | Crypto | Accumulate (42.5) | **Buy** (30.9) |
+| BNB | Crypto | Hold (57.7) | **Accumulate** (46.5) |
 | Zinc | Commodities | Trim (73.3) | **Hold** (63.2) |
-| Solana | Crypto | Accumulate (41.7) | **Buy** (33.2) |
+| Solana | Crypto | Accumulate (41.7) | **Buy** (33.0) |
+| XRP | Crypto | Accumulate (42.6) | **Buy** (34.9) |
+| Aluminium | Commodities | Hold (51.4) | **Accumulate** (43.8) |
 | Nifty 50 | Indian equities | Accumulate (45.0) | **Hold** (51.3) |
-| Aluminium | Commodities | Hold (51.4) | **Accumulate** (46.2) |
 | Iron ore | Commodities | Strong buy (19.6) | **Buy** (21.7) |
 
 ## Cheapest readings (score 35 or lower)
@@ -37,8 +38,8 @@ This month: market mood **34/100 (fearful)**; **11** readings changed band; **14
 - **Hang Seng China Enterprises (offshore China)** (International): 28.8, Buy · Enter in 3 tranches over ~6 m
 - **Jakarta Composite** (International): 29.3, Buy · Enter in thirds over 6-12 m (price >15% below 200-DMA); speed up once it recrosses the 200-DMA
 - **RBI Floating Rate Savings Bond 2020 (T), 7-yr** (Fixed income): 29.3, Buy · Buy floating
+- **Ethereum** (Crypto): 30.9, Buy · Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off
 - **Mumbai housing** (Real estate): 31.4, Buy · Valuation only: check the rent-vs-buy calculator on your own numbers
-- **Ethereum** (Crypto): 31.8, Buy · Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off
 - **Bengaluru housing** (Real estate): 32.0, Buy · Valuation only: check the rent-vs-buy calculator on your own numbers
 
 ## Buy in stages rather than at once
@@ -47,10 +48,11 @@ This month: market mood **34/100 (fearful)**; **11** readings changed band; **14
 - **Nifty IT** (Indian equities): 27.9, Buy · Strongest buy: add + overweight
 - **Hang Seng China Enterprises (offshore China)** (International): 28.8, Buy · Enter in 3 tranches over ~6 m
 - **Jakarta Composite** (International): 29.3, Buy · Enter in thirds over 6-12 m (price >15% below 200-DMA); speed up once it recrosses the 200-DMA
-- **Ethereum** (Crypto): 31.8, Buy · Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off
+- **Ethereum** (Crypto): 30.9, Buy · Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off
+- **Solana** (Crypto): 33.0, Buy · Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off
 - **Ibovespa** (International): 33.2, Buy · Enter in thirds over 6-12 m (price >15% below 200-DMA); speed up once it recrosses the 200-DMA
-- **Solana** (Crypto): 33.2, Buy · Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off
 - **S&P/BMV IPC** (International): 33.6, Buy · Enter in 3 tranches over ~6 m
+- **XRP** (Crypto): 34.9, Buy · Indicative only; stage entries and keep all crypto within the 5% cap; 31.2% VDA tax, no loss set-off
 
 Cheap, but timing or the macro filter argues against a lump sum.
 
